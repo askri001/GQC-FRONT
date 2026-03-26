@@ -33,6 +33,30 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Promise<boolean> {
+    console.log('Login attempt:', credentials.username); // Debug log
+    // Mock login for development (admin/admin)
+    if (credentials.username === 'admin' && credentials.password === 'admin') {
+      const mockToken = 'mock-jwt-token-dev';
+      const mockUser: User = {
+        id: 1,
+        username: 'admin',
+        email: 'admin@bna.tn',
+        firstName: 'Admin',
+        lastName: 'Super',
+        active: true,
+        roles: [{ 
+          id: 1, 
+          name: 'ADMIN', 
+          permissions: [{ id: 1, name: 'ALL', code: 'ALL', module: 'ALL' }] 
+        }]
+      };
+      this.storeToken(mockToken);
+      this.storeUser(mockUser);
+      this.currentUserSignal.set(mockUser);
+      this.isAuthenticatedSignal.set(true);
+      return Promise.resolve(true);
+    }
+
     return new Promise((resolve, reject) => {
       this.api.post<AuthResponse>('/auth/login', credentials)
         .pipe(
@@ -44,9 +68,8 @@ export class AuthService {
             resolve(true);
           }),
           catchError(error => {
-            reject(error);
+            reject(new Error('Identifiants invalides'));
             return of(null);
-
           })
         )
         .subscribe();
