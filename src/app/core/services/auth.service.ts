@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
 import { User, AuthResponse, LoginRequest } from '../models';
-import { tap, catchError, of, delay } from 'rxjs';
+import { tap, catchError, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,65 +11,29 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
-  private currentUserSignal = signal<User | null>(this.getStoredUser());
-  private isAuthenticatedSignal = signal<boolean>(this.hasValidToken());
+  private currentUserSignal = signal<User | null>(null);
+  private isAuthenticatedSignal = signal<boolean>(false);
 
   currentUser = computed(() => this.currentUserSignal());
   isAuthenticated = computed(() => this.isAuthenticatedSignal());
 
-  // Mock users for demo - BNA Tunisia
-  private mockUsers: { username: string; password: string; user: User }[] = [
-    {
-      username: 'admin',
-      password: 'admin123',
-      user: {
-        id: 1,
-        username: 'admin',
-        email: 'admin@bna.tn',
-        firstName: 'Admin',
-        lastName: 'BNA',
-        active: true,
-        roles: [{ id: 1, name: 'ADMIN', permissions: [] }]
-      }
-    },
-    {
-      username: 'user',
-      password: 'user123',
-      user: {
-        id: 2,
-        username: 'user',
-        email: 'utilisateur@bna.tn',
-        firstName: 'Utilisateur',
-        lastName: 'BNA',
-        active: true,
-        roles: [{ id: 2, name: 'USER', permissions: [] }]
-      }
-    }
-  ];
-
   constructor(
     private api: ApiService,
     private router: Router
-  ) {}
+  ) {
+    // Load from localStorage on init
+    const storedUser = localStorage.getItem(this.USER_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (storedUser && token) {
+      try {
+        this.currentUserSignal.set(JSON.parse(storedUser));
+        this.isAuthenticatedSignal.set(true);
+      } catch {}
+    }
+  }
 
   login(credentials: LoginRequest): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      // Check for mock login first
-      const mockUser = this.mockUsers.find(
-        u => u.username === credentials.username && u.password === credentials.password
-      );
-
-      if (mockUser) {
-        // Mock successful login
-        this.storeToken('mock-jwt-token-' + Date.now());
-        this.storeUser(mockUser.user);
-        this.currentUserSignal.set(mockUser.user);
-        this.isAuthenticatedSignal.set(true);
-        resolve(true);
-        return;
-      }
-
-      // Try API login
       this.api.post<AuthResponse>('/auth/login', credentials)
         .pipe(
           tap(response => {
@@ -80,9 +44,9 @@ export class AuthService {
             resolve(true);
           }),
           catchError(error => {
-            console.error('Login error:', error);
             reject(error);
             return of(null);
+
           })
         )
         .subscribe();
@@ -131,23 +95,6 @@ export class AuthService {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
-  private getStoredUser(): User | null {
-    const userJson = localStorage.getItem(this.USER_KEY);
-    if (userJson) {
-      try {
-        return JSON.parse(userJson);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  private hasValidToken(): boolean {
-    const token = this.getToken();
-    return !!token;
-  }
-
   refreshUser(): void {
     this.api.get<User>('/auth/me')
       .pipe(
@@ -159,4 +106,3 @@ export class AuthService {
       .subscribe();
   }
 }
-
