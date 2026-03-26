@@ -32,3 +32,4 @@ export const TYPE_FACTURE_LABELS: Record<TypeFacture, string> = {
   'AUTRE': 'Autre'
 };
 
+

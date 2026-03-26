@@ -1,0 +1,22 @@
+<h2>Factures</h2>
+
+<form (ngSubmit)="save()">
+
+  <input type="text" placeholder="Numero" [(ngModel)]="facture.numero" name="numero">
+
+  <input type="number" placeholder="Montant" [(ngModel)]="facture.montant" name="montant">
+
+  <input type="text" placeholder="Statut" [(ngModel)]="facture.statut" name="statut">
+
+  <button type="submit">Ajouter</button>
+
+</form>
+
+<hr>
+
+<ul>
+  <li *ngFor="let f of factures">
+    {{f.numero}} - {{f.montant}} TND
+    <button (click)="delete(f.id)">Supprimer</button>
+  </li>
+</ul>

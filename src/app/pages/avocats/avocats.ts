@@ -18,10 +18,10 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 import { Prestataire } from '../../core/models';
 import { PrestataireService } from '../../core/services/prestataire.service';
-import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './prestataire-form-dialog';
+import { AvocatFormDialogComponent, AvocatFormDialogData } from './avocat-form-dialog';
 
 @Component({
-  selector: 'app-prestataires',
+  selector: 'app-avocats',
   standalone: true,
   imports: [
     CommonModule,
@@ -46,12 +46,12 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
       <mat-card class="page-card">
         <div class="card-header">
           <div class="header-title">
-            <mat-icon class="title-icon">business</mat-icon>
-            <h2>Gestion des Prestataires</h2>
+            <mat-icon class="title-icon">gavel</mat-icon>
+            <h2>Gestion des Avocats</h2>
           </div>
           <button mat-raised-button color="primary" (click)="openAddDialog()">
             <mat-icon>add</mat-icon>
-            Nouveau Prestataire
+            Nouvel Avocat
           </button>
         </div>
 
@@ -63,12 +63,12 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Type</mat-label>
-            <mat-select [(ngModel)]="typeFilter" (selectionChange)="applyFilter()">
-              <mat-option value="">Tous</mat-option>
-              <mat-option value="AVOCAT">Avocat</mat-option>
-              <mat-option value="EXPERT">Expert</mat-option>
-              <mat-option value="HUISSIER">Huissier</mat-option>
+            <mat-label>Spécialité</mat-label>
+            <mat-select [(ngModel)]="specialiteFilter" (selectionChange)="applyFilter()">
+              <mat-option value="">Toutes</mat-option>
+              @for (spec of specialites; track spec) {
+                <mat-option [value]="spec">{{ spec }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
 
@@ -85,19 +85,16 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
         @if (isLoading()) {
           <div class="loading-container">
             <mat-spinner diameter="40"></mat-spinner>
-            <p>Chargement des prestataires...</p>
+            <p>Chargement des avocats...</p>
           </div>
         }
 
         @if (!isLoading()) {
           <div class="table-container">
-            <table mat-table [dataSource]="filteredPrestataires()" class="full-width">
+            <table mat-table [dataSource]="filteredAvocats()" class="full-width">
               <ng-container matColumnDef="nom">
-                <th mat-header-cell *matHeaderCellDef>ID / Nom</th>
-                <td mat-cell *matCellDef="let p">
-                  <div>{{ p.id }}</div>
-                  <div class="name">{{ getFullName(p) }}</div>
-                </td>
+                <th mat-header-cell *matHeaderCellDef>Nom</th>
+                <td mat-cell *matCellDef="let p">{{ getFullName(p) }}</td>
               </ng-container>
 
               <ng-container matColumnDef="telephone">
@@ -118,7 +115,7 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
               </ng-container>
 
               <ng-container matColumnDef="tarifJournalier">
-                <th mat-header-cell *matHeaderCellDef>Tarif (DH/j)</th>
+Tarif (DT/j)
                 <td mat-cell *matCellDef="let p">
                   <span class="tarif">{{ p.tarifJournalier | number:'1.0-0' }}</span>
                 </td>
@@ -141,10 +138,6 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
                   </button>
                   <mat-menu #menu="matMenu">
                     <button mat-menu-item (click)="openEditDialog(p)">
-                      <mat-icon>visibility</mat-icon>
-                      <span>Voir</span>
-                    </button>
-                    <button mat-menu-item (click)="openEditDialog(p)">
                       <mat-icon>edit</mat-icon>
                       <span>Modifier</span>
                     </button>
@@ -161,19 +154,19 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="prestataire-row"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="avocat-row"></tr>
 
               <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
                   <mat-icon>person_off</mat-icon>
-                  <p>Aucun prestataire trouvé</p>
+                  <p>Aucun avocat trouvé</p>
                 </td>
               </tr>
             </table>
           </div>
 
           <mat-paginator 
-            [length]="filteredPrestataires().length"
+            [length]="filteredAvocats().length"
             [pageSize]="pageSize"
             [pageSizeOptions]="[5, 10, 25, 50]"
             (page)="onPageChange($event)"
@@ -200,56 +193,57 @@ import { PrestataireFormDialogComponent, PrestataireFormDialogData } from './pre
     .statut-chip { font-weight: 500; }
     .statut-actif { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .statut-inactif { background: #ffebee !important; color: #c62828 !important; }
-    .prestataire-row:hover { background: #f5f5f5; }
+    .avocat-row:hover { background: #f5f5f5; }
     .no-data { text-align: center; padding: 40px !important; color: #9e9e9e; }
     .no-data mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 10px; }
     .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: #666; }
     .loading-container p { margin-top: 16px; }
     .delete-action { color: #f44336; }
     mat-paginator { margin-top: 20px; }
-    .name { font-weight: 500; margin-top: 2px; }
   `]
 })
-export class PrestatairesComponent implements OnInit {
+export class AvocatsComponent implements OnInit {
   private prestataireService = inject(PrestataireService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  prestataires = signal<Prestataire[]>([]);
-  filteredPrestataires = signal<Prestataire[]>([]);
+  avocats = signal<Prestataire[]>([]);
+  filteredAvocats = signal<Prestataire[]>([]);
   isLoading = signal<boolean>(false);
 
   displayedColumns = ['nom', 'telephone', 'email', 'specialite', 'tarifJournalier', 'actif', 'actions'];
 
   searchQuery = '';
-  typeFilter = '';
+  specialiteFilter = '';
   actifFilter = '';
 
   pageSize = 10;
   currentPage = 0;
 
+  specialites = ['Civil', 'Pénal', 'Commercial', 'Travail'];
+
   ngOnInit(): void {
-    this.loadPrestataires();
+    this.loadAvocats();
   }
 
-  loadPrestataires(): void {
+  loadAvocats(): void {
     this.isLoading.set(true);
-    this.prestataireService.getPrestataires().subscribe({
-      next: (data: Prestataire[]) => {
-        this.prestataires.set(data);
+    this.prestataireService.getByType('AVOCAT').subscribe({
+      next: (data) => {
+        this.avocats.set(data);
         this.applyFilter();
         this.isLoading.set(false);
       },
-      error: (error: any) => {
-        console.error('Error loading prestataires:', error);
+      error: (error) => {
+        console.error('Error loading avocats:', error);
         this.isLoading.set(false);
-        this.showNotification('Erreur lors du chargement des prestataires', 'error');
+        this.showNotification('Erreur lors du chargement des avocats', 'error');
       }
     });
   }
 
   applyFilter(): void {
-    let result = [...this.prestataires()];
+    let result = [...this.avocats()];
 
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
@@ -259,15 +253,15 @@ export class PrestatairesComponent implements OnInit {
       );
     }
 
-    if (this.typeFilter) {
-      result = result.filter(p => p.typePrestataire === this.typeFilter);
+    if (this.specialiteFilter) {
+      result = result.filter(p => p.specialite === this.specialiteFilter);
     }
 
     if (this.actifFilter !== '') {
       result = result.filter(p => p.actif === (this.actifFilter === 'true'));
     }
 
-    this.filteredPrestataires.set(result);
+    this.filteredAvocats.set(result);
   }
 
   onPageChange(event: PageEvent): void {
@@ -280,88 +274,88 @@ export class PrestatairesComponent implements OnInit {
   }
 
   openAddDialog(): void {
-    const dialogRef = this.dialog.open(PrestataireFormDialogComponent, {
+    const dialogRef = this.dialog.open(AvocatFormDialogComponent, {
       width: '500px',
       data: { isEdit: false }
     });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.createPrestataire(result);
+        this.createAvocat(result);
       }
     });
   }
 
-  openEditDialog(prestataire: Prestataire): void {
-    const dialogRef = this.dialog.open(PrestataireFormDialogComponent, {
+  openEditDialog(avocat: Prestataire): void {
+    const dialogRef = this.dialog.open(AvocatFormDialogComponent, {
       width: '500px',
-      data: { prestataire: prestataire, isEdit: true }
+      data: { prestataire: avocat, isEdit: true }
     });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.updatePrestataire(prestataire.id!, result);
+        this.updateAvocat(avocat.id!, result);
       }
     });
   }
 
-  toggleStatus(prestataire: Prestataire): void {
-    const newStatus = !prestataire.actif;
-    if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} ce prestataire ?`)) {
-      this.prestataireService.updateStatus(prestataire.id!, newStatus).subscribe({
-        next: (updated: Prestataire) => {
-          this.prestataires.update(list => list.map(p => p.id === prestataire.id ? updated : p));
+  toggleStatus(avocat: Prestataire): void {
+    const newStatus = !avocat.actif;
+    if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} cet avocat ?`)) {
+      this.prestataireService.updateStatus(avocat.id!, newStatus).subscribe({
+        next: (updated) => {
+          this.avocats.update(list => list.map(p => p.id === avocat.id ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
-        error: (error: any) => this.showNotification('Erreur mise à jour statut', 'error')
+        error: (error) => this.showNotification('Erreur mise à jour statut', 'error')
       });
     }
   }
 
-  createPrestataire(data: Partial<Prestataire>): void {
+  createAvocat(data: Partial<Prestataire>): void {
     this.prestataireService.create(data).subscribe({
-      next: (newPrestataire: Prestataire) => {
-        this.prestataires.update(list => [...list, newPrestataire]);
+      next: (newAvocat) => {
+        this.avocats.update(list => [...list, newAvocat]);
         this.applyFilter();
-        this.showNotification('Prestataire créé avec succès', 'success');
+        this.showNotification('Avocat créé avec succès', 'success');
       },
-      error: (error: any) => {
-        console.error('Error creating prestataire:', error);
+      error: (error) => {
+        console.error('Error creating avocat:', error);
         this.showNotification('Erreur lors de la création', 'error');
       }
     });
   }
 
-  updatePrestataire(id: number, data: Partial<Prestataire>): void {
+  updateAvocat(id: number, data: Partial<Prestataire>): void {
     this.prestataireService.update(id, data).subscribe({
-      next: (updated: Prestataire) => {
-        this.prestataires.update(list => list.map(p => p.id === id ? updated : p));
+      next: (updated) => {
+        this.avocats.update(list => list.map(p => p.id === id ? updated : p));
         this.applyFilter();
-        this.showNotification('Prestataire mis à jour avec succès', 'success');
+        this.showNotification('Avocat mis à jour avec succès', 'success');
       },
-      error: (error: any) => {
-        console.error('Error updating prestataire:', error);
+      error: (error) => {
+        console.error('Error updating avocat:', error);
         this.showNotification('Erreur lors de la mise à jour', 'error');
       }
     });
   }
 
-  confirmDelete(prestataire: Prestataire): void {
-    if (confirm(`Supprimer le prestataire "${this.getFullName(prestataire)}" ? Action irréversible.`)) {
-      this.deletePrestataire(prestataire.id!);
+  confirmDelete(avocat: Prestataire): void {
+    if (confirm(`Supprimer l'avocat "${this.getFullName(avocat)}" ? Action irréversible.`)) {
+      this.deleteAvocat(avocat.id!);
     }
   }
 
-  deletePrestataire(id: number): void {
+  deleteAvocat(id: number): void {
     this.prestataireService.delete(id).subscribe({
       next: () => {
-        this.prestataires.update(list => list.filter(p => p.id !== id));
+        this.avocats.update(list => list.filter(p => p.id !== id));
         this.applyFilter();
-        this.showNotification('Prestataire supprimé avec succès', 'success');
+        this.showNotification('Avocat supprimé avec succès', 'success');
       },
-      error: (error: any) => {
-        console.error('Error deleting prestataire:', error);
+      error: (error) => {
+        console.error('Error deleting avocat:', error);
         this.showNotification('Erreur lors de la suppression', 'error');
       }
     });

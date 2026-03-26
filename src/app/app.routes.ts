@@ -57,6 +57,18 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/missions/missions').then(m => m.MissionsComponent)
       },
       {
+        path: 'avocats',
+        loadComponent: () => import('./pages/avocats/avocats').then(m => m.AvocatsComponent)
+      },
+      {
+        path: 'experts',
+        loadComponent: () => import('./pages/experts/experts').then(m => m.ExpertsComponent)
+      },
+      {
+        path: 'huissiers',
+        loadComponent: () => import('./pages/huissiers/huissiers').then(m => m.HuissiersComponent)
+      },
+      {
         path: 'factures',
         loadComponent: () => import('./pages/factures/factures').then(m => m.FacturesComponent)
       }

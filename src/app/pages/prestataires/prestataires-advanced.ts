@@ -235,12 +235,12 @@ export class PrestatairesComponent implements OnInit {
   loadPrestataires(): void {
     this.isLoading.set(true);
     this.prestataireService.getPrestataires().subscribe({
-      next: (data: Prestataire[]) => {
+      next: (data) => {
         this.prestataires.set(data);
         this.applyFilter();
         this.isLoading.set(false);
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error loading prestataires:', error);
         this.isLoading.set(false);
         this.showNotification('Erreur lors du chargement des prestataires', 'error');
@@ -285,7 +285,7 @@ export class PrestatairesComponent implements OnInit {
       data: { isEdit: false }
     });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.createPrestataire(result);
       }
@@ -298,7 +298,7 @@ export class PrestatairesComponent implements OnInit {
       data: { prestataire: prestataire, isEdit: true }
     });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.updatePrestataire(prestataire.id!, result);
       }
@@ -309,24 +309,24 @@ export class PrestatairesComponent implements OnInit {
     const newStatus = !prestataire.actif;
     if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} ce prestataire ?`)) {
       this.prestataireService.updateStatus(prestataire.id!, newStatus).subscribe({
-        next: (updated: Prestataire) => {
+        next: (updated) => {
           this.prestataires.update(list => list.map(p => p.id === prestataire.id ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
-        error: (error: any) => this.showNotification('Erreur mise à jour statut', 'error')
+        error: (error) => this.showNotification('Erreur mise à jour statut', 'error')
       });
     }
   }
 
   createPrestataire(data: Partial<Prestataire>): void {
     this.prestataireService.create(data).subscribe({
-      next: (newPrestataire: Prestataire) => {
+      next: (newPrestataire) => {
         this.prestataires.update(list => [...list, newPrestataire]);
         this.applyFilter();
         this.showNotification('Prestataire créé avec succès', 'success');
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error creating prestataire:', error);
         this.showNotification('Erreur lors de la création', 'error');
       }
@@ -335,12 +335,12 @@ export class PrestatairesComponent implements OnInit {
 
   updatePrestataire(id: number, data: Partial<Prestataire>): void {
     this.prestataireService.update(id, data).subscribe({
-      next: (updated: Prestataire) => {
+      next: (updated) => {
         this.prestataires.update(list => list.map(p => p.id === id ? updated : p));
         this.applyFilter();
         this.showNotification('Prestataire mis à jour avec succès', 'success');
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error updating prestataire:', error);
         this.showNotification('Erreur lors de la mise à jour', 'error');
       }
@@ -360,7 +360,7 @@ export class PrestatairesComponent implements OnInit {
         this.applyFilter();
         this.showNotification('Prestataire supprimé avec succès', 'success');
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error deleting prestataire:', error);
         this.showNotification('Erreur lors de la suppression', 'error');
       }
