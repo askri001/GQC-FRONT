@@ -1,5 +1,5 @@
 export interface Prestataire {
-  id?: number;
+  idPrestataire?: number;
   typePrestataire: TypePrestataire;
   nom: string;
   prenom: string;

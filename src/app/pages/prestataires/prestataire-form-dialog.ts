@@ -117,7 +117,7 @@ export interface PrestataireFormDialogData {
           mat-raised-button 
           color="primary" 
           [disabled]="form.invalid || isLoading"
-          (click)="onSubmit()"
+          (click)="onSubmit(data.isEdit ? data.prestataire?.idPrestataire : undefined)"
         >
           <mat-icon>{{ data.isEdit ? 'save' : 'add' }}</mat-icon>
           {{ isLoading ? 'Enregistrement...' : (data.isEdit ? 'Mettre à jour' : 'Créer') }}
@@ -168,22 +168,22 @@ export class PrestataireFormDialogComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
+  onSubmit(idParam?: number): void {
     if (this.form.valid) {
       this.isLoading = true;
       
       const formValue = this.form.value;
+      const prestataireId = idParam || this.data.prestataire?.idPrestataire;
+  
       const prestataireData: Partial<Prestataire> = {
+        id: prestataireId,  // Explicitly include ID for update case
         ...formValue,
         typePrestataire: 'AVOCAT' as TypePrestataire // Default, can be overridden by parent
       };
 
       // Simulate save
       setTimeout(() => {
-        this.dialogRef.close({
-          ...prestataireData,
-          id: this.data.prestataire?.id
-        });
+        this.dialogRef.close(prestataireData);
         this.isLoading = false;
       }, 800);
     }

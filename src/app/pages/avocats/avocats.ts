@@ -294,7 +294,7 @@ export class AvocatsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.updateAvocat(avocat.id!, result);
+        this.updateAvocat(avocat.idPrestataire!, result);
       }
     });
   }
@@ -302,9 +302,9 @@ export class AvocatsComponent implements OnInit {
   toggleStatus(avocat: Prestataire): void {
     const newStatus = !avocat.actif;
     if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} cet avocat ?`)) {
-      this.prestataireService.updateStatus(avocat.id!, newStatus).subscribe({
+      this.prestataireService.updateStatus(avocat.idPrestataire!, newStatus).subscribe({
         next: (updated) => {
-          this.avocats.update(list => list.map(p => p.id === avocat.id ? updated : p));
+          this.avocats.update(list => list.map(p => p.idPrestataire === avocat.idPrestataire ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
@@ -330,7 +330,7 @@ export class AvocatsComponent implements OnInit {
   updateAvocat(id: number, data: Partial<Prestataire>): void {
     this.prestataireService.update(id, data).subscribe({
       next: (updated) => {
-        this.avocats.update(list => list.map(p => p.id === id ? updated : p));
+        this.avocats.update(list => list.map(p => p.idPrestataire === id ? updated : p));
         this.applyFilter();
         this.showNotification('Avocat mis à jour avec succès', 'success');
       },
@@ -343,14 +343,14 @@ export class AvocatsComponent implements OnInit {
 
   confirmDelete(avocat: Prestataire): void {
     if (confirm(`Supprimer l'avocat "${this.getFullName(avocat)}" ? Action irréversible.`)) {
-      this.deleteAvocat(avocat.id!);
+      this.deleteAvocat(avocat.idPrestataire!);
     }
   }
 
   deleteAvocat(id: number): void {
     this.prestataireService.delete(id).subscribe({
       next: () => {
-        this.avocats.update(list => list.filter(p => p.id !== id));
+        this.avocats.update(list => list.filter(p => p.idPrestataire !== id));
         this.applyFilter();
         this.showNotification('Avocat supprimé avec succès', 'success');
       },

@@ -33,7 +33,6 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Promise<boolean> {
-    console.log('Login attempt:', credentials.username); // Debug log
     // Mock login for development (admin/admin)
     if (credentials.username === 'admin' && credentials.password === 'admin') {
       const mockToken = 'mock-jwt-token-dev';

@@ -294,7 +294,7 @@ export class ExpertsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.updateExpert(expert.id!, result);
+        this.updateExpert(expert.idPrestataire!, result);
       }
     });
   }
@@ -302,9 +302,9 @@ export class ExpertsComponent implements OnInit {
   toggleStatus(expert: Prestataire): void {
     const newStatus = !expert.actif;
     if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} cet expert ?`)) {
-      this.prestataireService.updateStatus(expert.id!, newStatus).subscribe({
+      this.prestataireService.updateStatus(expert.idPrestataire!, newStatus).subscribe({
         next: (updated) => {
-          this.experts.update(list => list.map(p => p.id === expert.id ? updated : p));
+          this.experts.update(list => list.map(p => p.idPrestataire === expert.idPrestataire ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
@@ -330,7 +330,7 @@ export class ExpertsComponent implements OnInit {
   updateExpert(id: number, data: Partial<Prestataire>): void {
     this.prestataireService.update(id, data).subscribe({
       next: (updated) => {
-        this.experts.update(list => list.map(p => p.id === id ? updated : p));
+        this.experts.update(list => list.map(p => p.idPrestataire === id ? updated : p));
         this.applyFilter();
         this.showNotification('Expert mis à jour avec succès', 'success');
       },
@@ -343,14 +343,14 @@ export class ExpertsComponent implements OnInit {
 
   confirmDelete(expert: Prestataire): void {
     if (confirm(`Supprimer l'expert "${this.getFullName(expert)}" ? Action irréversible.`)) {
-      this.deleteExpert(expert.id!);
+      this.deleteExpert(expert.idPrestataire!);
     }
   }
 
   deleteExpert(id: number): void {
     this.prestataireService.delete(id).subscribe({
       next: () => {
-        this.experts.update(list => list.filter(p => p.id !== id));
+        this.experts.update(list => list.filter(p => p.idPrestataire !== id));
         this.applyFilter();
         this.showNotification('Expert supprimé avec succès', 'success');
       },

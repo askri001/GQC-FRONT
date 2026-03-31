@@ -45,7 +45,7 @@ export class PrestataireService {
     return this.api.get<Prestataire>(`${this.endpoint}/${id}`).pipe(
       catchError(error => {
         console.error('Error loading prestataire:', error);
-        const found = this.prestatairesSignal().find(p => p.id === id);
+        const found = this.prestatairesSignal().find(p => p.idPrestataire === id);
         return of(found);
       })
     );
@@ -101,13 +101,14 @@ export class PrestataireService {
   }
 
   update(id: number, prestataire: Partial<Prestataire>): Observable<Prestataire> {
+    
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     return this.api.put<Prestataire>(`${this.endpoint}/${id}`, prestataire).pipe(
       tap(updated => {
         this.prestatairesSignal.update(list => 
-          list.map(p => p.id === id ? updated : p)
+          list.map(p => p.idPrestataire === id ? updated : p)
         );
         this.loadingSignal.set(false);
       }),
@@ -117,7 +118,7 @@ export class PrestataireService {
         this.loadingSignal.set(false);
         const mockUpdated: Prestataire = { ...prestataire, id } as Prestataire;
         this.prestatairesSignal.update(list => 
-          list.map(p => p.id === id ? mockUpdated : p)
+          list.map(p => p.idPrestataire === id ? mockUpdated : p)
         );
         return of(mockUpdated);
       })
@@ -134,14 +135,14 @@ export class PrestataireService {
 
     return this.api.delete<void>(`${this.endpoint}/${id}`).pipe(
       tap(() => {
-        this.prestatairesSignal.update(list => list.filter(p => p.id !== id));
+        this.prestatairesSignal.update(list => list.filter(p => p.idPrestataire !== id));
         this.loadingSignal.set(false);
       }),
       catchError(error => {
         console.error('Error deleting prestataire:', error);
         this.errorSignal.set('Erreur lors de la suppression du prestataire');
         this.loadingSignal.set(false);
-        this.prestatairesSignal.update(list => list.filter(p => p.id !== id));
+        this.prestatairesSignal.update(list => list.filter(p => p.idPrestataire !== id));
         return of(undefined as any);
       })
     );
@@ -154,7 +155,7 @@ export class PrestataireService {
   private getMockPrestataires(type?: TypePrestataire): Prestataire[] {
     const allMocks: Prestataire[] = [
       {
-        id: 1,
+        idPrestataire: 1,
         typePrestataire: 'AVOCAT',
         nom: 'Dupont',
         prenom: 'Jean',
@@ -168,7 +169,7 @@ export class PrestataireService {
         updatedAt: new Date()
       },
       {
-        id: 2,
+        idPrestataire: 2,
         typePrestataire: 'EXPERT',
         nom: 'Martin',
         prenom: 'Sophie',
@@ -182,7 +183,7 @@ export class PrestataireService {
         updatedAt: new Date()
       },
       {
-        id: 3,
+        idPrestataire: 3,
         typePrestataire: 'HUISSIER',
         nom: 'Leroy',
         prenom: 'Pierre',
@@ -196,7 +197,7 @@ export class PrestataireService {
         updatedAt: new Date()
       },
       {
-        id: 4,
+        idPrestataire: 4,
         typePrestataire: 'AVOCAT',
         nom: 'Garcia',
         prenom: 'Maria',

@@ -1,13 +1,7 @@
-# Task Progress: Complete
+# TODO: Fix parent components to use dialog-returned ID
 
-## Completed:
-- [x] Start Angular dev server
-- [x] Fix all TypeScript/build errors 
-- [x] Resolve git merge conflicts
-- [x] Fix login (mock admin/admin works)
-- [x] Git push changes
+- [x] Step 1: Update prestataires.ts openEditDialog afterClosed to use result.id!
+- [x] Step 2: Update prestataires-advanced.ts openEditDialog afterClosed to use result.id!
+- [x] Step 3: Test update flow: no more /undefined URL
+- [x] Step 4: Complete
 
-App running: http://localhost:4202/
-Login: admin/admin → dashboard
-
-Ready for use.

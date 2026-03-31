@@ -300,7 +300,7 @@ export class PrestatairesComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.updatePrestataire(prestataire.id!, result);
+        this.updatePrestataire(result.id!, result);
       }
     });
   }
@@ -308,9 +308,9 @@ export class PrestatairesComponent implements OnInit {
   toggleStatus(prestataire: Prestataire): void {
     const newStatus = !prestataire.actif;
     if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} ce prestataire ?`)) {
-      this.prestataireService.updateStatus(prestataire.id!, newStatus).subscribe({
+      this.prestataireService.updateStatus(prestataire.idPrestataire!, newStatus).subscribe({
         next: (updated: Prestataire) => {
-          this.prestataires.update(list => list.map(p => p.id === prestataire.id ? updated : p));
+          this.prestataires.update(list => list.map(p => p.idPrestataire === prestataire.idPrestataire ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
@@ -334,9 +334,9 @@ export class PrestatairesComponent implements OnInit {
   }
 
   updatePrestataire(id: number, data: Partial<Prestataire>): void {
-    this.prestataireService.update(id, data).subscribe({
+    this.prestataireService.update(id ,  data).subscribe({
       next: (updated: Prestataire) => {
-        this.prestataires.update(list => list.map(p => p.id === id ? updated : p));
+        this.prestataires.update(list => list.map(p => p.idPrestataire === id ? updated : p));
         this.applyFilter();
         this.showNotification('Prestataire mis à jour avec succès', 'success');
       },
@@ -349,14 +349,14 @@ export class PrestatairesComponent implements OnInit {
 
   confirmDelete(prestataire: Prestataire): void {
     if (confirm(`Supprimer le prestataire "${this.getFullName(prestataire)}" ? Action irréversible.`)) {
-      this.deletePrestataire(prestataire.id!);
+      this.deletePrestataire(prestataire.idPrestataire!);
     }
   }
 
   deletePrestataire(id: number): void {
     this.prestataireService.delete(id).subscribe({
       next: () => {
-        this.prestataires.update(list => list.filter(p => p.id !== id));
+        this.prestataires.update(list => list.filter(p => p.idPrestataire !== id));
         this.applyFilter();
         this.showNotification('Prestataire supprimé avec succès', 'success');
       },

@@ -277,7 +277,7 @@ export class HuissiersComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.updateHuissier(huissier.id!, result);
+        this.updateHuissier(huissier.idPrestataire!, result);
       }
     });
   }
@@ -285,9 +285,9 @@ export class HuissiersComponent implements OnInit {
   toggleStatus(huissier: Prestataire): void {
     const newStatus = !huissier.actif;
     if (confirm(`Voulez-vous ${newStatus ? 'activer' : 'désactiver'} cet huissier ?`)) {
-      this.prestataireService.updateStatus(huissier.id!, newStatus).subscribe({
+      this.prestataireService.updateStatus(huissier.idPrestataire!, newStatus).subscribe({
         next: (updated) => {
-          this.huissiers.update(list => list.map(p => p.id === huissier.id ? updated : p));
+          this.huissiers.update(list => list.map(p => p.idPrestataire === huissier.idPrestataire ? updated : p));
           this.applyFilter();
           this.showNotification('Statut mis à jour', 'success');
         },
@@ -313,7 +313,7 @@ export class HuissiersComponent implements OnInit {
   updateHuissier(id: number, data: Partial<Prestataire>): void {
     this.prestataireService.update(id, data).subscribe({
       next: (updated) => {
-        this.huissiers.update(list => list.map(p => p.id === id ? updated : p));
+        this.huissiers.update(list => list.map(p => p.idPrestataire === id ? updated : p));
         this.applyFilter();
         this.showNotification('Huissier mis à jour avec succès', 'success');
       },
@@ -326,14 +326,14 @@ export class HuissiersComponent implements OnInit {
 
   confirmDelete(huissier: Prestataire): void {
     if (confirm(`Supprimer l'huissier "${this.getFullName(huissier)}" ? Action irréversible.`)) {
-      this.deleteHuissier(huissier.id!);
+      this.deleteHuissier(huissier.idPrestataire!);
     }
   }
 
   deleteHuissier(id: number): void {
     this.prestataireService.delete(id).subscribe({
       next: () => {
-        this.huissiers.update(list => list.filter(p => p.id !== id));
+        this.huissiers.update(list => list.filter(p => p.idPrestataire !== id));
         this.applyFilter();
         this.showNotification('Huissier supprimé avec succès', 'success');
       },
