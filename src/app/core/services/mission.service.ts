@@ -1,7 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from './api.service';
-import { Mission, StatutMission, TypeMission } from '../models';
+import type { Mission, StatutMission } from '../models';
+import { TypeMission } from '../models/mission.model';
+
 
 @Injectable({
   providedIn: 'root'

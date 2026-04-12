@@ -1,0 +1,19 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.date-row {
+  display: flex;
+  gap: 16px;
+}
+
+.date-row mat-form-field {
+  flex: 1;
+}
+

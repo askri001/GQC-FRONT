@@ -1,0 +1,91 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>{{ data.isEdit ? 'edit' : 'add' }}</mat-icon>
+      {{ data.isEdit ? 'Modifier la Mission' : 'Nouvelle Mission' }}
+    </h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <form [formGroup]="form" class="mission-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Type de Mission</mat-label>
+        <mat-select formControlName="typeMission">
+          @for (type of typesMission; track type.value) {
+            <mat-option [value]="type.value">{{ type.label }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matSuffix>category</mat-icon>
+        <mat-error *ngIf="form.get('typeMission')?.hasError('required')">
+          Le type est obligatoire
+        </mat-error>
+      </mat-form-field>
+
+      <div class="date-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Date Début</mat-label>
+          <input matInput [matDatepicker]="pickerDebut" formControlName="dateDebut">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+          <mat-datepicker #pickerDebut></mat-datepicker>
+          <mat-error *ngIf="form.get('dateDebut')?.hasError('required')">
+            La date de début est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Date Fin</mat-label>
+          <input matInput [matDatepicker]="pickerFin" formControlName="dateFin">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFin></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select formControlName="statut">
+          @for (statut of statutsMission; track statut.value) {
+            <mat-option [value]="statut.value">{{ statut.label }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matSuffix>flag</mat-icon>
+        <mat-error *ngIf="form.get('statut')?.hasError('required')">
+          Le statut est obligatoire
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ID Dossier</mat-label>
+        <input matInput type="number" formControlName="dossierId" placeholder="1">
+        <mat-icon matSuffix>folder</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ID Prestataire</mat-label>
+        <input matInput type="number" formControlName="prestataireId" placeholder="1">
+        <mat-icon matSuffix>person</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Résultat</mat-label>
+        <textarea matInput formControlName="resultat" placeholder="Résultat de la mission..." rows="3"></textarea>
+        <mat-icon matSuffix>description</mat-icon>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Annuler</button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      [disabled]="form.invalid || isLoading()"
+      (click)="onSubmit()"
+    >
+      <mat-icon>{{ data.isEdit ? 'save' : 'add' }}</mat-icon>
+      {{ isLoading() ? 'Enregistrement...' : (data.isEdit ? 'Mettre à jour' : 'Créer') }}
+    </button>
+  </mat-dialog-actions>
+</div>

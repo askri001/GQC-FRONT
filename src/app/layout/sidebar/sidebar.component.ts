@@ -186,8 +186,7 @@ export class SidebarComponent {
     { label: 'Affaires', icon: 'gavel', route: '/affaires' },
 { label: 'Prestataires', icon: 'business', route: '/prestataires' },
     { label: 'Avocats', icon: 'gavel', route: '/avocats' },
-    { label: 'Experts', icon: 'science', route: '/experts' },
-    { label: 'Huissiers', icon: 'gavel', route: '/huissiers' },
+
     { label: 'Missions', icon: 'assignment', route: '/missions' },
     { label: 'Factures', icon: 'receipt', route: '/factures' }
   ];
