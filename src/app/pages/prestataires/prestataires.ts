@@ -124,6 +124,7 @@ export class PrestatairesComponent implements OnInit {
           'HUISSIER': () => this.huissiers.set(data)
         };
         setData[type]?.();
+        console.log('we re here ',type)
         this.applyFilter(type);
         const setLoadingOff = {
           'AVOCAT': () => this.loadingAvocat.set(false),
@@ -159,26 +160,26 @@ export class PrestatairesComponent implements OnInit {
         this.filteredAvocats.set(result);
         break;
       case 'EXPERT':
-        result = this.experts();
+        let result2 = this.experts();
         if (this.expertSearch) {
-          result = result.filter(p => this.getFullName(p).toLowerCase().includes(this.expertSearch.toLowerCase()) || 
+          result = result2.filter(p => this.getFullName(p).toLowerCase().includes(this.expertSearch.toLowerCase()) || 
                                      p.specialite.toLowerCase().includes(this.expertSearch.toLowerCase()));
         }
         if (this.expertActif !== '') {
-          result = result.filter(p => p.actif === (this.expertActif === 'true'));
+          result = result2.filter(p => p.actif === (this.expertActif === 'true'));
         }
-        this.filteredExperts.set(result);
+        this.filteredExperts.set(result2);
         break;
       case 'HUISSIER':
-        result = this.huissiers();
+        let result3 = this.huissiers();
         if (this.huissierSearch) {
-          result = result.filter(p => this.getFullName(p).toLowerCase().includes(this.huissierSearch.toLowerCase()) || 
+          result = result3.filter(p => this.getFullName(p).toLowerCase().includes(this.huissierSearch.toLowerCase()) || 
                                      p.specialite.toLowerCase().includes(this.huissierSearch.toLowerCase()));
         }
         if (this.huissierActif !== '') {
-          result = result.filter(p => p.actif === (this.huissierActif === 'true'));
+          result = result3.filter(p => p.actif === (this.huissierActif === 'true'));
         }
-        this.filteredHuissiers.set(result);
+        this.filteredHuissiers.set(result3);
         break;
     }
   }
