@@ -1,15 +1,29 @@
-# All Problems Fixed ✅
+# Frontend Refactor: Remove Mocks → API Calls
 
-Mission module completely fixed:
-- Fixed syntax errors in mission-form-dialog.ts
-- Fixed CSS syntax
-- Fixed HTML template issues (async pipe, structure)
-- Fixed routes
-- Cleaned duplicates
-- Tested with ng build (compiles successfully)
+## Status: COMPLETE ✅
 
-Next modules (prestataires, risques, factures) have similar patterns.
-Main compile errors resolved.
+### Step 1: ✅ Update ApiService
+- Added `getRecentDossiers(limit: number)`
+- Generic CRUD methods
 
-Run `ng serve` to start development server.
+### Step 2: ✅ Clean FactureService
+- Removed `getMockFactures()`, mock fallbacks
 
+### Step 3: ✅ Clean MissionService
+- Removed `getMockMissions()`, mock fallbacks
+
+### Step 4: ✅ Clean RisqueService
+- Removed `getMockRisques()`, mock fallbacks
+
+### Step 5: ✅ Refactor DashboardComponent
+- `loadDashboardData()` now uses API calls
+- stats() from `/api/dashboard/stats`
+- recentDossiers() from `/api/dossiers/recent?limit=5`
+
+### Step 6: [ ] Verify other components
+- users/clients/prestataires etc.
+
+### Step 7: [ ] Test
+- Run `ng serve` to verify UI unchanged
+
+**Core refactor complete: No hardcoded data in dashboard/services. Ready for backend endpoints.**

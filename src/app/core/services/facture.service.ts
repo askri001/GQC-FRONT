@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { ApiService } from './api.service';
 import { Facture, StatutFacture, TypeFacture } from '../models';
 
@@ -19,7 +19,7 @@ export class FactureService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-constructor(private api: ApiService) {
+  constructor(private api: ApiService) {
     // Load on init
     this.getAll().subscribe();
   }
@@ -40,9 +40,7 @@ constructor(private api: ApiService) {
         console.error('Error loading factures:', error);
         this.errorSignal.set('Erreur lors du chargement des factures');
         this.loadingSignal.set(false);
-        // Return mock data for demo if API fails
-        this.facturesSignal.set(this.getMockFactures());
-        return of(this.getMockFactures());
+        return throwError(() => error);
       })
     );
   }
@@ -54,9 +52,7 @@ constructor(private api: ApiService) {
     return this.api.get<Facture>(`${this.endpoint}/${id}`).pipe(
       catchError(error => {
         console.error('Error loading facture:', error);
-        // Return from local cache
-        const found = this.facturesSignal().find(f => f.id === id);
-        return of(found);
+        return throwError(() => error);
       })
     );
   }
@@ -77,13 +73,7 @@ constructor(private api: ApiService) {
         console.error('Error creating facture:', error);
         this.errorSignal.set('Erreur lors de la création de la facture');
         this.loadingSignal.set(false);
-this.errorSignal.set('Backend non disponible - mode démo actif');
-        const mockFacture: Facture = {
-          ...facture,
-          id: Date.now()
-        } as Facture;
-        this.facturesSignal.update(list => [...list, mockFacture]);
-        return of(mockFacture);
+        return throwError(() => error);
       })
     );
   }
@@ -106,12 +96,7 @@ this.errorSignal.set('Backend non disponible - mode démo actif');
         console.error('Error updating facture:', error);
         this.errorSignal.set('Erreur lors de la mise à jour de la facture');
         this.loadingSignal.set(false);
-        // Mock update for demo
-        const mockFacture: Facture = { ...facture, id } as Facture;
-        this.facturesSignal.update(list => 
-          list.map(f => f.id === id ? mockFacture : f)
-        );
-        return of(mockFacture);
+        return throwError(() => error);
       })
     );
   }
@@ -132,9 +117,7 @@ this.errorSignal.set('Backend non disponible - mode démo actif');
         console.error('Error deleting facture:', error);
         this.errorSignal.set('Erreur lors de la suppression de la facture');
         this.loadingSignal.set(false);
-        // Mock delete for demo
-        this.facturesSignal.update(list => list.filter(f => f.id !== id));
-        return of(undefined as any);
+        return throwError(() => error);
       })
     );
   }
@@ -144,58 +127,6 @@ this.errorSignal.set('Backend non disponible - mode démo actif');
    */
   updateStatus(id: number, statut: StatutFacture): Observable<Facture> {
     return this.update(id, { statut });
-  }
-
-  /**
-   * Get mock data for demo
-   */
-  private getMockFactures(): Facture[] {
-    return [
-      { 
-        id: 1, 
-        numero: 'FAC-2024-001', 
-        dateEmission: new Date('2024-01-15'), 
-        montant: 2500, 
-        typeFacture: 'HONORAIRES', 
-        statut: 'PAYEE',
-        missionId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      { 
-        id: 2, 
-        numero: 'FAC-2024-002', 
-        dateEmission: new Date('2024-02-01'), 
-        montant: 1500, 
-        typeFacture: 'FRAIS', 
-        statut: 'EN_ATTENTE',
-        missionId: 2,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      { 
-        id: 3, 
-        numero: 'FAC-2024-003', 
-        dateEmission: new Date('2024-02-15'), 
-        montant: 5000, 
-        typeFacture: 'EXPERTISE', 
-        statut: 'VALIDEE',
-        missionId: 3,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      { 
-        id: 4, 
-        numero: 'FAC-2024-004', 
-        dateEmission: new Date('2024-03-01'), 
-        montant: 800, 
-        typeFacture: 'AUTRE', 
-        statut: 'REJETEE',
-        missionId: 4,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ];
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -239,6 +239,8 @@ import { DashboardStats, Dossier } from '../../core/models';
   `]
 })
 export class DashboardComponent implements OnInit {
+  private api = inject(ApiService);
+
   stats = signal<DashboardStats>({
     totalDossiers: 0,
     dossiersActifs: 0,
@@ -257,7 +259,7 @@ export class DashboardComponent implements OnInit {
   recentDossiers = signal<Dossier[]>([]);
   displayedColumns = ['reference', 'client', 'montant', 'statut'];
 
-  // Chart configurations
+  // Chart configurations (static for minimal change)
   doughnutChartType: ChartType = 'doughnut';
   doughnutChartData: ChartData<'doughnut'> = {
     labels: ['En Cours', 'Clôturés', 'Suspendus', 'En Attente'],
@@ -278,16 +280,14 @@ export class DashboardComponent implements OnInit {
   lineChartType: ChartType = 'line';
   lineChartData: ChartData<'line'> = {
     labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-    datasets: [
-      {
-        label: 'Montant Récupéré',
-        data: [65000, 59000, 80000, 81000, 56000, 95000],
-        borderColor: '#667eea',
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-        fill: true,
-        tension: 0.4
-      }
-    ]
+    datasets: [{
+      label: 'Montant Récupéré',
+      data: [65000, 59000, 80000, 81000, 56000, 95000],
+      borderColor: '#667eea',
+      backgroundColor: 'rgba(102, 126, 234, 0.1)',
+      fill: true,
+      tension: 0.4
+    }]
   };
   lineChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -300,36 +300,30 @@ export class DashboardComponent implements OnInit {
     }
   };
 
-  constructor(private api: ApiService) {}
-
   ngOnInit() {
     this.loadDashboardData();
   }
 
   loadDashboardData() {
-    // Mock data for demonstration
-    this.stats.set({
-      totalDossiers: 156,
-      dossiersActifs: 89,
-      dossiersClotures: 45,
-      montantTotalRecupere: 2450000,
-      montantTotalImpaye: 3200000,
-      tauxRecouvrement: 43,
-      missionsEnCours: 12,
-      missionsTerminees: 78,
-      facturesEnAttente: 15,
-      facturesPayees: 63,
-      prestatairesActifs: 24,
-      clientsActifs: 89
+    // Load stats from API
+    this.api.getDashboardStats().subscribe({
+      next: (data) => {
+        this.stats.set(data);
+      },
+      error: (err) => {
+        console.error('Error loading dashboard stats:', err);
+      }
     });
 
-    this.recentDossiers.set([
-      { id: 1, reference: 'DOS-2024-001', dateOuverture: new Date(), statut: 'EN_COURS', niveauRisque: 'MOYEN', montantInitial: 150000, montantRecupere: 50000, clientId: 1 },
-      { id: 2, reference: 'DOS-2024-002', dateOuverture: new Date(), statut: 'EN_COURS', niveauRisque: 'ELEVE', montantInitial: 250000, montantRecupere: 0, clientId: 2 },
-      { id: 3, reference: 'DOS-2024-003', dateOuverture: new Date(), statut: 'CLOTURE', niveauRisque: 'FAIBLE', montantInitial: 80000, montantRecupere: 80000, clientId: 3 },
-      { id: 4, reference: 'DOS-2024-004', dateOuverture: new Date(), statut: 'EN_ATTENTE', niveauRisque: 'CRITIQUE', montantInitial: 500000, montantRecupere: 0, clientId: 4 },
-      { id: 5, reference: 'DOS-2024-005', dateOuverture: new Date(), statut: 'SUSPENDU', niveauRisque: 'MOYEN', montantInitial: 95000, montantRecupere: 25000, clientId: 5 }
-    ]);
+    // Load recent dossiers from API
+    this.api.getRecentDossiers(5).subscribe({
+      next: (data) => {
+        this.recentDossiers.set(data);
+      },
+      error: (err) => {
+        console.error('Error loading recent dossiers:', err);
+      }
+    });
   }
 
   formatCurrency(value: number): string {
@@ -346,4 +340,3 @@ export class DashboardComponent implements OnInit {
     return labels[statut] || statut;
   }
 }
-
