@@ -1,0 +1,284 @@
+<div class="page-container">
+  <mat-card class="page-card">
+
+    <div class="card-header">
+      <div class="header-title">
+        <mat-icon class="title-icon">person</mat-icon>
+        <h2>Gestion des Clients</h2>
+      </div>
+    </div>
+
+    <mat-tab-group mat-align-tabs="start">
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>people</mat-icon>
+          Tous les Clients ({{ filteredClients().length }})
+        </ng-template>
+
+        <div class="tab-content">
+
+          <!-- HEADER -->
+          <div class="tab-header">
+            <h3>Gestion des Clients</h3>
+            <button mat-raised-button color="primary" (click)="startInlineEdit()">
+              <mat-icon>add</mat-icon>
+              Nouveau Client
+            </button>
+          </div>
+
+          <!-- FILTERS -->
+          <div class="filters">
+
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Rechercher</mat-label>
+              <input matInput [(ngModel)]="search" (input)="applyFilter()" placeholder="Nom, CIN...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Statut</mat-label>
+              <mat-select [(ngModel)]="actifFilter" (selectionChange)="applyFilter()">
+                <mat-option value="">Tous</mat-option>
+                <mat-option [value]="true">Actifs</mat-option>
+                <mat-option [value]="false">Inactifs</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+          </div>
+
+          <!-- LOADING -->
+          @if (loading()) {
+            <div class="loading-container">
+              <mat-spinner diameter="50"></mat-spinner>
+              <p>Chargement des clients...</p>
+            </div>
+          }
+
+          <!-- EMPTY -->
+          @else if (filteredClients().length === 0) {
+            <div class="no-data-container">
+              <mat-icon>person_off</mat-icon>
+              <p>Aucun client trouvé</p>
+            </div>
+          }
+
+          <!-- TABLE -->
+          @else {
+            <div class="table-container">
+
+              <table mat-table [dataSource]="filteredClients()" class="mat-elevation-z8">
+
+                <!-- NOM -->
+                <ng-container matColumnDef="nom">
+                  <th mat-header-cell *matHeaderCellDef>Nom</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-form-field appearance="outline">
+                        <input matInput [(ngModel)]="tempClient().nom" placeholder="Nom">
+                      </mat-form-field>
+                    } @else {
+                      {{ c.prenom }} {{ c.nom }}
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- CIN -->
+                <ng-container matColumnDef="cin">
+                  <th mat-header-cell *matHeaderCellDef>CIN</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-form-field appearance="outline">
+                        <input matInput [(ngModel)]="tempClient().cin">
+                      </mat-form-field>
+                    } @else {
+                      {{ c.cin }}
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- TEL -->
+                <ng-container matColumnDef="tel">
+                  <th mat-header-cell *matHeaderCellDef>Téléphone</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-form-field appearance="outline">
+                        <input matInput [(ngModel)]="tempClient().tel">
+                      </mat-form-field>
+                    } @else {
+                      {{ c.tel }}
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- EMAIL -->
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-form-field appearance="outline">
+                        <input matInput [(ngModel)]="tempClient().email">
+                      </mat-form-field>
+                    } @else {
+                      {{ c.email || '-' }}
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- ADRESSE -->
+                <ng-container matColumnDef="adresse">
+                  <th mat-header-cell *matHeaderCellDef>Adresse</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-form-field appearance="outline">
+                        <input matInput [(ngModel)]="tempClient().adresse">
+                      </mat-form-field>
+                    } @else {
+                      {{ c.adresse }}
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- DATE CREATION (READ ONLY) -->
+                <ng-container matColumnDef="dateCreation">
+                  <th mat-header-cell *matHeaderCellDef>Date Création</th>
+                  <td mat-cell *matCellDef="let c">
+                    {{ c.dateCreation ? (c.dateCreation | date:'short') : '-' }}
+                  </td>
+                </ng-container>
+
+                <!-- ACTIVE -->
+                <ng-container matColumnDef="active">
+                  <th mat-header-cell *matHeaderCellDef>Statut</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    @if (editId() === c.id) {
+                      <mat-checkbox [(ngModel)]="tempClient().active"></mat-checkbox>
+                    } @else {
+                      <mat-chip [color]="c.active ? 'primary' : 'warn'">
+                        {{ c.active ? 'Actif' : 'Inactif' }}
+                      </mat-chip>
+                    }
+
+                  </td>
+                </ng-container>
+
+                <!-- ACTIONS -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let c">
+
+                    <button mat-icon-button color="primary" (click)="startInlineEdit(c.id)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <button mat-icon-button (click)="showDetail(c)">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+
+                    <button mat-icon-button (click)="toggleStatus(c)">
+                      <mat-icon>{{ c.active ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+                    </button>
+
+                    <button mat-icon-button color="warn" (click)="confirmDelete(c)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+              </table>
+
+            </div>
+
+            <!-- PAGINATOR -->
+            <mat-paginator
+              [length]="filteredClients().length"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 25, 50]"
+              (page)="onPageChange($event)">
+            </mat-paginator>
+
+          }
+
+          <!-- INLINE EDIT FORM -->
+          @if (editMode()) {
+            <div class="inline-edit-row">
+
+              <h4>
+                {{ editId() === null ? 'Nouveau Client' : 'Modifier Client' }}
+              </h4>
+
+              <div class="form-grid">
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().nom" placeholder="Nom *">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().prenom" placeholder="Prénom">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().cin" placeholder="CIN *">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().tel" placeholder="Téléphone *">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().email" placeholder="Email">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <input matInput [(ngModel)]="tempClient().adresse" placeholder="Adresse">
+                </mat-form-field>
+
+                <!-- ACTIVE -->
+                <mat-checkbox [(ngModel)]="tempClient().active">
+                  Actif
+                </mat-checkbox>
+
+              </div>
+
+              <div class="actions">
+
+                <button mat-raised-button color="primary"
+                        (click)="saveInlineEdit()"
+                        [disabled]="!tempClient().nom || !tempClient().cin">
+
+                  <mat-icon>save</mat-icon>
+                  Sauvegarder
+                </button>
+
+                <button mat-button color="warn" (click)="cancelInlineEdit()">
+                  <mat-icon>close</mat-icon>
+                  Annuler
+                </button>
+
+              </div>
+
+            </div>
+          }
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+
+  </mat-card>
+</div>

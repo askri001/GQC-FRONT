@@ -1,50 +1,215 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Client } from '../../core/models';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
+import { ClientService } from '../../core/services/client.service';
+import { Client } from '../../core/models/client.model';
+
+interface ExtendedClient extends Client {
+  dateCreation?: string;
+}
 
 @Component({
   selector: 'app-clients',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatTableModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
-  template: `
-    <div class="page-container">
-      <mat-card class="page-card">
-        <div class="card-header">
-          <h2>Gestion des Clients</h2>
-          <button mat-raised-button color="primary"><mat-icon>add</mat-icon> Nouveau Client</button>
-        </div>
-        <div class="filters">
-          <mat-form-field appearance="outline"><mat-label>Rechercher</mat-label><input matInput placeholder="Nom, CIN..."><mat-icon matSuffix>search</mat-icon></mat-form-field>
-        </div>
-        <table mat-table [dataSource]="clients()" class="full-width">
-          <ng-container matColumnDef="nom"><th mat-header-cell *matHeaderCellDef>Nom</th><td mat-cell *matCellDef="let c">{{ c.nom }}</td></ng-container>
-          <ng-container matColumnDef="prenom"><th mat-header-cell *matHeaderCellDef>Prénom</th><td mat-cell *matCellDef="let c">{{ c.prenom }}</td></ng-container>
-          <ng-container matColumnDef="cin"><th mat-header-cell *matHeaderCellDef>CIN</th><td mat-cell *matCellDef="let c">{{ c.cin }}</td></ng-container>
-          <ng-container matColumnDef="tel"><th mat-header-cell *matHeaderCellDef>Téléphone</th><td mat-cell *matCellDef="let c">{{ c.tel }}</td></ng-container>
-          <ng-container matColumnDef="adresse"><th mat-header-cell *matHeaderCellDef>Adresse</th><td mat-cell *matCellDef="let c">{{ c.adresse }}</td></ng-container>
-          <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>Actions</th><td mat-cell *matCellDef="let c"><button mat-icon-button color="primary"><mat-icon>edit</mat-icon></button><button mat-icon-button color="warn"><mat-icon>delete</mat-icon></button></td></ng-container>
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-      </mat-card>
-    </div>
-  `,
-  styles: [`.page-container { padding: 0; }.page-card { padding: 20px; border-radius: 12px; }.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }.card-header h2 { margin: 0; color: #1a237e; }.filters { margin-bottom: 20px; }.filters mat-form-field { width: 300px; }.full-width { width: 100%; }`]
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatCardModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    MatTabsModule,
+    MatCheckboxModule
+  ],
+  templateUrl: './client.html',
+  styleUrls: ['./client-modern.css']
 })
-export class ClientsComponent implements OnInit {
-  clients = signal<Client[]>([]);
-  displayedColumns = ['nom', 'prenom', 'cin', 'tel', 'adresse', 'actions'];
-  ngOnInit() {
-    this.clients.set([
-      { id: 1, nom: 'Bennani', prenom: 'Ahmed', cin: 'AB123456', tel: '0661234567', adresse: 'Casablanca, Morocco', dateCreation: new Date() },
-      { id: 2, nom: 'Alami', prenom: 'Fatima', cin: 'CD789012', tel: '0662345678', adresse: 'Rabat, Morocco', dateCreation: new Date() }
-    ]);
+export class ClientsComponent {
+  private clientService = inject(ClientService);
+  private snackBar = inject(MatSnackBar);
+
+  clients = signal<ExtendedClient[]>([]);
+  loading = signal(false);
+  editMode = signal(false);
+  editId = signal<number | null>(null);
+  tempClient = signal<Partial<Client>>({});
+
+  search = signal('');
+  actifFilter = signal<string>('');
+
+  pageSize = 10;
+  currentPage = 0;
+
+  displayedColumns = [
+    'nom',
+    'cin',
+    'tel',
+    'email',
+    'adresse',
+    'dateCreation',
+    'active',
+    'actions'
+  ];
+
+  constructor() {
+    this.loadClients();
+  }
+
+  loadClients(): void {
+    this.loading.set(true);
+  this.clientService.getAll().subscribe({
+      next: (data) => {
+        this.clients.set(
+          data.map(c => ({
+            ...c,
+            active: c.active ?? true
+          }))
+        );
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.snackBar.open('Erreur chargement', 'OK');
+      }
+    });
+  }
+
+  applyFilter(): void {
+    // Signals are reactive, no need for manual filter trigger
+  }
+
+  filteredClients = computed(() => {
+    return this.clients().filter(c => {
+      const matchSearch =
+        !this.search() ||
+        (c.nom ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
+        (c.cin ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
+        (c.tel ?? '').includes(this.search()!) ||
+        (c.email ?? '').toLowerCase().includes(this.search()!.toLowerCase());
+
+      const matchStatus =
+        this.actifFilter() === '' ||
+        c.active === (this.actifFilter() === 'true');
+
+      return matchSearch && matchStatus;
+    });
+  });
+
+  pagedClients = computed(() => {
+    const start = this.currentPage * this.pageSize;
+    return this.filteredClients().slice(start, start + this.pageSize);
+  });
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.currentPage = event.pageIndex;
+  }
+
+  startInlineEdit(id?: number): void {
+    if (id) {
+      const client = this.clients().find(c => c.id === id);
+      this.tempClient.set({ ...client });
+    } else {
+      this.tempClient.set({
+        active: true
+      });
+    }
+    this.editId.set(id ?? null);
+    this.editMode.set(true);
+  }
+
+  cancelInlineEdit(): void {
+    this.editMode.set(false);
+    this.editId.set(null);
+    this.tempClient.set({});
+  }
+
+  saveInlineEdit(): void {
+    const temp = this.tempClient();
+    if (!temp.nom || !temp.cin) {
+      this.snackBar.open('Nom et CIN requis', 'OK');
+      return;
+    }
+
+    const payload: Partial<Client> = {
+      id: this.editId() ?? undefined,
+      nom: temp.nom!,
+      prenom: temp.prenom || '',
+      cin: temp.cin!,
+      tel: temp.tel || '',
+      email: temp.email,
+      adresse: temp.adresse,
+      active: temp.active ?? true
+    };
+
+    const request = this.editId()
+      ? this.clientService.update(this.editId()!, payload as Client)
+      : this.clientService.create(payload as Client);
+
+    request.subscribe({
+      next: () => {
+        this.snackBar.open('Sauvegardé avec succès', 'OK');
+        this.loadClients();
+        this.cancelInlineEdit();
+      },
+      error: () => {
+        this.snackBar.open('Erreur sauvegarde', 'OK');
+      }
+    });
+  }
+
+  confirmDelete(c: ExtendedClient): void {
+    if (confirm(`Supprimer ${c.nom} ?`)) {
+      this.clientService.delete(c.id!).subscribe({
+        next: () => {
+          this.snackBar.open('Supprimé', 'OK');
+          this.loadClients();
+        },
+        error: () => this.snackBar.open('Erreur suppression', 'OK')
+      });
+    }
+  }
+
+  toggleStatus(c: ExtendedClient): void {
+    const updated = { ...c, active: !c.active };
+    this.clientService.update(c.id!, updated).subscribe({
+      next: () => this.loadClients(),
+      error: () => this.snackBar.open('Erreur statut', 'OK')
+    });
+  }
+
+  showDetail(c: ExtendedClient): void {
+    this.snackBar.open(
+      `${c.nom} ${c.prenom ?? ''} | ${c.tel} | ${c.email ?? '-'}`,
+      'OK',
+      { duration: 3000 }
+    );
   }
 }
 

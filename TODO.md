@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Frontend Refactor: Remove Mocks → API Calls
 
 ## Status: COMPLETE ✅
@@ -8,6 +9,13 @@
 
 ### Step 2: ✅ Clean FactureService
 - Removed `getMockFactures()`, mock fallbacks
+=======
+# ClientsComponent Fix Plan
+
+✅ **Step 1**: Complete `src/app/pages/clients/clients.ts` - Fixed imports, type issues, syntax errors. Compilation successful.
+
+**Status**: Completed
+>>>>>>> 88b655e72f10b2d8ee7cdf0591a2db0133642f54
 
 ### Step 3: ✅ Clean MissionService
 - Removed `getMockMissions()`, mock fallbacks

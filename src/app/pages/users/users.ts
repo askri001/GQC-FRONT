@@ -107,8 +107,8 @@ export class UsersComponent implements OnInit {
     // Mock data
     this.users.set([
       { id: 1, username: 'admin', email: 'admin@gac.ma', firstName: 'Admin', lastName: 'System', active: true, roles: [{ id: 1, name: 'ADMINISTRATEUR', permissions: [], active: true }] },
-      { id: 2, username: 'charge1', email: 'charge1@gac.ma', firstName: 'Ahmed', lastName: 'Bennani', active: true, roles: [{ id: 2, name: 'CHARGE_DOSSIER', permissions: [], active: true }] },
-      { id: 3, username: 'responsable', email: 'resp@gac.ma', firstName: 'Fatima', lastName: 'Alami', active: true, roles: [{ id: 3, name: 'RESPONSABLE_CONTENTIEUX', permissions: [], active: true }] }
+      { id: 2, username: 'charge1', email: 'charge1@gac.ma', firstName: 'Charge', lastName: 'Dossier', active: true, roles: [{ id: 2, name: 'CHARGE_DOSSIER', permissions: [], active: true }] },
+      { id: 3, username: 'responsable', email: 'resp@gac.ma', firstName: 'Responsable', lastName: 'Contentieux', active: true, roles: [{ id: 3, name: 'RESPONSABLE_CONTENTIEUX', permissions: [], active: true }] }
     ]);
   }
 }

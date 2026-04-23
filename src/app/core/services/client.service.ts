@@ -1,18 +1,49 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Client } from '../models/client.model';
-import { ApiService } from './api.service';
+
+export interface Client {
+  id?: number;
+  nom: string;
+  prenom: string;
+  cin: string;
+  tel: string;
+  email?: string;
+  adresse?: string;
+  active?: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClientService {
-  private readonly endpoint = '/clients';
 
-  constructor(private api: ApiService) {}
+  private apiUrl = 'http://localhost:8080/api/clients';
 
+  constructor(private http: HttpClient) {}
+
+  // GET ALL CLIENTS
   getAll(): Observable<Client[]> {
-    return this.api.get<Client[]>(this.endpoint);
+    return this.http.get<Client[]>(this.apiUrl);
+  }
+
+  // GET BY ID 
+  getById(id: number): Observable<Client> {
+    return this.http.get<Client>(`${this.apiUrl}/${id}`);
+  }
+
+  // CREATE CLIENT
+  create(client: Client): Observable<Client> {
+    return this.http.post<Client>(this.apiUrl, client);
+  }
+
+  // UPDATE CLIENT
+  update(id: number, client: Client): Observable<Client> {
+    return this.http.put<Client>(`${this.apiUrl}/${id}`, client);
+  }
+
+  // DELETE CLIENT
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
-
