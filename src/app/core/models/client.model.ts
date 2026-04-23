@@ -2,18 +2,10 @@ export interface Client {
   id?: number;
   nom: string;
   prenom: string;
-  tel: string;
-  adresse: string;
   cin: string;
+  tel: string;
   email?: string;
-  dateCreation: Date;
+  adresse?: string;
   active?: boolean;
+  dateCreation?: string | Date;
 }
-
-export interface ClientSearch {
-  nom?: string;
-  prenom?: string;
-  cin?: string;
-  tel?: string;
-}
-

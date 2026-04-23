@@ -149,7 +149,7 @@ export class MissionService {
    */
   private getMockMissions(): Mission[] {
     return [
-      { 
+{ 
         id: 1, 
         typeMission: 'HUISSIER', 
         dateDebut: new Date('2024-01-10'), 
@@ -163,7 +163,7 @@ export class MissionService {
         dossier: {
           id: 1,
           reference: 'DOS-2024-001',
-          client: { nom: 'Bennani', prenom: 'Ahmed' }
+          client: { nom: 'Client', prenom: 'A' }
         },
         prestataire: {
           id: 1,
@@ -172,7 +172,7 @@ export class MissionService {
           typePrestataire: 'HUISSIER'
         }
       },
-      { 
+{ 
         id: 2, 
         typeMission: 'EXPERT',
         dateDebut: new Date('2024-02-01'), 
@@ -186,7 +186,7 @@ export class MissionService {
         dossier: {
           id: 2,
           reference: 'DOS-2024-002',
-          client: { nom: 'Alami', prenom: 'Fatima' }
+          client: { nom: 'Client', prenom: 'B' }
         },
         prestataire: {
           id: 2,
