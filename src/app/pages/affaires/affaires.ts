@@ -22,14 +22,14 @@ import { Affaire } from '../../core/models';
           <ng-container matColumnDef="tribunal"><th mat-header-cell *matHeaderCellDef>Tribunal</th><td mat-cell *matCellDef="let a">{{ a.tribunal }}</td></ng-container>
           <ng-container matColumnDef="statut"><th mat-header-cell *matHeaderCellDef>Statut</th><td mat-cell *matCellDef="let a"><mat-chip>{{ a.statut }}</mat-chip></td></ng-container>
           <ng-container matColumnDef="jugement"><th mat-header-cell *matHeaderCellDef>Jugement</th><td mat-cell *matCellDef="let a">{{ a.jugement || 'En cours' }}</td></ng-container>
-          <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>Actions</th><td mat-cell *matCellDef="let a"><button mat-icon-button><mat-icon>visibility</mat-icon></button></td></ng-container>
+          <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>Actions</th><td mat-cell *matCellDef="let a"></td></ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
       </mat-card>
     </div>
   `,
-  styles: [`.page-container { padding: 0; }.page-card { padding: 20px; border-radius: 12px; }.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }.card-header h2 { margin: 0; color: #1a237e; }.full-width { width: 100%; }`]
+  styleUrls: ['./affaires.css']
 })
 export class AffairesComponent implements OnInit {
   affaires = signal<Affaire[]>([]);

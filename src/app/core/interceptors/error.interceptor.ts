@@ -20,7 +20,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             errorMessage = 'Session expirée. Veuillez vous reconnecter.';
             localStorage.removeItem('auth_token');
             localStorage.removeItem('auth_user');
-            router.navigate(['/login']);
+            // Prevent redirect loop: skip if already on /login or if request is to auth endpoint
+            if (!router.url.includes('/login') && !req.url.includes('/auth/login')) {
+              router.navigate(['/login']);
+            }
             break;
           case 403:
             errorMessage = 'Accès refusé. Vous n\'avez pas les permissions nécessaires.';

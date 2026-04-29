@@ -138,9 +138,6 @@
                     <button mat-icon-button color="primary" (click)="openDialog('AVOCAT', p)" matTooltip="Modifier">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="showDetail(p)" matTooltip="Détail">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
                     <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
                       <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>
                     </button>
@@ -339,9 +336,6 @@
                     <button mat-icon-button color="primary" (click)="openDialog('EXPERT', p)" matTooltip="Modifier">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="showDetail(p)" matTooltip="Détail">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
                     <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
                       <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>
                     </button>
@@ -537,9 +531,6 @@
                   <td mat-cell *matCellDef="let p">
                     <button mat-icon-button color="primary" (click)="openDialog('HUISSIER', p)" matTooltip="Modifier">
                       <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="showDetail(p)" matTooltip="Détail">
-                      <mat-icon>visibility</mat-icon>
                     </button>
                     <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
                       <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>

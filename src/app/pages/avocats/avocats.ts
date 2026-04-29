@@ -18,10 +18,6 @@ import { MatCardModule } from '@angular/material/card';
       </mat-card>
     </div>
   `,
-  styles: [`
-    .page-container { padding: 20px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  `]
+  styleUrls: ['./avocats.css']
 })
 export class AvocatsComponent { }
-

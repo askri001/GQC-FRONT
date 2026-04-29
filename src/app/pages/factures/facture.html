@@ -82,9 +82,6 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let f">
-              <button mat-icon-button color="primary" (click)="showDetail(f)" matTooltip="Détail">
-                <mat-icon>visibility</mat-icon>
-              </button>
               <button mat-icon-button [color]="f.statut === 'EN_ATTENTE' ? 'warn' : 'primary'" (click)="toggleStatus(f)" matTooltip="Statut">
                 <mat-icon>{{f.statut === 'EN_ATTENTE' ? 'schedule' : 'check_circle'}}</mat-icon>
               </button>

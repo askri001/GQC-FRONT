@@ -1,3 +1,7 @@
+/****************************************************
+ * Dossiers — BNA Green Theme
+ ****************************************************/
+
 .dossiers-container {
   padding: 24px;
   max-width: 1400px;
@@ -6,7 +10,7 @@
 
 .dossiers-card {
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 150, 110, 0.1);
 }
 
 .header {
@@ -15,14 +19,14 @@
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--bna-lighter);
 }
 
 .header h2 {
   margin: 0;
   font-size: 28px;
   font-weight: 600;
-  color: #1976d2;
+  color: var(--bna-dark);
 }
 
 .actions {
@@ -47,7 +51,7 @@
   justify-content: center;
   padding: 64px;
   gap: 16px;
-  color: #666;
+  color: var(--bna-text-muted);
 }
 
 .table-container {
@@ -60,7 +64,7 @@
   align-items: center;
   justify-content: center;
   padding: 64px;
-  color: #666;
+  color: var(--bna-text-muted);
   text-align: center;
 }
 
@@ -92,16 +96,16 @@ table {
   font-weight: 500;
 }
 
-.status-en_cours { background-color: #e3f2fd; color: #1976d2; }
-.status-cloture { background-color: #e8f5e8; color: #388e3c; }
-.status-suspendu { background-color: #fff3e0; color: #f57c00; }
+.status-en_cours { background-color: var(--bna-bg); color: var(--bna-primary); }
+.status-cloture { background-color: var(--bna-success-bg); color: var(--bna-success); }
+.status-suspendu { background-color: var(--bna-warning-bg); color: var(--bna-warning); }
 .status-transfere { background-color: #f3e5f5; color: #7b1fa2; }
 .status-en_attente { background-color: #f5f5f5; color: #616161; }
 
-.risk-faible { background-color: #e8f5e8; color: #2e7d32; }
-.risk-moyen { background-color: #fff3e0; color: #f57c00; }
-.risk-eleve { background-color: #ffebee; color: #d32f2f; }
-.risk-critique { background-color: #ffebee; color: #c62828; font-weight: 600; }
+.risk-faible { background-color: var(--bna-success-bg); color: var(--bna-success); }
+.risk-moyen { background-color: var(--bna-warning-bg); color: var(--bna-warning); }
+.risk-eleve { background-color: var(--bna-error-bg); color: var(--bna-error); }
+.risk-critique { background-color: var(--bna-error-bg); color: var(--bna-error); font-weight: 600; }
 
 .mat-mdc-icon-button {
   margin: 0 4px;
@@ -119,3 +123,4 @@ table {
     width: 100%;
   }
 }
+

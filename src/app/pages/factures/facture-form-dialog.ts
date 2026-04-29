@@ -61,7 +61,7 @@ export interface FactureFormDialogData {
           <!-- NUMERO -->
           <mat-form-field appearance="outline">
             <mat-label>Numéro</mat-label>
-            <input matInput formControlName="numero" placeholder="FAC-2024-001">
+            <input matInput formControlName="numero">
             <mat-icon matSuffix>confirmation_number</mat-icon>
             <mat-error *ngIf="form.get('numero')?.hasError('required')">
               Obligatoire
@@ -155,25 +155,7 @@ export interface FactureFormDialogData {
 
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      min-width: 500px;
-    }
-
-    .dialog-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .facture-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      min-width: 450px;
-    }
-  `]
+  styleUrls: ['./facture-form-dialog.css']
 })
 export class FactureFormDialogComponent implements OnInit {
 
@@ -225,3 +207,4 @@ export class FactureFormDialogComponent implements OnInit {
 }
 
 export {};
+

@@ -1,7 +1,64 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { Facture, StatutFacture, TypeFacture } from '../models';
+
+/* ---------------- MOCK DATA ---------------- */
+
+const MOCK_FACTURES: Facture[] = [
+  {
+    id: 1,
+    numero: 'FAC-2024-001',
+    dateEmission: new Date('2024-01-15'),
+    dateEcheance: new Date('2024-02-15'),
+    montant: 15000,
+    statut: 'PAYEE',
+    typeFacture: 'HONORAIRES',
+    dossierId: 1
+  },
+  {
+    id: 2,
+    numero: 'FAC-2024-002',
+    dateEmission: new Date('2024-02-20'),
+    dateEcheance: new Date('2024-03-20'),
+    montant: 8500,
+    statut: 'EN_ATTENTE',
+    typeFacture: 'HONORAIRES',
+    dossierId: 2
+  },
+  {
+    id: 3,
+    numero: 'FAC-2024-003',
+    dateEmission: new Date('2024-03-05'),
+    dateEcheance: new Date('2024-04-05'),
+    montant: 22000,
+    statut: 'EN_RETARD',
+    typeFacture: 'FRAIS',
+    dossierId: 3
+  },
+  {
+    id: 4,
+    numero: 'FAC-2024-004',
+    dateEmission: new Date('2024-03-18'),
+    dateEcheance: new Date('2024-04-18'),
+    montant: 12000,
+    statut: 'PAYEE',
+    typeFacture: 'HONORAIRES',
+    dossierId: 4
+  },
+  {
+    id: 5,
+    numero: 'FAC-2024-005',
+    dateEmission: new Date('2024-04-01'),
+    dateEcheance: new Date('2024-05-01'),
+    montant: 5500,
+    statut: 'EN_ATTENTE',
+    typeFacture: 'FRAIS',
+    dossierId: 5
+  }
+];
+
+/* ---------------- SERVICE ---------------- */
 
 @Injectable({
   providedIn: 'root'
@@ -9,24 +66,19 @@ import { Facture, StatutFacture, TypeFacture } from '../models';
 export class FactureService {
   private readonly endpoint = '/factures';
 
-  // Signals for reactive state
   private facturesSignal = signal<Facture[]>([]);
   private loadingSignal = signal<boolean>(false);
   private errorSignal = signal<string | null>(null);
 
-  // Public signals
   readonly factures = this.facturesSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
   constructor(private api: ApiService) {
-    // Load on init
     this.getAll().subscribe();
   }
 
-  /**
-   * Get all invoices
-   */
+  /* ---------------- GET ALL ---------------- */
   getAll(): Observable<Facture[]> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -37,17 +89,15 @@ export class FactureService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.error('Error loading factures:', error);
-        this.errorSignal.set('Erreur lors du chargement des factures');
+        console.warn('API unavailable, using mock factures');
+        this.facturesSignal.set(MOCK_FACTURES);
         this.loadingSignal.set(false);
-        return throwError(() => error);
+        return of(MOCK_FACTURES);
       })
     );
   }
 
-  /**
-   * Get invoice by ID
-   */
+  /* ---------------- GET BY ID ---------------- */
   getById(id: number): Observable<Facture | undefined> {
     return this.api.get<Facture>(`${this.endpoint}/${id}`).pipe(
       catchError(error => {
@@ -57,9 +107,7 @@ export class FactureService {
     );
   }
 
-  /**
-   * Create new invoice
-   */
+  /* ---------------- CREATE ---------------- */
   create(facture: Partial<Facture>): Observable<Facture> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -70,7 +118,6 @@ export class FactureService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.error('Error creating facture:', error);
         this.errorSignal.set('Erreur lors de la création de la facture');
         this.loadingSignal.set(false);
         return throwError(() => error);
@@ -78,22 +125,19 @@ export class FactureService {
     );
   }
 
-  /**
-   * Update existing invoice
-   */
+  /* ---------------- UPDATE ---------------- */
   update(id: number, facture: Partial<Facture>): Observable<Facture> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     return this.api.put<Facture>(`${this.endpoint}/${id}`, facture).pipe(
       tap(updated => {
-        this.facturesSignal.update(list => 
-          list.map(f => f.id === id ? updated : f)
+        this.facturesSignal.update(list =>
+          list.map(f => (f.id === id ? updated : f))
         );
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.error('Error updating facture:', error);
         this.errorSignal.set('Erreur lors de la mise à jour de la facture');
         this.loadingSignal.set(false);
         return throwError(() => error);
@@ -101,9 +145,7 @@ export class FactureService {
     );
   }
 
-  /**
-   * Delete invoice
-   */
+  /* ---------------- DELETE ---------------- */
   delete(id: number): Observable<void> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -114,7 +156,6 @@ export class FactureService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.error('Error deleting facture:', error);
         this.errorSignal.set('Erreur lors de la suppression de la facture');
         this.loadingSignal.set(false);
         return throwError(() => error);
@@ -122,16 +163,12 @@ export class FactureService {
     );
   }
 
-  /**
-   * Update invoice status
-   */
+  /* ---------------- STATUS UPDATE ---------------- */
   updateStatus(id: number, statut: StatutFacture): Observable<Facture> {
     return this.update(id, { statut });
   }
 
-  /**
-   * Clear error
-   */
+  /* ---------------- CLEAR ERROR ---------------- */
   clearError(): void {
     this.errorSignal.set(null);
   }

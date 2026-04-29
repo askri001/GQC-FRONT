@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Client } from '../models/client.model';
 
-export interface Client {
-  id?: number;
-  nom: string;
-  prenom: string;
-  cin: string;
-  tel: string;
-  email?: string;
-  adresse?: string;
-  active?: boolean;
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number?: number;
+  size?: number;
 }
 
 @Injectable({
@@ -22,27 +20,45 @@ export class ClientService {
 
   constructor(private http: HttpClient) {}
 
-  // GET ALL CLIENTS
-  getAll(): Observable<Client[]> {
-    return this.http.get<Client[]>(this.apiUrl);
+  // ================= GET PAGINATED + FILTERS =================
+  getPaginated(
+    page: number,
+    size: number,
+    search?: string,
+    typeClient?: string,
+    active?: boolean
+  ): Observable<PageResponse<Client>> {
+
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (search && search.trim()) {
+      params = params.set('search', search);
+    }
+
+    if (typeClient) {
+      params = params.set('type', typeClient);
+    }
+
+    if (active !== undefined && active !== null) {
+      params = params.set('active', active);
+    }
+
+    return this.http.get<PageResponse<Client>>(this.apiUrl, { params });
   }
 
-  // GET BY ID 
-  getById(id: number): Observable<Client> {
-    return this.http.get<Client>(`${this.apiUrl}/${id}`);
-  }
-
-  // CREATE CLIENT
-  create(client: Client): Observable<Client> {
+  // ================= CREATE =================
+  create(client: Partial<Client>): Observable<Client> {
     return this.http.post<Client>(this.apiUrl, client);
   }
 
-  // UPDATE CLIENT
-  update(id: number, client: Client): Observable<Client> {
+  // ================= UPDATE =================
+  update(id: number, client: Partial<Client>): Observable<Client> {
     return this.http.put<Client>(`${this.apiUrl}/${id}`, client);
   }
 
-  // DELETE CLIENT
+  // ================= DELETE =================
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

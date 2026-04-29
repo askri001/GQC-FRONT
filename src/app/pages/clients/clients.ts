@@ -1,29 +1,27 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 
+import { MatConfirmDialogComponent } from '../../shared/mat-confirm-dialog/mat-confirm-dialog';
 import { ClientService } from '../../core/services/client.service';
 import { Client } from '../../core/models/client.model';
-
-interface ExtendedClient extends Client {
-  dateCreation?: string;
-}
+import { ClientFormDialogComponent } from './client-form-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-clients',
@@ -31,185 +29,249 @@ interface ExtendedClient extends Client {
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule,
     MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule,
     MatPaginatorModule,
+    MatDialogModule,
     MatTabsModule,
-    MatCheckboxModule
+    MatFormFieldModule,
+    MatInputModule,
+    MatChipsModule,
+    MatSelectModule
   ],
   templateUrl: './client.html',
-  styleUrls: ['./client-modern.css']
+  styleUrls: ['./client.css']
 })
-export class ClientsComponent {
-  private clientService = inject(ClientService);
-  private snackBar = inject(MatSnackBar);
+export class ClientsComponent implements OnInit {
 
-  clients = signal<ExtendedClient[]>([]);
+  private service = inject(ClientService);
+  private snack = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private auth = inject(AuthService);
+
+  // ================= STATE =================
+  clients = signal<Client[]>([]);
+  totalClients = signal(0);
   loading = signal(false);
-  editMode = signal(false);
-  editId = signal<number | null>(null);
-  tempClient = signal<Partial<Client>>({});
+  error = signal<string | null>(null);
 
-  search = signal('');
-  actifFilter = signal<string>('');
+  pageSize = signal(10);
+  currentPage = signal(0);
 
-  pageSize = 10;
-  currentPage = 0;
+  search = '';
+  typeFilter = '';
+  statusFilter = '';
+  showFilters = signal(true);
 
+  // ================= PERMISSIONS =================
+  canCreate = computed(() =>
+    this.auth.isAuthenticated() &&
+    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_CREATE'))
+  );
+
+  canEdit = computed(() =>
+    this.auth.isAuthenticated() &&
+    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_UPDATE'))
+  );
+
+  canDelete = computed(() =>
+    this.auth.isAuthenticated() &&
+    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_DELETE'))
+  );
+
+  // ================= TABLE =================
   displayedColumns = [
+    'identifiant',
     'nom',
-    'cin',
+    'typeClient',
     'tel',
     'email',
-    'adresse',
-    'dateCreation',
     'active',
     'actions'
   ];
 
-  constructor() {
+  ngOnInit(): void {
     this.loadClients();
   }
 
+  // ================= LOAD =================
   loadClients(): void {
     this.loading.set(true);
-  this.clientService.getAll().subscribe({
-      next: (data) => {
-        this.clients.set(
-          data.map(c => ({
-            ...c,
-            active: c.active ?? true
-          }))
-        );
-        this.loading.set(false);
+    this.error.set(null);
+
+    const type = this.typeFilter || undefined;
+
+    const status =
+      this.statusFilter === ''
+        ? undefined
+        : this.statusFilter === 'true';
+
+    const searchValue = this.search?.trim()
+      ? this.search.trim()
+      : undefined;
+
+    this.service.getPaginated(
+      this.currentPage(),
+      this.pageSize(),
+      searchValue,
+      type,
+      status
+    ).pipe(
+      finalize(() => this.loading.set(false))
+    ).subscribe({
+      next: (res: any) => {
+        this.clients.set(res.content ?? []);
+        this.totalClients.set(res.totalElements ?? 0);
       },
-      error: () => {
-        this.loading.set(false);
-        this.snackBar.open('Erreur chargement', 'OK');
+      error: (err) => {
+        let msg = 'Erreur chargement clients';
+
+        if (err?.status === 0) {
+          msg = 'Serveur indisponible (backend down)';
+        } else if (err?.status === 403) {
+          msg = 'Accès refusé (403) - problème permissions JWT';
+        } else if (err?.error?.message) {
+          msg = err.error.message;
+        }
+
+        this.error.set(msg);
+        this.clients.set([]);
+        this.totalClients.set(0);
       }
     });
   }
 
-  applyFilter(): void {
-    // Signals are reactive, no need for manual filter trigger
-  }
-
-  filteredClients = computed(() => {
-    return this.clients().filter(c => {
-      const matchSearch =
-        !this.search() ||
-        (c.nom ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
-        (c.cin ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
-        (c.tel ?? '').includes(this.search()!) ||
-        (c.email ?? '').toLowerCase().includes(this.search()!.toLowerCase());
-
-      const matchStatus =
-        this.actifFilter() === '' ||
-        c.active === (this.actifFilter() === 'true');
-
-      return matchSearch && matchStatus;
-    });
-  });
-
-  pagedClients = computed(() => {
-    const start = this.currentPage * this.pageSize;
-    return this.filteredClients().slice(start, start + this.pageSize);
-  });
-
+  // ================= PAGINATION =================
   onPageChange(event: PageEvent): void {
-    this.pageSize = event.pageSize;
-    this.currentPage = event.pageIndex;
+    this.pageSize.set(event.pageSize);
+    this.currentPage.set(event.pageIndex);
+    this.loadClients();
   }
 
-  startInlineEdit(id?: number): void {
-    if (id) {
-      const client = this.clients().find(c => c.id === id);
-      this.tempClient.set({ ...client });
-    } else {
-      this.tempClient.set({
-        active: true
-      });
-    }
-    this.editId.set(id ?? null);
-    this.editMode.set(true);
-  }
-
-  cancelInlineEdit(): void {
-    this.editMode.set(false);
-    this.editId.set(null);
-    this.tempClient.set({});
-  }
-
-  saveInlineEdit(): void {
-    const temp = this.tempClient();
-    if (!temp.nom || !temp.cin) {
-      this.snackBar.open('Nom et CIN requis', 'OK');
+  // ================= CREATE =================
+  openNewClient(): void {
+    if (!this.canCreate()) {
+      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
       return;
     }
 
-    const payload: Partial<Client> = {
-      id: this.editId() ?? undefined,
-      nom: temp.nom!,
-      prenom: temp.prenom || '',
-      cin: temp.cin!,
-      tel: temp.tel || '',
-      email: temp.email,
-      adresse: temp.adresse,
-      active: temp.active ?? true
-    };
+    const ref = this.dialog.open(ClientFormDialogComponent, {
+      width: '600px',
+      data: { isEdit: false, existingClients: this.clients() }
+    });
 
-    const request = this.editId()
-      ? this.clientService.update(this.editId()!, payload as Client)
-      : this.clientService.create(payload as Client);
+    ref.afterClosed().subscribe(res => {
+      if (!res) return;
 
-    request.subscribe({
+      this.service.create(res).subscribe({
+        next: () => {
+          this.snack.open('Client créé', 'OK', { duration: 2000 });
+          this.loadClients();
+        },
+        error: () => {
+          this.snack.open('Erreur création client', 'OK', { duration: 3000 });
+        }
+      });
+    });
+  }
+
+  // ================= EDIT =================
+  openEditClient(c: Client): void {
+    if (!this.canEdit()) {
+      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
+      return;
+    }
+
+    const ref = this.dialog.open(ClientFormDialogComponent, {
+      width: '600px',
+      data: { client: c, isEdit: true, existingClients: this.clients() }
+    });
+
+    ref.afterClosed().subscribe(res => {
+      if (!res) return;
+
+      this.service.update(c.id!, res).subscribe({
+        next: () => {
+          this.snack.open('Client modifié', 'OK', { duration: 2000 });
+          this.loadClients();
+        },
+        error: () => {
+          this.snack.open('Erreur modification client', 'OK', { duration: 3000 });
+        }
+      });
+    });
+  }
+
+  // ================= DELETE =================
+  confirmDelete(c: Client): void {
+    if (!confirm(`Supprimer ${c.nom} ?`)) return;
+
+    this.service.delete(c.id!).subscribe({
       next: () => {
-        this.snackBar.open('Sauvegardé avec succès', 'OK');
+        this.snack.open('Client supprimé', 'OK', { duration: 2000 });
         this.loadClients();
-        this.cancelInlineEdit();
       },
       error: () => {
-        this.snackBar.open('Erreur sauvegarde', 'OK');
+        this.snack.open('Erreur suppression', 'OK', { duration: 3000 });
       }
     });
   }
 
-  confirmDelete(c: ExtendedClient): void {
-    if (confirm(`Supprimer ${c.nom} ?`)) {
-      this.clientService.delete(c.id!).subscribe({
+  // ================= FILTERS =================
+  applyFilters(): void {
+    this.currentPage.set(0);
+    this.loadClients();
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update(v => !v);
+  }
+
+  // ================= HELPERS =================
+  getTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      'PHYSIQUE': 'Particulier',
+      'MORALE': 'Entreprise'
+    };
+    return labels[type] || type;
+  }
+
+  // ================= TOGGLE STATUS =================
+  toggleStatus(c: Client): void {
+    if (!this.canEdit()) {
+      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
+      return;
+    }
+
+    const newStatus = !c.active;
+    const statusText = newStatus ? 'activer' : 'désactiver';
+
+    const ref = this.dialog.open(MatConfirmDialogComponent, {
+      data: {
+        title: 'Confirmer le changement',
+        message: `Voulez-vous vraiment ${statusText} le client "${c.nom}" ?`,
+        confirmLabel: 'Confirmer',
+        cancelLabel: 'Annuler'
+      }
+    });
+
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.service.update(c.id!, { active: newStatus }).subscribe({
         next: () => {
-          this.snackBar.open('Supprimé', 'OK');
+          this.snack.open(`Client ${newStatus ? 'activé' : 'désactivé'}`, 'OK', { duration: 2000 });
           this.loadClients();
         },
-        error: () => this.snackBar.open('Erreur suppression', 'OK')
+        error: () => {
+          this.snack.open('Erreur changement statut', 'OK', { duration: 3000 });
+        }
       });
-    }
-  }
-
-  toggleStatus(c: ExtendedClient): void {
-    const updated = { ...c, active: !c.active };
-    this.clientService.update(c.id!, updated).subscribe({
-      next: () => this.loadClients(),
-      error: () => this.snackBar.open('Erreur statut', 'OK')
     });
-  }
-
-  showDetail(c: ExtendedClient): void {
-    this.snackBar.open(
-      `${c.nom} ${c.prenom ?? ''} | ${c.tel} | ${c.email ?? '-'}`,
-      'OK',
-      { duration: 3000 }
-    );
   }
 }
 

@@ -1,0 +1,17 @@
+.dialog-container {
+  min-width: 500px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.facture-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 450px;
+}
+

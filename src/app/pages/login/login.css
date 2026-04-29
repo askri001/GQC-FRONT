@@ -1,0 +1,124 @@
+/****************************************************
+ * Login Page — BNA Green Theme
+ ****************************************************/
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 50%, var(--bna-light) 100%);
+}
+
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.login-content {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  backdrop-filter: blur(10px);
+}
+
+.logo mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--bna-white);
+}
+
+.login-header h1 {
+  color: var(--bna-white);
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.login-header p {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  margin: 0;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.login-card h2 {
+  margin: 0 0 24px;
+  color: var(--bna-dark);
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-btn {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bna-error-bg);
+  color: var(--bna-error);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.login-footer {
+  margin-top: 40px;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+}
+

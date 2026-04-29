@@ -87,17 +87,7 @@ import { User } from '../../core/models';
       </mat-card>
     </div>
   `,
-  styles: [`
-    .page-container { padding: 0; }
-    .page-card { padding: 20px; border-radius: 12px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .card-header h2 { margin: 0; color: #1a237e; }
-    .filters { margin-bottom: 20px; }
-    .filters mat-form-field { width: 300px; }
-    .full-width { width: 100%; }
-    .active-chip { background: #e8f5e9 !important; color: #2e7d32 !important; }
-    .inactive-chip { background: #ffebee !important; color: #c62828 !important; }
-  `]
+  styleUrls: ['./users.css']
 })
 export class UsersComponent implements OnInit {
   users = signal<User[]>([]);
@@ -112,4 +102,3 @@ export class UsersComponent implements OnInit {
     ]);
   }
 }
-

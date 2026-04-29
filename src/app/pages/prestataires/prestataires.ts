@@ -47,7 +47,7 @@ import { PrestataireService } from '../../core/services/prestataire.service';
     MatCheckboxModule
   ],
   templateUrl: './prestataire.html',
-  styleUrls: ['./prestataire-modern.css']
+  styleUrls: ['./prestataire-modern.css', './prestataire.css']
 })
 export class PrestatairesComponent implements OnInit {
   private prestataireService = inject(PrestataireService);
@@ -326,12 +326,6 @@ export class PrestatairesComponent implements OnInit {
         error: () => this.showNotification('Erreur statut', 'error')
       });
     }
-  }
-
-  showDetail(p: Prestataire): void {
-    this.snackBar.open(`${this.getFullName(p)}: ${p.telephone} | ${p.email} | ${p.specialite}`, 'OK', {
-      duration: 4000
-    });
   }
 
   confirmDelete(p: Prestataire): void {

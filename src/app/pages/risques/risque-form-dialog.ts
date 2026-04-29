@@ -92,11 +92,7 @@ export interface DialogData {
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .dialog-container { min-width: 500px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    mat-form-field { width: 100%; }
-  `]
+  styleUrls: ['./risque-form-dialog.css']
 })
 export class RisqueFormDialogComponent {
   form: FormGroup;
@@ -143,4 +139,5 @@ export class RisqueFormDialogComponent {
     }
   }
 }
+
 

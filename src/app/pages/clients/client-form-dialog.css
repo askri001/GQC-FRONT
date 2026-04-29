@@ -1,0 +1,188 @@
+
+:root {
+  --bna-primary:   #00966E;
+  --bna-dark:      #007A58;
+  --bna-darker:    #005C43;
+  --bna-light:     #4DBFA3;
+  --bna-lighter:   #B2DFD1;
+  --bna-bg:        #E6F5F0;
+}
+
+.client-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+}
+
+.client-dialog .mdc-dialog__surface {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+}
+
+/* ============================================
+   DIALOG TITLE
+   ============================================ */
+.client-dialog .mdc-dialog__title {
+  margin: 0 !important;
+  padding: 20px 24px 16px !important;
+  color: var(--bna-dark) !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 1px solid var(--bna-lighter) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.client-dialog .mdc-dialog__title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, var(--bna-primary) 0%, #00B386 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   DIALOG CONTENT
+   ============================================ */
+.client-dialog .mdc-dialog__content {
+  padding: 24px !important;
+  color: #333 !important;
+}
+
+/* ============================================
+   FORM GRID
+   ============================================ */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ============================================
+   FORM FIELDS — supported MDC variables only
+   ============================================ */
+.bna-field {
+  width: 100%;
+
+  /* Shape */
+  --mdc-outlined-text-field-container-shape: 8px;
+
+  /* Outline colors */
+  --mdc-outlined-text-field-outline-color: var(--bna-lighter);
+  --mdc-outlined-text-field-hover-outline-color: var(--bna-light);
+  --mdc-outlined-text-field-focus-outline-color: var(--bna-primary);
+
+  /* Label colors */
+  --mdc-outlined-text-field-label-text-color: var(--bna-dark);
+  --mdc-outlined-text-field-hover-label-text-color: var(--bna-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--bna-primary);
+
+  /* Input text */
+  --mdc-outlined-text-field-input-text-color: #333;
+  --mdc-outlined-text-field-caret-color: var(--bna-primary);
+}
+
+/* ============================================
+   ICONS inside inputs
+   ============================================ */
+.bna-field .mat-mdc-form-field-icon-prefix {
+  padding: 0 8px 0 12px;
+}
+
+.bna-field .mat-mdc-form-field-icon-prefix mat-icon {
+  color: var(--bna-primary);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+}
+
+/* ============================================
+   DIALOG ACTIONS
+   ============================================ */
+.client-dialog .mdc-dialog__actions {
+  padding: 16px 24px !important;
+  border-top: 1px solid var(--bna-lighter) !important;
+  gap: 12px !important;
+}
+
+/* Cancel button */
+.client-dialog .mdc-dialog__actions button[mat-button] {
+  color: #555 !important;
+  border-radius: 8px !important;
+  padding: 8px 20px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.client-dialog .mdc-dialog__actions button[mat-button]:hover {
+  background: var(--bna-bg) !important;
+  color: var(--bna-dark) !important;
+  transform: translateY(-1px);
+}
+
+/* Primary action button */
+.client-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"] {
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  border-radius: 8px !important;
+  padding: 8px 24px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.client-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:hover:not([disabled]) {
+  background: linear-gradient(135deg, var(--bna-darker) 0%, var(--bna-dark) 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 150, 110, 0.4) !important;
+}
+
+.client-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:active:not([disabled]) {
+  transform: translateY(0);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+.client-dialog .mdc-dialog__content {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .client-dialog .mdc-dialog__title {
+    font-size: 18px !important;
+    padding: 16px 20px 12px !important;
+  }
+
+  .client-dialog .mdc-dialog__content {
+    padding: 20px !important;
+  }
+
+  .client-dialog .mdc-dialog__actions {
+    padding: 12px 20px !important;
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .client-dialog .mdc-dialog__actions button {
+    width: 100%;
+  }
+}
+

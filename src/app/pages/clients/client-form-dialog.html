@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>
+  {{ isEdit ? 'Modifier' : 'Nouveau' }} Client
+</h2>
+
+<mat-dialog-content>
+  <div class="form-grid">
+
+    <!-- TYPE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Type</mat-label>
+      <mat-icon matPrefix>category</mat-icon>
+      <mat-select [(ngModel)]="form.typeClient">
+        <mat-option value="PHYSIQUE">Particulier</mat-option>
+        <mat-option value="MORALE">Société</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- NOM -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Nom</mat-label>
+      <mat-icon matPrefix>person</mat-icon>
+      <input matInput [(ngModel)]="form.nom">
+    </mat-form-field>
+
+    <!-- PHYSIQUE -->
+    <ng-container *ngIf="isPhysical">
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>Prénom</mat-label>
+        <mat-icon matPrefix>person_outline</mat-icon>
+        <input matInput [(ngModel)]="form.prenom">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>CIN</mat-label>
+        <mat-icon matPrefix>badge</mat-icon>
+        <input matInput [(ngModel)]="form.cin">
+      </mat-form-field>
+    </ng-container>
+
+    <!-- MORALE -->
+    <ng-container *ngIf="!isPhysical">
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>RNE</mat-label>
+        <mat-icon matPrefix>business</mat-icon>
+        <input matInput [(ngModel)]="form.rne">
+      </mat-form-field>
+    </ng-container>
+
+    <!-- TEL -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Téléphone</mat-label>
+      <mat-icon matPrefix>phone</mat-icon>
+      <input matInput [(ngModel)]="form.tel">
+    </mat-form-field>
+
+    <!-- EMAIL -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Email</mat-label>
+      <mat-icon matPrefix>email</mat-icon>
+      <input matInput [(ngModel)]="form.email">
+    </mat-form-field>
+
+    <!-- ADRESSE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Adresse</mat-label>
+      <mat-icon matPrefix>location_on</mat-icon>
+      <input matInput [(ngModel)]="form.adresse">
+    </mat-form-field>
+
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button">
+    Annuler
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="isLoading">
+    {{ isEdit ? 'Modifier' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

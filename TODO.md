@@ -1,37 +1,31 @@
-<<<<<<< HEAD
-# Frontend Refactor: Remove Mocks → API Calls
+# Fix Problems - Clients Module Completion
 
-## Status: COMPLETE ✅
+## Steps (Progress tracked here)
 
-### Step 1: ✅ Update ApiService
-- Added `getRecentDossiers(limit: number)`
-- Generic CRUD methods
+### Step 1: Create Client Model [DONE ✅]
+- Create src/app/core/models/client.model.ts with interface based on usage.
 
-### Step 2: ✅ Clean FactureService
-- Removed `getMockFactures()`, mock fallbacks
-=======
-# ClientsComponent Fix Plan
+### Step 2: Add toggleStatus method [DONE ✅]
+- src/app/pages/clients/clients.ts
 
-✅ **Step 1**: Complete `src/app/pages/clients/clients.ts` - Fixed imports, type issues, syntax errors. Compilation successful.
+### Step 3: Fix client.html issues [DONE ✅]
+- Remove empty filters div
+- Fix toggle button (remove clientsComponent. prefix)
+- Add [disabled]="!canCreate()" to new button
 
-**Status**: Completed
->>>>>>> 88b655e72f10b2d8ee7cdf0591a2db0133642f54
+### Step 4: Update clients TODO.md [DONE ✅]
+- src/app/pages/clients/TODO.md updated
 
-### Step 3: ✅ Clean MissionService
-- Removed `getMockMissions()`, mock fallbacks
+### Step 5: Test [COMPLETE ✅]
+- `ng build` succeeded
+- `ng serve` running
 
-### Step 4: ✅ Clean RisqueService
-- Removed `getMockRisques()`, mock fallbacks
+### Step 6: Dynamic CIN/RNE Form [COMPLETE ✅]
+- Dropdown fixed: values 'PHYSIQUE'/'MORALE', labels "Particulier"/"Société"
+- Added type-specific validation: numeric CIN required for Particulier, RNE for Société
+- Instant visibility via *ngIf=isPhysical, Angular change detection
 
-### Step 5: ✅ Refactor DashboardComponent
-- `loadDashboardData()` now uses API calls
-- stats() from `/api/dashboard/stats`
-- recentDossiers() from `/api/dossiers/recent?limit=5`
-
-### Step 6: [ ] Verify other components
-- users/clients/prestataires etc.
-
-### Step 7: [ ] Test
-- Run `ng serve` to verify UI unchanged
-
-**Core refactor complete: No hardcoded data in dashboard/services. Ready for backend endpoints.**
+### Step 7: Toggle Confirmation Popup [COMPLETE ✅]
+- Added MatConfirmDialog in toggleStatus()
+- Dynamic message "Voulez-vous vraiment activer/désactiver le client '{nom}' ?"
+- Proceed only on confirm=true

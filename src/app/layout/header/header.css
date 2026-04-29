@@ -1,0 +1,97 @@
+.header {
+  height: 64px;
+  background: var(--bna-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--bna-dark);
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-btn {
+  color: var(--bna-text-muted);
+}
+
+.header-btn:hover {
+  color: var(--bna-primary);
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.user-btn:hover {
+  background: rgba(0, 150, 110, 0.05);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bna-white);
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--bna-text);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.user-avatar-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--bna-primary);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-fullname {
+  font-weight: 600;
+  color: var(--bna-text);
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--bna-text-muted);
+}
+

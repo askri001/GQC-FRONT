@@ -19,28 +19,7 @@ import { HeaderComponent } from '../header/header.component';
       </div>
     </div>
   `,
-  styles: [`
-    .layout-container {
-      display: flex;
-      min-height: 100vh;
-      background: #f5f7fa;
-    }
-
-    .main-content {
-      flex: 1;
-      margin-left: 260px;
-      transition: margin-left 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    .content-area {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-    }
-  `]
+  styleUrls: ['./main-layout.css']
 })
 export class MainLayoutComponent {
   pageTitle = signal('Dashboard');

@@ -1,0 +1,13 @@
+.dialog-container {
+  min-width: 500px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+mat-form-field {
+  width: 100%;
+}
+

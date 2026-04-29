@@ -1,11 +1,12 @@
 export interface Client {
   id?: number;
   nom: string;
-  prenom: string;
-  cin: string;
+  prenom?: string;
+  typeClient: 'PHYSIQUE' | 'MORALE';
   tel: string;
   email?: string;
   adresse?: string;
-  active?: boolean;
-  dateCreation?: string | Date;
+  cin?: string;
+  rne?: string;
+  active: boolean;
 }

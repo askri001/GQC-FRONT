@@ -47,7 +47,7 @@ import { FactureFormDialogComponent } from './facture-form-dialog';
     DatePipe
   ],
   templateUrl: './facture.html',
-  styleUrls: ['./facture-modern.css']
+  styleUrls: ['./facture-modern.css', './facture.css']
 })
 export class FacturesComponent implements OnInit {
 
@@ -201,15 +201,6 @@ export class FacturesComponent implements OnInit {
         error: () => this.showNotification('Erreur suppression', 'error')
       });
     }
-  }
-
-  // ================= DETAIL =================
-  showDetail(f: Facture): void {
-    this.snackBar.open(
-      `${f.numero} - ${f.montant} DT - ${this.statutLabels[f.statut]}`,
-      'OK',
-      { duration: 3000 }
-    );
   }
 
   // ================= RESET FILTER =================

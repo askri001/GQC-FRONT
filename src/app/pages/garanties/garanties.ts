@@ -28,7 +28,7 @@ import { Garantie } from '../../core/models';
       </mat-card>
     </div>
   `,
-  styles: [`.page-container { padding: 0; }.page-card { padding: 20px; border-radius: 12px; }.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }.card-header h2 { margin: 0; color: #1a237e; }.full-width { width: 100%; }`]
+  styleUrls: ['./garanties.css']
 })
 export class GarantiesComponent implements OnInit {
   garanties = signal<Garantie[]>([]);

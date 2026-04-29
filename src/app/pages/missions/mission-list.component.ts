@@ -23,7 +23,7 @@ import { MissionService } from '../../../app/core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
 
 @Component({
-  selector: 'app-missions',
+  selector: 'app-mission-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -43,7 +43,7 @@ import { MissionFormDialogComponent } from './mission-form-dialog';
     MatMenuModule,
     MatPaginatorModule
   ],
-  templateUrl: './mission.html',
+  templateUrl: './mission-list.html',
   styleUrls: ['./mission.css']
 })
 export class MissionsComponent implements OnInit {

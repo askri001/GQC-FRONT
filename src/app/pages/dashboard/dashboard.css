@@ -1,0 +1,103 @@
+/****************************************************
+ * Dashboard — BNA Green Theme
+ ****************************************************/
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.kpi-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.kpi-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-icon mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--bna-white);
+}
+
+.kpi-icon.dossiers { background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%); }
+.kpi-icon.actifs { background: linear-gradient(135deg, var(--bna-light) 0%, var(--bna-primary) 100%); }
+.kpi-icon.recovered { background: linear-gradient(135deg, var(--bna-primary) 0%, #00B386 100%); }
+.kpi-icon.rate { background: linear-gradient(135deg, var(--bna-lighter) 0%, var(--bna-light) 100%); }
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--bna-dark);
+}
+
+.kpi-label {
+  font-size: 14px;
+  color: var(--bna-text-muted);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.chart-card {
+  border-radius: 12px;
+}
+
+.chart-card mat-card-header {
+  margin-bottom: 16px;
+}
+
+.chart-card canvas {
+  max-height: 300px;
+}
+
+.recent-card {
+  border-radius: 12px;
+}
+
+.recent-card mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.statut-en_cours { background: var(--bna-bg) !important; color: var(--bna-primary) !important; }
+.statut-cloture { background: var(--bna-success-bg) !important; color: var(--bna-success) !important; }
+.statut-suspendu { background: var(--bna-warning-bg) !important; color: var(--bna-warning) !important; }
+

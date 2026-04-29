@@ -28,7 +28,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Date Début</mat-label>
           <input matInput [matDatepicker]="pickerDebut" formControlName="dateDebut">
-          <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix [for]="pickerDebut"></mat-datepicker-toggle>
           <mat-datepicker #pickerDebut></mat-datepicker>
           <mat-error *ngIf="form.get('dateDebut')?.hasError('required')">
             La date de début est obligatoire
@@ -38,7 +38,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Date Fin</mat-label>
           <input matInput [matDatepicker]="pickerFin" formControlName="dateFin">
-          <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
           <mat-datepicker #pickerFin></mat-datepicker>
         </mat-form-field>
       </div>
@@ -58,19 +58,19 @@
 
       <mat-form-field appearance="outline">
         <mat-label>ID Dossier</mat-label>
-        <input matInput type="number" formControlName="dossierId" placeholder="1">
+        <input matInput type="number" formControlName="dossierId">
         <mat-icon matSuffix>folder</mat-icon>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>ID Prestataire</mat-label>
-        <input matInput type="number" formControlName="prestataireId" placeholder="1">
+        <input matInput type="number" formControlName="prestataireId">
         <mat-icon matSuffix>person</mat-icon>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Résultat</mat-label>
-        <textarea matInput formControlName="resultat" placeholder="Résultat de la mission..." rows="3"></textarea>
+        <textarea matInput formControlName="resultat" rows="3"></textarea>
         <mat-icon matSuffix>description</mat-icon>
       </mat-form-field>
     </form>
@@ -89,3 +89,4 @@
     </button>
   </mat-dialog-actions>
 </div>
+

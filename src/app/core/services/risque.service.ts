@@ -1,7 +1,14 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { Risque } from '../models';
+
+const MOCK_RISQUES: Risque[] = [
+  { id: 1, montantPrincipal: 150000, montantInteret: 15000, montantTotal: 165000, dateContrat: new Date('2024-01-15'), dateEcheance: new Date('2024-06-15'), tauxInteret: 10, dossierId: 1, actif: true },
+  { id: 2, montantPrincipal: 85000, montantInteret: 5000, montantTotal: 90000, dateContrat: new Date('2024-02-20'), dateEcheance: new Date('2024-05-20'), tauxInteret: 6, dossierId: 2, actif: true },
+  { id: 3, montantPrincipal: 320000, montantInteret: 48000, montantTotal: 368000, dateContrat: new Date('2024-03-05'), dateEcheance: new Date('2025-03-05'), tauxInteret: 15, dossierId: 3, actif: true },
+  { id: 4, montantPrincipal: 500000, montantInteret: 75000, montantTotal: 575000, dateContrat: new Date('2024-03-18'), dateEcheance: new Date('2024-09-18'), tauxInteret: 15, dossierId: 4, actif: false }
+];
 
 @Injectable({
   providedIn: 'root'
@@ -31,10 +38,10 @@ export class RisqueService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.error('Error loading risques:', error);
-        this.errorSignal.set('Erreur lors du chargement des risques');
+        console.warn('API unavailable, using mock risques');
+        this.risquesSignal.set(MOCK_RISQUES);
         this.loadingSignal.set(false);
-        return throwError(() => error);
+        return of(MOCK_RISQUES);
       })
     );
   }

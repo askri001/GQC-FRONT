@@ -39,7 +39,7 @@ import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/d
     MatNativeDateModule
   ],
   templateUrl: "./dossiers.html",
-  styleUrls: ["./dossiers-modern.css"]
+  styleUrls: ["./dossiers-modern.css", "./dossiers.css"]
 })
 export class DossiersComponent implements OnInit {
   private dossierService = inject(DossierService);
@@ -168,11 +168,6 @@ export class DossiersComponent implements OnInit {
         }
       });
     }
-  }
-
-  showDetail(dossier: Dossier) {
-    const msg = `Ref: ${dossier.reference} | ${dossier.statut} | Risque: ${dossier.niveauRisque} | Initial: ${dossier.montantInitial} DH`;
-    this.snackBar.open(msg, 'OK', { duration: 4000 });
   }
 
   cancelEdit() {

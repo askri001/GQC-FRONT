@@ -1,24 +1,26 @@
-/* Modern Glassmorphism Factures - Copied from prestataire-modern.css */
+/****************************************************
+ * Factures Modern — BNA Green Theme
+ ****************************************************/
 
 .page-container {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, var(--bna-bg-page) 0%, var(--bna-bg) 100%);
   min-height: 100vh;
 }
 
 .page-card {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--bna-white);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid var(--bna-lighter);
+  box-shadow: 0 8px 32px 0 rgba(0, 150, 110, 0.15);
   padding: 32px;
   transition: all 0.3s ease;
 }
 
 .page-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+  box-shadow: 0 12px 40px 0 rgba(0, 150, 110, 0.2);
 }
 
 .card-header {
@@ -32,21 +34,20 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bna-bg);
   padding: 16px 24px;
   border-radius: 16px;
-  backdrop-filter: blur(10px);
 }
 
 .title-icon {
   font-size: 36px;
-  color: #1e88e5;
-  filter: drop-shadow(0 2px 4px rgba(30, 136, 229, 0.3));
+  color: var(--bna-primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 150, 110, 0.3));
 }
 
 .card-header h2 {
   margin: 0;
-  color: #1a237e;
+  color: var(--bna-dark);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -61,7 +62,7 @@
 
 .tab-header h3 {
   margin: 0;
-  color: #1a237e;
+  color: var(--bna-dark);
   font-size: 22px;
   font-weight: 500;
 }
@@ -74,14 +75,13 @@
 }
 
 mat-form-field {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bna-white);
   border-radius: 12px;
-  backdrop-filter: blur(10px);
   transition: all 0.2s ease;
 }
 
 mat-form-field:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bna-white);
   transform: translateY(-1px);
 }
 
@@ -91,11 +91,10 @@ mat-form-field:hover {
 }
 
 .table-container {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bna-white);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 150, 110, 0.08);
 }
 
 mat-table {
@@ -109,13 +108,13 @@ mat-table {
 }
 
 .facture-row:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
+  background: var(--bna-bg) !important;
   transform: scale(1.01);
 }
 
 .specialite-chip {
-  background: linear-gradient(45deg, #e3f2fd, #bbdefb) !important;
-  color: #1976d2 !important;
+  background: linear-gradient(45deg, var(--bna-bg), var(--bna-lighter)) !important;
+  color: var(--bna-primary) !important;
   font-size: 12px;
   font-weight: 500;
   border-radius: 20px;
@@ -123,9 +122,9 @@ mat-table {
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(25, 118, 210, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 150, 110, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 150, 110, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 150, 110, 0); }
 }
 
 .statut-chip {
@@ -135,7 +134,7 @@ mat-table {
 }
 
 .delete-action {
-  color: #ef5350 !important;
+  color: var(--bna-error) !important;
   transition: color 0.2s ease;
 }
 
@@ -144,8 +143,8 @@ mat-table {
 }
 
 .inline-edit-row {
-  background: rgba(76, 175, 80, 0.1);
-  border: 2px dashed rgba(76, 175, 80, 0.3);
+  background: var(--bna-bg);
+  border: 2px dashed var(--bna-lighter);
   border-radius: 16px;
   padding: 20px;
   margin-top: 20px;
@@ -164,10 +163,10 @@ mat-table {
 .no-data-container {
   text-align: center;
   padding: 60px;
-  color: #9e9e9e;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--bna-text-muted);
+  background: var(--bna-bg);
   border-radius: 16px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed var(--bna-lighter);
 }
 
 .no-data-container mat-icon {
@@ -184,16 +183,15 @@ mat-table {
   align-items: center;
   justify-content: center;
   padding: 80px;
-  color: #666;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--bna-text-muted);
+  background: var(--bna-bg);
   border-radius: 16px;
 }
 
 mat-paginator {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bna-bg);
   border-radius: 12px;
   margin-top: 24px;
-  backdrop-filter: blur(10px);
 }
 
 /* Responsive */
@@ -214,12 +212,12 @@ mat-paginator {
 
 /* Success/Error Snackbars */
 .success-snackbar {
-  background: linear-gradient(45deg, #4caf50, #81c784) !important;
+  background: linear-gradient(45deg, var(--bna-dark), var(--bna-primary)) !important;
   color: white !important;
 }
 
 .error-snackbar {
-  background: linear-gradient(45deg, #f44336, #ef5350) !important;
+  background: linear-gradient(45deg, var(--bna-error), #ef5350) !important;
   color: white !important;
 }
 
@@ -231,32 +229,31 @@ mat-paginator {
 /* Factures specific */
 .facture-numero {
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--bna-dark);
 }
 
 .montant {
   font-weight: 600;
   font-size: 15px;
-  color: #2e7d32;
+  color: var(--bna-dark);
 }
 
 .statut-payee {
-  background: linear-gradient(45deg, #c8e6c9, #a5d6a7) !important;
-  color: #1b5e20 !important;
+  background: linear-gradient(45deg, var(--bna-success-bg), var(--bna-lighter)) !important;
+  color: var(--bna-success) !important;
 }
 
 .statut-validee {
-  background: linear-gradient(45deg, #b3e5fc, #81d4fa) !important;
-  color: #0277bd !important;
+  background: linear-gradient(45deg, var(--bna-bg), var(--bna-lighter)) !important;
+  color: var(--bna-primary) !important;
 }
 
 .statut-en_attente {
-  background: linear-gradient(45deg, #fff3e0, #ffcc80) !important;
-  color: #ef6c00 !important;
+  background: linear-gradient(45deg, var(--bna-warning-bg), var(--bna-lighter)) !important;
+  color: var(--bna-warning) !important;
 }
 
 .statut-rejetee {
-  background: linear-gradient(45deg, #ffcdd2, #ef9a9a) !important;
-  color: #c62828 !important;
+  background: linear-gradient(45deg, var(--bna-error-bg), var(--bna-lighter)) !important;
+  color: var(--bna-error) !important;
 }
-

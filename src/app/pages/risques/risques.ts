@@ -138,57 +138,7 @@ import { Risque } from '../../core/models';
       </mat-card>
     </div>
   `,
-  styles: [`
-    .page-container { padding: 20px; min-height: calc(100vh - 200px); }
-    .page-card { height: 100%; }
-    .card-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 24px; 
-      flex-wrap: wrap; 
-      gap: 16px; 
-    }
-    .card-header h2 { margin: 0; color: #1a237e; }
-    .subtitle { margin: 0; color: #666; font-size: 0.9em; }
-    .error-banner { 
-      background: #ffebee; 
-      color: #c62828; 
-      padding: 12px; 
-      border-radius: 4px; 
-      margin-bottom: 16px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-    }
-    .search-section { margin-bottom: 20px; }
-    .search-field { width: 100%; max-width: 400px; }
-    .loading-container { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 60px 20px; 
-      color: #666; 
-    }
-    .table-container { position: relative; }
-    .full-width { width: 100%; }
-    .risque-row:hover { background: #f5f5f5; }
-    .no-data-row { height: 120px; }
-    .no-data-cell { 
-      text-align: center; 
-      color: #999; 
-      padding: 40px; 
-    }
-    .table-footer { 
-      margin-top: 24px; 
-      text-align: center; 
-    }
-    @media (max-width: 768px) {
-      .card-header { flex-direction: column; align-items: stretch; }
-      .form-grid { grid-template-columns: 1fr; }
-    }
-  `]
+  styleUrls: ['./risques.css']
 })
 export class RisquesComponent implements OnInit {
   searchTerm = '';
@@ -205,7 +155,6 @@ export class RisquesComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {
-    // Auto-load data on init
     effect(() => {
       if (!this.risqueService.loading() && this.risqueService.risques().length === 0) {
         this.loadData();
@@ -242,11 +191,10 @@ export class RisquesComponent implements OnInit {
       data: { risque: risque || null }
     });
 
-this.dialogRef.afterClosed().subscribe((result: Risque | null) => {
+    this.dialogRef.afterClosed().subscribe((result: Risque | null) => {
       if (result) {
         const message = result.id ? 'Risque mis à jour' : 'Risque créé';
         this.snackBar.open(message, 'OK', { duration: 3000 });
-        // Refresh if needed
         if (!this.risqueService.risques().some(r => r.id === result.id)) {
           this.loadData();
         }
@@ -276,4 +224,3 @@ this.dialogRef.afterClosed().subscribe((result: Risque | null) => {
     this.sub?.unsubscribe();
   }
 }
-
