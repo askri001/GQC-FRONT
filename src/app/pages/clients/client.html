@@ -27,8 +27,8 @@
         <mat-label>Type de client</mat-label>
         <mat-select [(ngModel)]="typeFilter" (ngModelChange)="applyFilters()">
           <mat-option value="">Tous les types</mat-option>
-          <mat-option value="PARTICULIER">Particulier</mat-option>
-          <mat-option value="ENTREPRISE">Entreprise</mat-option>
+<mat-option value="PHYSIQUE">Particulier</mat-option>
+          <mat-option value="MORALE">Entreprise</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -84,7 +84,39 @@
           <!-- TYPE -->
           <ng-container matColumnDef="typeClient">
             <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let c">{{ getTypeLabel(c.typeClient) }}</td>
+            <td mat-cell *matCellDef="let c">{{ getTypeLabel(c.typeClient) }}</td>
+          </ng-container>
+
+          <!-- CIN -->
+          <ng-container matColumnDef="cin">
+            <th mat-header-cell *matHeaderCellDef>CIN</th>
+            <td mat-cell *matCellDef="let c" class="sensitive-cell">
+              <span class="masked-value">
+                {{ isRevealed(c.id, 'cin') ? (c.cin || '-') : (c.cin | mask) }}
+              </span>
+              <button mat-icon-button class="reveal-btn"
+                      *ngIf="c.cin"
+                      (click)="toggleReveal(c.id, 'cin')"
+                      [title]="isRevealed(c.id, 'cin') ? 'Masquer' : 'Afficher'">
+                <mat-icon class="reveal-icon">{{ isRevealed(c.id, 'cin') ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- RNE -->
+          <ng-container matColumnDef="rne">
+            <th mat-header-cell *matHeaderCellDef>RNE</th>
+            <td mat-cell *matCellDef="let c" class="sensitive-cell">
+              <span class="masked-value">
+                {{ isRevealed(c.id, 'rne') ? (c.rne || '-') : (c.rne | mask) }}
+              </span>
+              <button mat-icon-button class="reveal-btn"
+                      *ngIf="c.rne"
+                      (click)="toggleReveal(c.id, 'rne')"
+                      [title]="isRevealed(c.id, 'rne') ? 'Masquer' : 'Afficher'">
+                <mat-icon class="reveal-icon">{{ isRevealed(c.id, 'rne') ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </td>
           </ng-container>
 
           <!-- TEL -->

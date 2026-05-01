@@ -71,24 +71,33 @@ export class ClientFormDialogComponent {
     const f = this.form;
 
     // VALIDATION
-    if (!f.nom.trim() || !f.tel.trim()) {
-      this.snackBar.open('Nom et téléphone sont requis', 'OK', { duration: 3000 });
+    if (!f.nom.trim()) {
+      this.snackBar.open('Le nom est requis', 'OK', { duration: 3000 });
+      return;
+    }
+    const telTrimmed = f.tel?.trim();
+    if (!telTrimmed || !/^[24579][0-9]{7}$/.test(telTrimmed)) {
+      this.snackBar.open('Le numéro de téléphone doit contenir exactement 8 chiffres valides.', 'OK', { duration: 3000 });
+      return;
+    }
+    const emailTrimmed = f.email?.trim();
+    if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      this.snackBar.open('Adresse email invalide.', 'OK', { duration: 3000 });
       return;
     }
 
+
     // TYPE-SPECIFIC VALIDATION
     if (this.isPhysical) {
-      if (!f.cin?.trim()) {
-        this.snackBar.open('CIN requis pour Particulier', 'OK', { duration: 3000 });
-        return;
-      }
-      if (!/^[0-9]+$/.test(f.cin.trim())) {
-        this.snackBar.open('CIN doit être numérique', 'OK', { duration: 3000 });
+      const cinTrimmed = f.cin?.trim();
+      if (!cinTrimmed || !/^[0-9]{8}$/.test(cinTrimmed)) {
+        this.snackBar.open('La CIN doit contenir exactement 8 chiffres.', 'OK', { duration: 3000 });
         return;
       }
     } else {
-      if (!f.rne?.trim()) {
-        this.snackBar.open('RNE requis pour Société', 'OK', { duration: 3000 });
+      const rneTrimmed = f.rne?.trim();
+      if (!rneTrimmed || !/^[0-9]{7}$/.test(rneTrimmed)) {
+        this.snackBar.open('Le RNE doit contenir exactement 7 chiffres.', 'OK', { duration: 3000 });
         return;
       }
     }
@@ -99,20 +108,23 @@ export class ClientFormDialogComponent {
     const rne = f.rne?.trim();
 
     // ================= DUPLICATE CHECK =================
-    const duplicate = this.data.existingClients?.find(c =>
-      c.id !== this.data.client?.id &&
-      (
-        (tel && c.tel === tel) ||
-        (email && c.email === email) ||
-        (cin && c.cin === cin) ||
-        (rne && c.rne === rne)
-      )
-    );
+    const others = this.data.existingClients?.filter(c => c.id !== this.data.client?.id) ?? [];
+    const duplicateErrors: string[] = [];
 
-    if (duplicate) {
-      this.snackBar.open('Client déjà existant (tel/email/cin/rne)', 'OK', {
-        duration: 3000
-      });
+    if (tel && others.some(c => c.tel === tel)) {
+      duplicateErrors.push('Ce numéro de téléphone est déjà utilisé.');
+    }
+    if (emailTrimmed && others.some(c => c.email === emailTrimmed)) {
+      duplicateErrors.push('Cette adresse email est déjà utilisée.');
+    }
+    if (cin && others.some(c => c.cin === cin)) {
+      duplicateErrors.push('Cette CIN est déjà utilisée.');
+    }
+    if (rne && others.some(c => c.rne === rne)) {
+      duplicateErrors.push('Ce RNE est déjà utilisé.');
+    }
+    if (duplicateErrors.length > 0) {
+      this.snackBar.open(duplicateErrors.join(' | '), 'OK', { duration: 5000 });
       return;
     }
 

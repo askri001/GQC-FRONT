@@ -1,18 +1,10 @@
-# Clients Module - FULLY FIXED ✅
+# Client Backend Data Display TODO
 
-**All Issues Resolved:**
-- [x] Client model created (src/app/core/models/client.model.ts)
-- [x] 403 permission handling + signals
-- [x] toggleStatus method added for status toggle
-- [x] client.html fixed (empty div removed, toggle call fixed, create button permission-gated)
-- [x] Full CRUD + filters/pagination working
-- [x] No TS errors
+## Plan Steps:
 
-**Test Commands:**
-```
-ng build
-ng serve
-```
-Navigate to Clients: login → create/edit/toggle/delete → all work with permissions.
+- [ ] 3. Test: Start dev server (`ng serve`), navigate to /clients, verify data/mocks display
+- [ ] 4. Check backend: If running at localhost:8080/api/clients, real data loads; else mocks
+- [ ] 5. ✅ Task complete: Client data shows from backend or fallback
 
-**Status: 100% COMPLETE**
+Current progress: TODO.md created.
+Updated: Step 0 complete.

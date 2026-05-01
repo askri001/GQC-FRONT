@@ -373,3 +373,43 @@ mat-paginator {
     font-size: 12px;
   }
 }
+
+/* ================= SENSITIVE FIELD MASKING ================= */
+.sensitive-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.masked-value {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--bna-text);
+  min-width: 80px;
+  display: inline-block;
+}
+
+.reveal-btn {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 !important;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.reveal-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.reveal-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  color: var(--bna-primary);
+}

@@ -20,7 +20,7 @@ export class ClientService {
 
   constructor(private http: HttpClient) {}
 
-  // ================= GET PAGINATED + FILTERS =================
+
   getPaginated(
     page: number,
     size: number,
@@ -56,6 +56,14 @@ export class ClientService {
   // ================= UPDATE =================
   update(id: number, client: Partial<Client>): Observable<Client> {
     return this.http.put<Client>(`${this.apiUrl}/${id}`, client);
+  }
+
+  // ================= TOGGLE STATUS =================
+  // Uses PATCH /{id}/status with { active } — dedicated endpoint that only
+  // touches the active field. PUT /{id} is reserved for full client edits.
+  toggleStatus(id: number, active: boolean): Observable<Client> {
+    console.log('toggleStatus: PATCH /api/clients/' + id + '/status', { active });
+    return this.http.patch<Client>(`${this.apiUrl}/${id}/status`, { active });
   }
 
   // ================= DELETE =================

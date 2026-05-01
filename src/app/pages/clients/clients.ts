@@ -16,12 +16,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
-
 import { MatConfirmDialogComponent } from '../../shared/mat-confirm-dialog/mat-confirm-dialog';
 import { ClientService } from '../../core/services/client.service';
 import { Client } from '../../core/models/client.model';
 import { ClientFormDialogComponent } from './client-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { MaskPipe } from '../../shared/pipes/mask.pipe';
 
 @Component({
   selector: 'app-clients',
@@ -41,7 +41,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatFormFieldModule,
     MatInputModule,
     MatChipsModule,
-    MatSelectModule
+    MatSelectModule,
+    MaskPipe
   ],
   templateUrl: './client.html',
   styleUrls: ['./client.css']
@@ -88,6 +89,8 @@ export class ClientsComponent implements OnInit {
     'identifiant',
     'nom',
     'typeClient',
+    'cin',
+    'rne',
     'tel',
     'email',
     'active',
@@ -113,6 +116,8 @@ export class ClientsComponent implements OnInit {
     const searchValue = this.search?.trim()
       ? this.search.trim()
       : undefined;
+    console.log('loadClients params:', { page: this.currentPage(), size: this.pageSize(), search: searchValue, type, status });
+
 
     this.service.getPaginated(
       this.currentPage(),
@@ -172,8 +177,9 @@ export class ClientsComponent implements OnInit {
           this.snack.open('Client créé', 'OK', { duration: 2000 });
           this.loadClients();
         },
-        error: () => {
-          this.snack.open('Erreur création client', 'OK', { duration: 3000 });
+        error: (err) => {
+          const msg = err?.error?.message || 'Erreur création client';
+          this.snack.open(msg, 'OK', { duration: 5000 });
         }
       });
     });
@@ -199,8 +205,9 @@ export class ClientsComponent implements OnInit {
           this.snack.open('Client modifié', 'OK', { duration: 2000 });
           this.loadClients();
         },
-        error: () => {
-          this.snack.open('Erreur modification client', 'OK', { duration: 3000 });
+        error: (err) => {
+          const msg = err?.error?.message || 'Erreur modification client';
+          this.snack.open(msg, 'OK', { duration: 5000 });
         }
       });
     });
@@ -208,9 +215,17 @@ export class ClientsComponent implements OnInit {
 
   // ================= DELETE =================
   confirmDelete(c: Client): void {
+    if (c.id == null || c.id === undefined) {
+      console.error('confirmDelete: client id is undefined', c);
+      this.snack.open('Erreur : ID client invalide', 'OK', { duration: 3000 });
+      return;
+    }
+
+    console.log('Deleting client with id:', c.id);
+
     if (!confirm(`Supprimer ${c.nom} ?`)) return;
 
-    this.service.delete(c.id!).subscribe({
+    this.service.delete(c.id).subscribe({
       next: () => {
         this.snack.open('Client supprimé', 'OK', { duration: 2000 });
         this.loadClients();
@@ -220,6 +235,7 @@ export class ClientsComponent implements OnInit {
       }
     });
   }
+
 
   // ================= FILTERS =================
   applyFilters(): void {
@@ -240,10 +256,44 @@ export class ClientsComponent implements OnInit {
     return labels[type] || type;
   }
 
+  // ================= MASKING =================
+  // Tracks which client ids have their sensitive field revealed.
+  // Key format: "<clientId>-cin" or "<clientId>-rne"
+  revealedFields = new Set<string>();
+
+  /** Returns masked value showing only the last `visible` chars, rest replaced with *. */
+  maskValue(value: string | undefined, visible: number): string {
+    if (!value) return '-';
+    if (value.length <= visible) return value;
+    return '*'.repeat(value.length - visible) + value.slice(-visible);
+  }
+
+  toggleReveal(clientId: number | undefined, field: string): void {
+    if (clientId == null) return;
+    const key = clientId + '-' + field;
+    if (this.revealedFields.has(key)) {
+      this.revealedFields.delete(key);
+    } else {
+      this.revealedFields.add(key);
+    }
+  }
+
+  isRevealed(clientId: number | undefined, field: string): boolean {
+    if (clientId == null) return false;
+    return this.revealedFields.has(clientId + '-' + field);
+  }
+
+
   // ================= TOGGLE STATUS =================
   toggleStatus(c: Client): void {
     if (!this.canEdit()) {
       this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
+      return;
+    }
+
+    if (c.id == null || c.id === undefined) {
+      console.error('toggleStatus: client id is undefined', c);
+      this.snack.open('Erreur : ID client invalide', 'OK', { duration: 3000 });
       return;
     }
 
@@ -262,16 +312,21 @@ export class ClientsComponent implements OnInit {
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.service.update(c.id!, { active: newStatus }).subscribe({
-        next: () => {
-          this.snack.open(`Client ${newStatus ? 'activé' : 'désactivé'}`, 'OK', { duration: 2000 });
-          this.loadClients();
+      console.log('toggleStatus: PUT id=', c.id, ' active=', newStatus);
+
+      this.service.toggleStatus(c.id!, newStatus).subscribe({
+        next: (updated) => {
+          this.clients.update(list =>
+            list.map(item => item.id === updated.id ? { ...item, active: updated.active } : item)
+          );
+          const msg = newStatus ? 'Client activé' : 'Client désactivé';
+          this.snack.open(msg, 'OK', { duration: 2000 });
         },
-        error: () => {
+        error: (err) => {
+          console.error('toggleStatus error:', err);
           this.snack.open('Erreur changement statut', 'OK', { duration: 3000 });
         }
       });
     });
   }
 }
-
