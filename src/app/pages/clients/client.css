@@ -24,7 +24,7 @@
 
 .card-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -412,4 +412,15 @@ mat-paginator {
   height: 16px !important;
   line-height: 16px !important;
   color: var(--bna-primary);
+}
+
+/* CIN/RNE unified column — type label prefix */
+.id-type-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+  flex-shrink: 0;
 }

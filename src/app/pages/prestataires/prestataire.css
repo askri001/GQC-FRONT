@@ -1,112 +1,362 @@
 /****************************************************
- * Prestataires — BNA Green Theme
+ * Prestataires — matches Clients page design exactly
  ****************************************************/
 
+/* ── Page layout ─────────────────────────────────── */
 .page-container {
   padding: 20px;
+  background: linear-gradient(135deg, var(--bna-bg-page) 0%, var(--bna-bg) 100%);
+  min-height: 100vh;
 }
 
 .page-card {
-  padding: 24px;
+  background: var(--bna-white);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid var(--bna-lighter);
+  box-shadow: 0 8px 32px 0 rgba(0, 150, 110, 0.15);
+  padding: 32px;
+  transition: all 0.3s ease;
 }
 
+.page-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(0, 150, 110, 0.2);
+}
+
+/* ── Header ──────────────────────────────────────── */
 .card-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .header-title {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 8px 0;
 }
 
 .title-icon {
-  font-size: 32px;
+  font-size: 36px;
+  color: var(--bna-primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 150, 110, 0.3));
+}
+
+.card-header h2 {
+  margin: 0;
+  color: var(--bna-dark);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ── Tabs ────────────────────────────────────────── */
+::ng-deep .mat-mdc-tab-header {
+  border-bottom: 2px solid var(--bna-lighter);
+  margin-bottom: 8px;
+}
+
+::ng-deep .mat-mdc-tab .mdc-tab__text-label {
+  color: var(--bna-text-muted);
+  font-weight: 500;
+  gap: 8px;
+}
+
+::ng-deep .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
   color: var(--bna-primary);
 }
 
-.tab-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 20px;
+::ng-deep .mat-mdc-tab .mdc-tab-indicator__content--underline {
+  border-color: var(--bna-primary) !important;
 }
 
+.tab-content {
+  padding-top: 16px;
+}
+
+/* ── Tab sub-header (title + add button) ─────────── */
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tab-header h3 {
+  margin: 0;
+  color: var(--bna-dark);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.tab-header button[mat-raised-button][color="primary"] {
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  border-radius: 10px !important;
+  padding: 8px 20px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.tab-header button[mat-raised-button][color="primary"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 150, 110, 0.4) !important;
+}
+
+/* ── Filters bar ─────────────────────────────────── */
 .filters {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--bna-lighter);
 }
 
 .filters mat-form-field {
-  min-width: 200px;
+  background: transparent;
+  border-radius: 8px;
 }
 
 .search-field {
   flex: 1;
-  min-width: 300px;
+  min-width: 200px;
+}
+
+.filter-field {
+  min-width: 160px;
+}
+
+/* ── Table wrapper ───────────────────────────────── */
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .table-container {
-  overflow-x: auto;
+  background: var(--bna-white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 150, 110, 0.08);
+  position: relative;
 }
 
-.no-data-container {
-  text-align: center;
-  padding: 40px;
+/* ── Table header row ────────────────────────────── */
+.table-container table.mat-mdc-table .mat-mdc-header-row {
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  height: 56px;
+}
+
+.table-container table.mat-mdc-table .mat-mdc-header-cell {
+  color: var(--bna-white) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: none !important;
+  padding: 0 16px !important;
+}
+
+/* ── Table data rows ─────────────────────────────── */
+.table-container table.mat-mdc-table .mat-mdc-row,
+.table-container table.mat-mdc-table .prestataire-row {
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  margin: 4px 8px;
+  height: 56px;
+  background: var(--bna-bg);
+}
+
+.table-container table.mat-mdc-table .mat-mdc-row:hover,
+.table-container table.mat-mdc-table .prestataire-row:hover {
+  background: var(--bna-lighter) !important;
+  transform: scale(1.005);
+  box-shadow: 0 2px 8px rgba(0, 150, 110, 0.1);
+}
+
+.table-container table.mat-mdc-table .mat-mdc-cell {
+  color: var(--bna-text);
+  font-size: 14px;
+  padding: 0 16px !important;
+  border-bottom: none !important;
+}
+
+.table-container table.mat-mdc-table {
+  background: transparent;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+}
+
+/* ── Chips ───────────────────────────────────────── */
+.table-container mat-chip {
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 20px;
+}
+
+.specialite-chip {
+  background: var(--bna-bg) !important;
+  color: var(--bna-primary) !important;
+  font-size: 12px;
+}
+
+/* ── Action buttons ──────────────────────────────── */
+.table-container button[mat-icon-button][color="primary"] {
+  color: var(--bna-primary) !important;
+  transition: all 0.2s ease;
+}
+
+.table-container button[mat-icon-button][color="primary"]:hover {
+  background: var(--bna-bg);
+  transform: scale(1.1);
+}
+
+.table-container button[mat-icon-button][color="warn"] {
+  color: var(--bna-error) !important;
+  transition: all 0.2s ease;
+}
+
+.table-container button[mat-icon-button][color="warn"]:hover {
+  background: var(--bna-error-bg);
+  transform: scale(1.1);
+}
+
+.table-container button[mat-icon-button]:not([color]) {
   color: var(--bna-text-muted);
+  transition: all 0.2s ease;
 }
 
-.no-data-container mat-icon {
-  font-size: 48px;
-  height: 48px;
-  width: 48px;
-  margin-bottom: 10px;
+.table-container button[mat-icon-button]:not([color]):hover {
+  background: var(--bna-bg);
+  color: var(--bna-primary);
+  transform: scale(1.1);
 }
 
-.loading-container {
+/* ── Loading overlay ─────────────────────────────── */
+.table-loading-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  border-radius: 16px;
+}
+
+.table-loading-overlay p {
+  margin-top: 12px;
+  color: var(--bna-text-muted);
+  font-size: 14px;
+}
+
+/* ── Paginator ───────────────────────────────────── */
+mat-paginator {
+  background: var(--bna-bg);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+/* ── Empty / loading / error states ─────────────── */
+.no-data-container,
+.loading-container,
+.error-container {
+  text-align: center;
   padding: 60px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
-.specialite-chip {
-  font-size: 12px;
+.no-data-container {
+  color: var(--bna-text-muted);
+  background: var(--bna-bg);
+  border: 2px dashed var(--bna-lighter);
 }
 
-.delete-action {
-  color: var(--bna-error) !important;
+.no-data-container mat-icon {
+  font-size: 64px;
+  height: 64px;
+  width: 64px;
+  opacity: 0.5;
 }
 
-.page-container { padding: 0; }
-.page-card { padding: 24px; border-radius: 12px; }
-.header-title { display: flex; align-items: center; gap: 12px; }
-.title-icon { font-size: 32px; width: 32px; height: 32px; color: var(--bna-primary); }
-.card-header h2 { margin: 0; color: var(--bna-dark); font-size: 24px; font-weight: 500; }
-.filters { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.search-field { flex: 1; min-width: 250px; }
-.filter-field { width: 200px; }
-.table-container { overflow-x: auto; }
-.full-width { width: 100%; }
-.specialite-chip { background: var(--bna-bg) !important; color: var(--bna-primary) !important; font-size: 12px; }
-.tarif { font-weight: 600; color: var(--bna-dark); }
-.statut-chip { font-weight: 500; }
-.statut-actif { background: var(--bna-success-bg) !important; color: var(--bna-success) !important; }
-.statut-inactif { background: var(--bna-error-bg) !important; color: var(--bna-error) !important; }
-.prestataire-row:hover { background: var(--bna-bg); }
-.no-data { text-align: center; padding: 40px !important; color: var(--bna-text-muted); }
-.no-data mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 10px; }
-.loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: var(--bna-text-muted); }
-.loading-container p { margin-top: 16px; }
-.delete-action { color: var(--bna-error); }
-mat-paginator { margin-top: 20px; }
-.name { font-weight: 500; margin-top: 2px; }
-.card-header {
-  justify-content: center !important;
+.loading-container {
+  color: var(--bna-text-muted);
+  background: var(--bna-bg);
+}
+
+.loading-container p {
+  margin-top: 12px;
+}
+
+/* ── Inline edit row ─────────────────────────────── */
+.inline-edit-row {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bna-bg);
+  border-radius: 12px;
+  border: 1px solid var(--bna-lighter);
+}
+
+.inline-edit-row h4 {
+  margin: 0 0 16px;
+  color: var(--bna-dark);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.inline-field {
+  width: 160px;
+}
+
+.inline-edit-row button[mat-raised-button][color="primary"] {
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .page-card {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .tab-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .tab-header button[mat-raised-button] {
+    width: 100%;
+  }
+
+  .table-container table.mat-mdc-table .mat-mdc-header-cell,
+  .table-container table.mat-mdc-table .mat-mdc-cell {
+    padding: 0 8px !important;
+    font-size: 12px;
+  }
+
+  .inline-field {
+    width: 100%;
+  }
 }
