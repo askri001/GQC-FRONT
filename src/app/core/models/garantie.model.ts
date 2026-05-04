@@ -4,7 +4,7 @@ export interface Garantie {
   description: string;
   valeur: number;
   statut: StatutGarantie;
-  dossierId: number;
+  risqueId: number;
   actif?: boolean;
 }
 

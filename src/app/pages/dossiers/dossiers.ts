@@ -15,8 +15,10 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { DossierService } from '../../core/services/dossier.service';
+import { ApiService } from '../../core/services/api.service';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
+import { Client } from '../../core/models/client.model';
 
 @Component({
   selector: 'app-dossiers',
@@ -43,10 +45,11 @@ import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/d
 })
 export class DossiersComponent implements OnInit {
   private dossierService = inject(DossierService);
-
+  private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
 
   dossiers = signal<Dossier[]>([]);
+  clients = signal<Client[]>([]);
   displayedColumns: string[] = ['reference', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
 
   
@@ -62,7 +65,7 @@ export class DossiersComponent implements OnInit {
   editId = signal<number | null>(null);
   editMode = signal(false);
   tempDossier = signal<Partial<Dossier> | null>(null);
-  selectedClientId: any;
+  selectedClientId = signal<number>(0);
 
   
   get filteredDossiers() {
@@ -85,6 +88,14 @@ export class DossiersComponent implements OnInit {
 
   ngOnInit() {
     this.loadDossiers();
+    this.loadClients();
+  }
+
+  loadClients() {
+    this.api.get<Client[]>('/clients').subscribe({
+      next: (data) => this.clients.set(data),
+      error: (err) => console.error('Error loading clients', err)
+    });
   }
 
   loadDossiers() {
@@ -205,6 +216,10 @@ export class DossiersComponent implements OnInit {
   showNotification(msg: string, type: 'success' | 'error' = 'success') {
     const panelClass = type === 'success' ? 'success-snackbar' : 'error-snackbar';
     this.snackBar.open(msg, 'Close', { duration: 3000, panelClass });
+  }
+
+  getClientLabel(client: Client): string {
+    return `${client.nom}${client.prenom ? ' ' + client.prenom : ''} ${client.cin ? '(' + client.cin + ')' : ''}`.trim();
   }
 }
 

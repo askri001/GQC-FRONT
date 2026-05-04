@@ -113,6 +113,15 @@
         <h4>{{ editId() === 0 ? 'Nouveau' : 'Modifier' }} Dossier</h4>
         <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: end;">
           <mat-form-field appearance="outline">
+            <mat-label>Client *</mat-label>
+            <mat-select [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}">
+              <mat-option [value]="0" disabled>Sélectionner un client</mat-option>
+              @for (client of clients(); track client.id) {
+                <mat-option [value]="client.id">{{ getClientLabel(client) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
             <input matInput [(ngModel)]="tempDossier()!.reference" placeholder="Référence *">
           </mat-form-field>
           <mat-form-field appearance="outline">
@@ -154,8 +163,10 @@
             <mat-datepicker #dateCloturePicker></mat-datepicker>
           </mat-form-field>
           <div>
-[disabled]="!tempDossier()!.reference || tempDossier()!.montantInitial === undefined">
+            <button mat-raised-button color="primary" (click)="saveDossier()"
+              [disabled]="!tempDossier()!.reference || tempDossier()!.montantInitial === undefined">
               <mat-icon>save</mat-icon> {{ editId() === 0 ? 'Créer' : 'Sauvegarder' }}
+            </button>
             <button mat-button color="warn" (click)="cancelEdit()">
               <mat-icon>close</mat-icon> Annuler
             </button>

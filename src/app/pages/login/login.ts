@@ -2,12 +2,14 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -23,6 +25,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatIconModule,
     MatProgressSpinnerModule
   ],
+<<<<<<< Updated upstream
   template: `
     <div class="login-container">
       <div class="login-background">
@@ -85,14 +88,19 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
     </div>
   `,
+=======
+  templateUrl: './login.html',
+>>>>>>> Stashed changes
   styleUrls: ['./login.css']
 })
 export class LoginComponent {
+
   username = '';
   password = '';
+
   loading = signal(false);
-  hidePassword = signal(true);
   errorMessage = signal('');
+  hidePassword = signal(true);
 
   constructor(
     private authService: AuthService,
@@ -100,22 +108,28 @@ export class LoginComponent {
   ) {}
 
   async onLogin() {
-    if (!this.username || !this.password) {
-      this.errorMessage.set('Veuillez remplir tous les champs');
-      return;
-    }
 
     this.loading.set(true);
     this.errorMessage.set('');
 
     try {
-      await this.authService.login({ username: this.username, password: this.password });
-      this.router.navigate(['/dashboard']);
-    } catch (error: any) {
-      this.errorMessage.set(error?.message || 'Identifiants invalides');
+      await this.authService.login({
+        username: this.username,
+        password: this.password
+      });
+
+      // Redirect based on role
+      const role = this.authService.getPrimaryRole();
+      if (role === 'ROLE_CHARGEDOSSIER') {
+        this.router.navigate(['/dossiers']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+
+    } catch (err: any) {
+      this.errorMessage.set(err.message || 'Identifiants invalides');
     } finally {
       this.loading.set(false);
     }
   }
 }
-

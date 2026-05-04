@@ -16,7 +16,7 @@ const MOCK_DOSSIERS: Dossier[] = [
   providedIn: 'root'
 })
 export class DossierService {
-  private readonly endpoint = '/api/dossiers';
+  private readonly endpoint = '/dossiers';
 
   constructor(private api: ApiService) {}
 

@@ -130,6 +130,15 @@ export const routes: Routes = [
       },
 
       {
+        path: 'audiences',
+        loadComponent: () =>
+          import('./pages/audiences/audiences')
+            .then(m => m.AudiencesComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
+      },
+
+      {
         path: 'avocats',
         loadComponent: () =>
           import('./pages/avocats/avocats')

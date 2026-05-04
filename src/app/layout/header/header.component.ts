@@ -32,7 +32,7 @@ import { AuthService } from '../../core/services/auth.service';
             <div class="user-avatar">
               <mat-icon>person</mat-icon>
             </div>
-            <span class="user-name">{{ authService.currentUser()?.firstName || 'User' }}</span>
+            <span class="user-name">{{ authService.currentUser()?.username || 'User' }}</span>
             <mat-icon>arrow_drop_down</mat-icon>
           </button>
 

@@ -305,17 +305,25 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData() {
-    
     this.api.getDashboardStats().subscribe({
       next: (data) => {
         this.stats.set(data);
+        // Update doughnut chart with real data
+        this.doughnutChartData = {
+          labels: ['En Cours', 'Clôturés', 'Autres'],
+          datasets: [{
+            data: [data.dossiersActifs, data.dossiersClotures,
+                   data.totalDossiers - data.dossiersActifs - data.dossiersClotures],
+            backgroundColor: ['#667eea', '#43e97b', '#ffa726'],
+            borderWidth: 0
+          }]
+        };
       },
       error: (err) => {
         console.error('Error loading dashboard stats:', err);
       }
     });
 
-    
     this.api.getRecentDossiers(5).subscribe({
       next: (data) => {
         this.recentDossiers.set(data);
