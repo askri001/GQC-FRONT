@@ -3,9 +3,11 @@ export interface Risque {
   montantPrincipal: number;
   montantInteret: number;
   montantTotal: number;
-  dateContrat: Date;
-  dateEcheance: Date;
   tauxInteret: number;
+  periode?: string;
+  dateContrat: Date;
+  dateDeblocage?: Date;
+  dateEcheance: Date;
   dossierId: number;
   actif?: boolean;
 }

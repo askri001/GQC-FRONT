@@ -115,7 +115,7 @@ import { Risque } from '../../core/models/risque.model';
                   <button mat-icon-button color="primary" (click)="editGarantie(g)" title="Modifier">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.id!)" title="Supprimer">
+                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" title="Supprimer">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
@@ -284,7 +284,7 @@ export class GarantiesComponent implements OnInit {
   }
 
   editGarantie(garantie: Garantie) {
-    this.editId.set(garantie.id!);
+    this.editId.set(garantie.idGarantie!);
     this.tempGarantie.set({ ...garantie });
     this.editMode.set(true);
   }

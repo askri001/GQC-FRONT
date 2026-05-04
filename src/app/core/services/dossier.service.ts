@@ -21,9 +21,7 @@ export class DossierService {
   constructor(private api: ApiService) {}
 
   getAll(): Observable<Dossier[]> {
-    return this.api.get<Dossier[]>(this.endpoint).pipe(
-      catchError(() => of(MOCK_DOSSIERS))
-    );
+    return this.api.get<Dossier[]>(this.endpoint);
   }
 
   create(dossier: Omit<Dossier, 'id'>): Observable<Dossier> {

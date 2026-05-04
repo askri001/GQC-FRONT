@@ -108,7 +108,7 @@ import { Affaire } from '../../core/models/affaire.model';
                   <button mat-icon-button color="primary" (click)="editAudience(a)" title="Modifier">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteAudience(a.id!)" title="Supprimer">
+                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)" title="Supprimer">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>

@@ -38,10 +38,10 @@ export class RisqueService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.warn('API unavailable, using mock risques');
-        this.risquesSignal.set(MOCK_RISQUES);
+        console.error('Error loading risques:', error);
+        this.errorSignal.set('Erreur lors du chargement des risques');
         this.loadingSignal.set(false);
-        return of(MOCK_RISQUES);
+        return throwError(() => error);
       })
     );
   }

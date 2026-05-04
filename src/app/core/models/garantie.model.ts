@@ -1,5 +1,5 @@
 export interface Garantie {
-  id?: number;
+  idGarantie?: number;
   typeGarantie: TypeGarantie;
   description: string;
   valeur: number;

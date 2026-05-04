@@ -124,7 +124,7 @@ import { Dossier } from '../../core/models/dossier.model';
                   <button mat-icon-button color="primary" (click)="editAffaire(a)" title="Modifier">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.id!)" title="Supprimer">
+                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)" title="Supprimer">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
@@ -152,8 +152,8 @@ import { Dossier } from '../../core/models/dossier.model';
                 <mat-label>Dossier *</mat-label>
                 <mat-select [(ngModel)]="tempAffaire().dossierId">
                   <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
-                  @for (d of dossiers(); track d.id) {
-                    <mat-option [value]="d.id">{{ d.reference }}</mat-option>
+                  @for (d of dossiers(); track d.idDossier) {
+                    <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -294,7 +294,7 @@ export class AffairesComponent implements OnInit {
   }
 
   editAffaire(affaire: Affaire) {
-    this.editId.set(affaire.id!);
+    this.editId.set(affaire.idAffaire!);
     this.tempAffaire.set({ ...affaire });
     this.editMode.set(true);
   }
@@ -352,7 +352,7 @@ export class AffairesComponent implements OnInit {
   }
 
   getDossierRef(dossierId: number): string {
-    const dossier = this.dossiers().find(d => d.id === dossierId);
+    const dossier = this.dossiers().find(d => d.idDossier === dossierId);
     return dossier ? dossier.reference : `#${dossierId}`;
   }
 
