@@ -1,29 +1,27 @@
 
-
 .page-container {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bna-bg-page);
   min-height: 100vh;
 }
 
 .page-card {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
+  background: var(--bna-white);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid var(--bna-border);
+  box-shadow: 0 8px 32px rgba(15, 32, 68, 0.1);
   padding: 32px;
   transition: all 0.3s ease;
 }
 
 .page-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+  box-shadow: 0 12px 40px rgba(15, 32, 68, 0.15);
 }
 
 .card-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
 }
@@ -32,57 +30,27 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 16px 24px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
 }
 
 .title-icon {
   font-size: 36px;
-  color: #1e88e5;
-  filter: drop-shadow(0 2px 4px rgba(30, 136, 229, 0.3));
+  color: var(--bna-primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 150, 110, 0.3));
 }
 
 .card-header h2 {
   margin: 0;
-  color: #1a237e;
+  color: var(--bna-navy);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
-.tab-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.tab-header h3 {
-  margin: 0;
-  color: #1a237e;
-  font-size: 22px;
-  font-weight: 500;
-}
-
 .filters {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
   flex-wrap: wrap;
-}
-
-mat-form-field {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-}
-
-mat-form-field:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
 }
 
 .search-field {
@@ -91,124 +59,56 @@ mat-form-field:hover {
 }
 
 .table-container {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bna-white);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-mat-table {
-  background: transparent;
+  box-shadow: 0 4px 20px rgba(15, 32, 68, 0.08);
 }
 
 .facture-row {
   transition: all 0.2s ease;
-  border-radius: 12px;
-  margin: 4px 0;
 }
 
-
-
-.factures-container {
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  min-height: 100vh;
-}
-
-.factures-card {
-  @extend .glass-card;
-  padding: 32px;
-}
-
-.card-header {
-  @extend .glass-header;
-}
-
-.card-header h2 {
-  margin: 0;
-  color: #1a237e;
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.title-icon {
-  @extend .glass-title-icon;
-}
-
-.filters {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-mat-form-field {
-  @extend .glass-field;
-}
-
-.search-field {
-  flex: 1;
-  min-width: 300px;
-}
-
-.table-container {
-  @extend .glass-table;
-}
-
-.facture-row {
-  @extend .table-hover;
-}
-
-mat-table {
-  background: transparent;
-}
-
-.specialite-chip {
-  @extend .status-chip;
-  animation: pulse 2s infinite;
-}
-
-.statut-payee { @extend .chip-status-payee; }
-.statut-validee { @extend .chip-status-validee; }
-.statut-en_attente { @extend .chip-status-en_attente; }
-.statut-rejetee { @extend .chip-status-rejetee; }
-
-mat-paginator {
-  @extend .glass-paginator;
-}
-
-.no-data-container {
-  @extend .no-data-container;
-}
-
-.loading-container {
-  @extend .loading-container;
-}
-
-.inline-edit-row {
-  @extend .inline-edit-row;
+.facture-row:hover {
+  background: var(--bna-bg) !important;
 }
 
 .facture-numero {
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--bna-navy);
 }
 
 .montant {
   font-weight: 600;
   font-size: 15px;
-  color: #2e7d32;
+  color: var(--bna-primary);
 }
 
+.statut-payee    { background: var(--bna-success-bg) !important; color: var(--bna-success) !important; }
+.statut-validee  { background: var(--bna-info-bg) !important; color: var(--bna-info) !important; }
+.statut-en_attente { background: var(--bna-warning-bg) !important; color: var(--bna-warning) !important; }
+.statut-rejetee  { background: var(--bna-error-bg) !important; color: var(--bna-error) !important; }
+
+mat-paginator {
+  background: var(--bna-bg);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.no-data-container,
+.loading-container {
+  text-align: center;
+  padding: 60px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--bna-text-muted);
+  background: var(--bna-bg);
+}
 
 @media (max-width: 768px) {
-  .filters {
-    flex-direction: column;
-  }
-  .search-field {
-    min-width: 100%;
-  }
+  .filters { flex-direction: column; }
+  .search-field { min-width: 100%; }
 }
-
-

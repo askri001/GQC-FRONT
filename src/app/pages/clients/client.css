@@ -44,7 +44,7 @@
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-dark);
+  color: var(--bna-navy);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -145,7 +145,7 @@
 
 
 .table-container table.mat-mdc-table .mat-mdc-header-row {
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-navy-mid) 100%) !important;
   height: 56px;
 }
 

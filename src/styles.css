@@ -3,33 +3,43 @@
 
 /* ============================================================
    BNA — Global CSS Variables
-   Primary brand: BNA Green
+   Primary brand: BNA Green + Navy
    ============================================================ */
 :root {
-  /* Brand colors */
-  --bna-primary:      #00966E;   /* BNA main green */
-  --bna-dark:         #007A58;   /* darker green — hover, gradients */
-  --bna-darker:       #005C43;   /* deepest green — active states */
-  --bna-light:        #33B08A;   /* lighter green — gradients */
-  --bna-lighter:      #E0F2EC;   /* very light green — borders, bg tints */
-  --bna-bg:           #F0FAF6;   /* light green tint — table rows, chips */
-  --bna-bg-page:      #F5F7FA;   /* page background */
+  /* BNA Green — actions, accents, buttons */
+  --bna-primary:      #00966E;
+  --bna-primary-dark: #007A58;
+  --bna-primary-bright: #00C48C;
+  --bna-primary-light: #E0F5EE;
+
+  /* Navy — sidebar, headers, depth */
+  --bna-navy:         #0F2044;
+  --bna-navy-mid:     #1A3A6B;
+  --bna-navy-light:   #2A5298;
+
+  /* Keep old names mapped to new values for compatibility */
+  --bna-dark:         #0F2044;
+  --bna-darker:       #091529;
+  --bna-light:        #00C48C;
+  --bna-lighter:      #E0F5EE;
+  --bna-bg:           #F0FAF6;
+  --bna-bg-page:      #F4F6F9;
 
   /* Neutrals */
   --bna-white:        #FFFFFF;
-  --bna-text:         #1A2B22;   /* dark text */
-  --bna-text-muted:   #6B7C74;   /* secondary text */
-  --bna-border:       #D1E8DF;   /* subtle borders */
+  --bna-text:         #1A1F2E;
+  --bna-text-muted:   #6B7280;
+  --bna-border:       #E5E7EB;
 
   /* Semantic */
-  --bna-success:      #2E7D32;
-  --bna-success-bg:   #E8F5E9;
-  --bna-warning:      #F57C00;
-  --bna-warning-bg:   #FFF3E0;
-  --bna-error:        #C62828;
-  --bna-error-bg:     #FFEBEE;
-  --bna-info:         #1565C0;
-  --bna-info-bg:      #E3F2FD;
+  --bna-success:      #059669;
+  --bna-success-bg:   #D1FAE5;
+  --bna-warning:      #D97706;
+  --bna-warning-bg:   #FEF3C7;
+  --bna-error:        #DC2626;
+  --bna-error-bg:     #FEE2E2;
+  --bna-info:         #2563EB;
+  --bna-info-bg:      #DBEAFE;
 }
 
 * {
@@ -48,7 +58,7 @@ html, body {
 
 .mat-mdc-card {
   border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(15, 32, 68, 0.08) !important;
 }
 
 .mat-mdc-raised-button.mat-primary {
@@ -62,7 +72,7 @@ html, body {
 
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--bna-dark);
+  color: var(--bna-navy);
   font-weight: 600;
 }
 
@@ -105,7 +115,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-dark);
+  color: var(--bna-navy);
 }
 
 .full-width {
@@ -279,8 +289,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .inline-edit-row {
-  background: rgba(76, 175, 80, 0.1);
-  border: 2px dashed rgba(76, 175, 80, 0.3);
+  background: rgba(0, 150, 110, 0.05);
+  border: 2px dashed rgba(0, 150, 110, 0.25);
   border-radius: 16px;
   padding: 20px;
   margin-top: 20px;

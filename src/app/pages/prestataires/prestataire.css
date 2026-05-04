@@ -47,7 +47,7 @@
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-dark);
+  color: var(--bna-navy);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -93,7 +93,7 @@
 }
 
 .tab-header button[mat-raised-button][color="primary"] {
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-primary) 100%) !important;
   border-radius: 10px !important;
   padding: 8px 20px !important;
   font-weight: 500 !important;
@@ -148,7 +148,7 @@
 
 /* ── Table header row ────────────────────────────── */
 .table-container table.mat-mdc-table .mat-mdc-header-row {
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-navy-mid) 100%) !important;
   height: 56px;
 }
 
@@ -320,7 +320,7 @@ mat-paginator {
 }
 
 .inline-edit-row button[mat-raised-button][color="primary"] {
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-primary) 100%) !important;
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
 }

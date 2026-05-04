@@ -12,7 +12,7 @@
 .login-background {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 50%, var(--bna-light) 100%);
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-navy-mid) 40%, var(--bna-primary) 100%);
 }
 
 .bg-pattern {

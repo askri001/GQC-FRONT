@@ -12,15 +12,15 @@
   background: var(--bna-white);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid var(--bna-lighter);
-  box-shadow: 0 8px 32px 0 rgba(0, 150, 110, 0.15);
+  border: 1px solid var(--bna-border);
+  box-shadow: 0 8px 32px rgba(15, 32, 68, 0.1);
   padding: 32px;
   transition: all 0.3s ease;
 }
 
 .dossiers-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(0, 150, 110, 0.2);
+  box-shadow: 0 12px 40px rgba(15, 32, 68, 0.15);
 }
 
 .card-header {
@@ -47,7 +47,7 @@
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-dark);
+  color: var(--bna-navy);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -169,6 +169,6 @@ mat-paginator {
 }
 
 /* Snackbars */
-.success-snackbar { background: linear-gradient(45deg, var(--bna-dark), var(--bna-primary)) !important; color: white !important; }
+.success-snackbar { background: linear-gradient(45deg, var(--bna-navy), var(--bna-primary)) !important; color: white !important; }
 .error-snackbar { background: linear-gradient(45deg, var(--bna-error), #ef5350) !important; color: white !important; }
 

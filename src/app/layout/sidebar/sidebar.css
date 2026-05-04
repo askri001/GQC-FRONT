@@ -1,7 +1,7 @@
 .sidebar {
   width: 260px;
   height: 100vh;
-  background: linear-gradient(180deg, var(--bna-dark) 0%, var(--bna-primary) 100%);
+  background: linear-gradient(180deg, var(--bna-navy) 0%, var(--bna-navy-mid) 100%);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
@@ -9,7 +9,7 @@
   left: 0;
   top: 0;
   z-index: 1000;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 4px 0 20px rgba(15, 32, 68, 0.4);
 }
 
 .sidebar.collapsed {
@@ -89,7 +89,7 @@
   transform: translateY(-50%);
   width: 4px;
   height: 0;
-  background: var(--bna-white);
+  background: var(--bna-primary-bright);
   border-radius: 0 4px 4px 0;
   transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -105,19 +105,20 @@
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(77, 191, 163, 0.35) 0%, rgba(0, 150, 110, 0.2) 100%);
+  background: linear-gradient(90deg, rgba(0, 196, 140, 0.25) 0%, rgba(0, 150, 110, 0.15) 100%);
   color: var(--bna-white);
-  box-shadow: 0 4px 15px rgba(0, 150, 110, 0.35);
+  box-shadow: 0 4px 15px rgba(0, 196, 140, 0.2);
   font-weight: 600;
 }
 
 .nav-item.active::before {
   height: 70%;
+  background: var(--bna-primary-bright);
 }
 
 .nav-item.active mat-icon {
-  color: var(--bna-white);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  color: var(--bna-primary-bright);
+  filter: drop-shadow(0 0 6px rgba(0, 196, 140, 0.5));
 }
 
 .nav-item mat-icon {
