@@ -1,6 +1,37 @@
 
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* ============================================================
+   BNA — Global CSS Variables
+   Primary brand: BNA Green
+   ============================================================ */
+:root {
+  /* Brand colors */
+  --bna-primary:      #00966E;   /* BNA main green */
+  --bna-dark:         #007A58;   /* darker green — hover, gradients */
+  --bna-darker:       #005C43;   /* deepest green — active states */
+  --bna-light:        #33B08A;   /* lighter green — gradients */
+  --bna-lighter:      #E0F2EC;   /* very light green — borders, bg tints */
+  --bna-bg:           #F0FAF6;   /* light green tint — table rows, chips */
+  --bna-bg-page:      #F5F7FA;   /* page background */
+
+  /* Neutrals */
+  --bna-white:        #FFFFFF;
+  --bna-text:         #1A2B22;   /* dark text */
+  --bna-text-muted:   #6B7C74;   /* secondary text */
+  --bna-border:       #D1E8DF;   /* subtle borders */
+
+  /* Semantic */
+  --bna-success:      #2E7D32;
+  --bna-success-bg:   #E8F5E9;
+  --bna-warning:      #F57C00;
+  --bna-warning-bg:   #FFF3E0;
+  --bna-error:        #C62828;
+  --bna-error-bg:     #FFEBEE;
+  --bna-info:         #1565C0;
+  --bna-info-bg:      #E3F2FD;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -21,7 +52,7 @@ html, body {
 }
 
 .mat-mdc-raised-button.mat-primary {
-  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%) !important;
+  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
   border-radius: 8px !important;
 }
 
@@ -31,7 +62,7 @@ html, body {
 
 
 h1, h2, h3, h4, h5, h6 {
-  color: #1a237e;
+  color: var(--bna-dark);
   font-weight: 600;
 }
 
@@ -74,7 +105,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-header h2 {
   margin: 0;
-  color: #1a237e;
+  color: var(--bna-dark);
 }
 
 .full-width {

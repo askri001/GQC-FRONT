@@ -1,13 +1,4 @@
 
-:root {
-  --bna-primary:   #00966E;
-  --bna-dark:      #007A58;
-  --bna-darker:    #005C43;
-  --bna-light:     #4DBFA3;
-  --bna-lighter:   #B2DFD1;
-  --bna-bg:        #E6F5F0;
-}
-
 .client-dialog .mat-mdc-dialog-container {
   --mdc-dialog-container-color: transparent;
 }
