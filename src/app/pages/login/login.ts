@@ -25,72 +25,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatIconModule,
     MatProgressSpinnerModule
   ],
-<<<<<<< Updated upstream
-  template: `
-    <div class="login-container">
-      <div class="login-background">
-        <div class="bg-pattern"></div>
-      </div>
-      
-      <div class="login-content">
-        <div class="login-header">
-          <div class="logo">
-            <mat-icon>account_balance</mat-icon>
-          </div>
-          <h1>BNA - Gestion de Contentieux</h1>
-          <p>Banque Nationale Agricole - Système de Gestion des Litiges</p>
-        </div>
-
-        <mat-card class="login-card">
-          <mat-card-content>
-            <h2>Connexion BNA</h2>
-            
-            <form (ngSubmit)="onLogin()" class="login-form">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nom d'utilisateur</mat-label>
-                <input matInput [(ngModel)]="username" name="username" required>
-                <mat-icon matPrefix>person</mat-icon>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Mot de passe</mat-label>
-                <input matInput [type]="hidePassword() ? 'password' : 'text'" 
-                       [(ngModel)]="password" name="password" required>
-                <mat-icon matPrefix>lock</mat-icon>
-                <button mat-icon-button matSuffix (click)="hidePassword.set(!hidePassword())" 
-                        type="button">
-                  <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-              </mat-form-field>
-
-              @if (errorMessage()) {
-                <div class="error-message">
-                  <mat-icon>error</mat-icon>
-                  <span>{{ errorMessage() }}</span>
-                </div>
-              }
-
-              <button mat-raised-button color="primary" type="submit" 
-                      class="login-btn" [disabled]="loading()">
-                @if (loading()) {
-                  <mat-spinner diameter="20"></mat-spinner>
-                } @else {
-                  Se connecter
-                }
-              </button>
-            </form>
-          </mat-card-content>
-        </mat-card>
-
-        <div class="login-footer">
-          <p>© 2024 BNA - Banque Nationale Agricole Tunisia</p>
-        </div>
-      </div>
-    </div>
-  `,
-=======
   templateUrl: './login.html',
->>>>>>> Stashed changes
   styleUrls: ['./login.css']
 })
 export class LoginComponent {
@@ -108,7 +43,6 @@ export class LoginComponent {
   ) {}
 
   async onLogin() {
-
     this.loading.set(true);
     this.errorMessage.set('');
 
@@ -118,7 +52,6 @@ export class LoginComponent {
         password: this.password
       });
 
-      // Redirect based on role
       const role = this.authService.getPrimaryRole();
       if (role === 'ROLE_CHARGEDOSSIER') {
         this.router.navigate(['/dossiers']);

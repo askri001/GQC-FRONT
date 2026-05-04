@@ -129,7 +129,7 @@ export class DossiersComponent implements OnInit {
   }
 
   editDossier(dossier: Dossier) {
-    this.editId.set(dossier.id!);
+    this.editId.set(dossier.idDossier!);
     this.tempDossier.set({ ...dossier });
     this.selectedClientId.set(dossier.clientId);
     this.editMode.set(true);
@@ -147,7 +147,7 @@ export class DossiersComponent implements OnInit {
     }
 
     const request = this.editId() === 0 
-      ? this.dossierService.create(temp as Omit<Dossier, 'id'>)
+      ? this.dossierService.create(temp as Omit<Dossier, 'idDossier'>)
       : this.dossierService.update(this.editId()!, temp as Dossier);
 
     this.loading.set(true);

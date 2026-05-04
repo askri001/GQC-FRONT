@@ -19,7 +19,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { ClientService } from '../../core/services/client.service';
-import { Client } from '../../core/models/client.model';
+import { Client } from '../../core/services/client.service';
 
 interface ExtendedClient extends Client {
   dateCreation?: string;

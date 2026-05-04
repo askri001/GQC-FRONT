@@ -136,8 +136,8 @@ import { Affaire } from '../../core/models/affaire.model';
                 <mat-label>Affaire *</mat-label>
                 <mat-select [(ngModel)]="tempAudience().affaireId">
                   <mat-option [value]="0" disabled>Sélectionner une affaire</mat-option>
-                  @for (af of affaires(); track af.id) {
-                    <mat-option [value]="af.id">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
+                  @for (af of affaires(); track af.idAffaire) {
+                    <mat-option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -284,7 +284,7 @@ export class AudiencesComponent implements OnInit {
   }
 
   editAudience(audience: Audience) {
-    this.editId.set(audience.id!);
+    this.editId.set(audience.idAudience!);
     this.tempAudience.set({ ...audience });
     this.editMode.set(true);
   }
@@ -338,7 +338,7 @@ export class AudiencesComponent implements OnInit {
   }
 
   getAffaireRef(affaireId: number): string {
-    const affaire = this.affaires().find(a => a.id === affaireId);
+    const affaire = this.affaires().find(a => a.idAffaire === affaireId);
     return affaire ? `${affaire.numeroProcedure}` : `#${affaireId}`;
   }
 

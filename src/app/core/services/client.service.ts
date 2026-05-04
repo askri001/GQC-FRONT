@@ -5,12 +5,13 @@ import { Observable } from 'rxjs';
 export interface Client {
   id?: number;
   nom: string;
-  prenom: string;
-  cin: string;
+  prenom?: string;
+  cin?: string;
   tel: string;
   email?: string;
   adresse?: string;
   active?: boolean;
+  typeClient?: string;
 }
 
 @Injectable({
