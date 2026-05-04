@@ -1,22 +1,33 @@
-import { CanActivateFn, Router } from '@angular/router';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const roleGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+@Injectable({ providedIn: 'root' })
+export class RoleGuard implements CanActivate {
 
-  const requiredRoles = route.data['roles'] as string[];
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  if (!requiredRoles || requiredRoles.length === 0) {
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    const requiredRoles = route.data['roles'] as string[] | undefined;
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const userRoles = this.authService.getUserRoles() || [];
+
+    const hasRole = requiredRoles.some(role =>
+      userRoles.includes(role)
+    );
+
+    if (!hasRole) {
+      this.router.navigate(['/unauthorized']);
+      return false;
+    }
+
     return true;
   }
-
-  if (authService.hasAnyRole(requiredRoles)) {
-    return true;
-  }
-
-  router.navigate(['/dashboard']);
-  return false;
-};
-
+}

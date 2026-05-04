@@ -16,12 +16,12 @@ const MOCK_RISQUES: Risque[] = [
 export class RisqueService {
   private readonly endpoint = '/risques';
 
-  // Signals for reactive state
+  
   private risquesSignal = signal<Risque[]>([]);
   private loadingSignal = signal<boolean>(false);
   private errorSignal = signal<string | null>(null);
 
-  // Public signals
+  
   readonly risques = this.risquesSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();

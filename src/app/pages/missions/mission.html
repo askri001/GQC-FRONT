@@ -42,7 +42,7 @@
 
     <div *ngIf="!isLoading()" class="table-container">
       <table mat-table [dataSource]="filteredMissions()" class="full-width">
-        <!-- Columns definitions -->
+        
         <ng-container matColumnDef="typeMission">
           <th mat-header-cell *matHeaderCellDef>Type</th>
           <td mat-cell *matCellDef="let m">

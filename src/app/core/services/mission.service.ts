@@ -17,21 +17,19 @@ const MOCK_MISSIONS: Mission[] = [
 export class MissionService {
   private readonly endpoint = '/missions';
 
-  // Signals for reactive state
+  
   private missionsSignal = signal<Mission[]>([]);
   private loadingSignal = signal<boolean>(false);
   private errorSignal = signal<string | null>(null);
 
-  // Public signals
+  
   readonly missions = this.missionsSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
   constructor(private api: ApiService) {}
 
-  /**
-   * Get all missions
-   */
+  
   getAll(): Observable<Mission[]> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -51,9 +49,7 @@ export class MissionService {
     );
   }
 
-  /**
-   * Get mission by ID
-   */
+  
   getById(id: number): Observable<Mission | undefined> {
     return this.api.get<Mission>(`${this.endpoint}/${id}`).pipe(
       catchError(error => {
@@ -63,9 +59,7 @@ export class MissionService {
     );
   }
 
-  /**
-   * Create new mission
-   */
+  
   create(mission: Partial<Mission>): Observable<Mission> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -84,9 +78,7 @@ export class MissionService {
     );
   }
 
-  /**
-   * Update existing mission
-   */
+  
   update(id: number, mission: Partial<Mission>): Observable<Mission> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -107,9 +99,7 @@ export class MissionService {
     );
   }
 
-  /**
-   * Delete mission
-   */
+  
   delete(id: number): Observable<void> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
@@ -128,16 +118,12 @@ export class MissionService {
     );
   }
 
-  /**
-   * Update mission status
-   */
+  
   updateStatus(id: number, statut: StatutMission): Observable<Mission> {
     return this.update(id, { statut });
   }
 
-  /**
-   * Get mock data for demo
-   */
+  
   private getMockMissions(): Mission[] {
     return [
 { 
@@ -234,9 +220,7 @@ export class MissionService {
     ];
   }
 
-  /**
-   * Clear error
-   */
+  
   clearError(): void {
     this.errorSignal.set(null);
   }

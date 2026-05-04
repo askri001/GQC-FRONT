@@ -47,7 +47,7 @@ import { FactureFormDialogComponent } from './facture-form-dialog';
     DatePipe
   ],
   templateUrl: './facture.html',
-  styleUrls: ['./facture-modern.css', './facture.css']
+  styleUrls: ['./facture-modern.css']
 })
 export class FacturesComponent implements OnInit {
 
@@ -55,17 +55,17 @@ export class FacturesComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
 
-  // ================= DATA =================
+  
   factures = signal<Facture[]>([]);
   filteredFactures = signal<Facture[]>([]);
   isLoading = signal(false);
 
-  // ================= FILTERS =================
+  
   searchQuery = '';
   statusFilter = '';
   typeFilter = '';
 
-  // ================= PAGINATION =================
+  
   pageSize = 10;
   pageIndex = 0;
 
@@ -78,7 +78,7 @@ export class FacturesComponent implements OnInit {
     'actions'
   ];
 
-  // ================= ENUMS =================
+  
   statuts: StatutFacture[] = ['EN_ATTENTE', 'VALIDEE', 'PAYEE', 'REJETEE'];
   types: TypeFacture[] = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
 
@@ -89,7 +89,7 @@ export class FacturesComponent implements OnInit {
     this.loadFactures();
   }
 
-  // ================= LOAD =================
+  
   loadFactures(): void {
     this.isLoading.set(true);
 
@@ -106,7 +106,7 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ================= FILTER =================
+  
   applyFilter(): void {
     let result = [...this.factures()];
 
@@ -133,13 +133,13 @@ export class FacturesComponent implements OnInit {
     this.applyFilter();
   }
 
-  // ================= PAGINATION =================
+  
   onPageChange(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
   }
 
-  // ================= CREATE =================
+  
   openNewFacture(): void {
     const dialogRef = this.dialog.open(FactureFormDialogComponent, {
       width: '600px',
@@ -159,7 +159,7 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ================= EDIT =================
+  
   openEditFacture(f: Facture): void {
     const dialogRef = this.dialog.open(FactureFormDialogComponent, {
       width: '600px',
@@ -179,7 +179,7 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ================= STATUS TOGGLE =================
+  
   toggleStatus(f: Facture): void {
     const newStatus: StatutFacture =
       f.statut === 'EN_ATTENTE' ? 'VALIDEE' : 'EN_ATTENTE';
@@ -190,7 +190,7 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ================= DELETE =================
+  
   confirmDelete(f: Facture): void {
     if (confirm(`Supprimer ${f.numero} ?`)) {
       this.factureService.delete(f.id!).subscribe({
@@ -203,7 +203,16 @@ export class FacturesComponent implements OnInit {
     }
   }
 
-  // ================= RESET FILTER =================
+  
+  showDetail(f: Facture): void {
+    this.snackBar.open(
+      `${f.numero} - ${f.montant} DT - ${this.statutLabels[f.statut]}`,
+      'OK',
+      { duration: 3000 }
+    );
+  }
+
+  
   resetFilters(): void {
     this.searchQuery = '';
     this.statusFilter = '';
@@ -211,7 +220,7 @@ export class FacturesComponent implements OnInit {
     this.applyFilter();
   }
 
-  // ================= NOTIFICATION =================
+  
   showNotification(msg: string, type: 'success' | 'error'): void {
     this.snackBar.open(msg, 'Close', {
       duration: 3000,

@@ -49,22 +49,22 @@ export class DossiersComponent implements OnInit {
   dossiers = signal<Dossier[]>([]);
   displayedColumns: string[] = ['reference', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
 
-  // Filters & Pagination
+  
   searchTerm = '';
   statutFilter = '';
   pageSize = 10;
   currentPage = 0;
 
-  // Loading
+  
   loading = signal(false);
 
-  // Edit state
+  
   editId = signal<number | null>(null);
   editMode = signal(false);
   tempDossier = signal<Partial<Dossier> | null>(null);
   selectedClientId: any;
 
-  // Computed filtered & paginated
+  
   get filteredDossiers() {
     let result = this.dossiers();
     if (this.searchTerm) {
@@ -178,7 +178,7 @@ export class DossiersComponent implements OnInit {
   }
 
   applyFilters() {
-    this.currentPage = 0; // Reset pagination
+    this.currentPage = 0; 
   }
 
   onPageChange(event: PageEvent) {

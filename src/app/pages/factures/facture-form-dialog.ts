@@ -41,7 +41,7 @@ export interface FactureFormDialogData {
   template: `
     <div class="dialog-container">
 
-      <!-- HEADER -->
+      
       <div class="dialog-header">
         <h2 mat-dialog-title>
           <mat-icon>{{ data.isEdit ? 'edit' : 'add' }}</mat-icon>
@@ -53,12 +53,12 @@ export interface FactureFormDialogData {
         </button>
       </div>
 
-      <!-- FORM -->
+      
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
         <mat-dialog-content class="facture-form">
 
-          <!-- NUMERO -->
+          
           <mat-form-field appearance="outline">
             <mat-label>Numéro</mat-label>
             <input matInput formControlName="numero">
@@ -68,14 +68,14 @@ export interface FactureFormDialogData {
             </mat-error>
           </mat-form-field>
 
-          <!-- MONTANT -->
+          
           <mat-form-field appearance="outline">
             <mat-label>Montant (DT)</mat-label>
             <input matInput type="number" formControlName="montant">
             <mat-icon matSuffix>attach_money</mat-icon>
           </mat-form-field>
 
-          <!-- TYPE -->
+          
           <mat-form-field appearance="outline">
             <mat-label>Type</mat-label>
             <mat-select formControlName="typeFacture">
@@ -91,7 +91,7 @@ export interface FactureFormDialogData {
             </mat-select>
           </mat-form-field>
 
-          <!-- DATE -->
+          
           <mat-form-field appearance="outline">
             <mat-label>Date d'émission</mat-label>
 
@@ -101,7 +101,7 @@ export interface FactureFormDialogData {
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
-          <!-- STATUT -->
+          
           <mat-form-field appearance="outline">
             <mat-label>Statut</mat-label>
 
@@ -118,7 +118,7 @@ export interface FactureFormDialogData {
             </mat-select>
           </mat-form-field>
 
-          <!-- MISSION -->
+          
           <mat-form-field appearance="outline">
             <mat-label>ID Mission (optionnel)</mat-label>
             <input matInput type="number" formControlName="missionId">
@@ -126,7 +126,7 @@ export interface FactureFormDialogData {
 
         </mat-dialog-content>
 
-        <!-- ACTIONS -->
+        
         <mat-dialog-actions align="end">
 
           <button mat-button type="button" mat-dialog-close>

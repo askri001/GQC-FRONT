@@ -9,42 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
-import { DashboardStats } from '../../core/models';
-
-interface DashboardDossier {
-  id: number;
-  reference: string;
-  dateOuverture: Date;
-  statut: string;
-  niveauRisque: string;
-  montantInitial: number;
-  montantRecupere: number;
-  clientId: number;
-  client?: { id: number; nom: string; prenom: string };
-}
-
-const MOCK_STATS: DashboardStats = {
-  totalDossiers: 124,
-  dossiersActifs: 78,
-  dossiersClotures: 32,
-  montantTotalRecupere: 2850000,
-  montantTotalImpaye: 1200000,
-  tauxRecouvrement: 70.4,
-  missionsEnCours: 15,
-  missionsTerminees: 42,
-  facturesEnAttente: 8,
-  facturesPayees: 56,
-  prestatairesActifs: 12,
-  clientsActifs: 89
-};
-
-const MOCK_RECENT_DOSSIERS: DashboardDossier[] = [
-  { id: 1, reference: 'DOS-2024-001', dateOuverture: new Date('2024-01-15'), statut: 'EN_COURS', niveauRisque: 'MOYEN', montantInitial: 150000, montantRecupere: 75000, clientId: 1, client: { id: 1, nom: 'Ben Ali', prenom: 'Mohamed' } },
-  { id: 2, reference: 'DOS-2024-002', dateOuverture: new Date('2024-02-20'), statut: 'CLOTURE', niveauRisque: 'FAIBLE', montantInitial: 85000, montantRecupere: 85000, clientId: 2, client: { id: 2, nom: 'Trabelsi', prenom: 'Fatima' } },
-  { id: 3, reference: 'DOS-2024-003', dateOuverture: new Date('2024-03-05'), statut: 'EN_COURS', niveauRisque: 'ELEVE', montantInitial: 320000, montantRecupere: 45000, clientId: 3, client: { id: 3, nom: 'Guesmi', prenom: 'Ahmed' } },
-  { id: 4, reference: 'DOS-2024-004', dateOuverture: new Date('2024-03-18'), statut: 'SUSPENDU', niveauRisque: 'CRITIQUE', montantInitial: 500000, montantRecupere: 0, clientId: 4, client: { id: 4, nom: 'Jaziri', prenom: 'Sonia' } },
-  { id: 5, reference: 'DOS-2024-005', dateOuverture: new Date('2024-04-01'), statut: 'EN_ATTENTE', niveauRisque: 'FAIBLE', montantInitial: 45000, montantRecupere: 0, clientId: 5, client: { id: 5, nom: 'Mejri', prenom: 'Karim' } }
-];
+import { DashboardStats, Dossier } from '../../core/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -61,7 +26,7 @@ const MOCK_RECENT_DOSSIERS: DashboardDossier[] = [
   ],
   template: `
     <div class="dashboard-container">
-      <!-- KPI Cards -->
+      
       <div class="kpi-grid">
         <mat-card class="kpi-card">
           <div class="kpi-icon dossiers">
@@ -104,7 +69,7 @@ const MOCK_RECENT_DOSSIERS: DashboardDossier[] = [
         </mat-card>
       </div>
 
-      <!-- Charts Row -->
+      
       <div class="charts-grid">
         <mat-card class="chart-card">
           <mat-card-header>
@@ -133,7 +98,7 @@ const MOCK_RECENT_DOSSIERS: DashboardDossier[] = [
         </mat-card>
       </div>
 
-      <!-- Recent Dossiers -->
+      
       <mat-card class="recent-card">
         <mat-card-header>
           <mat-card-title>Dossiers Récents</mat-card-title>
@@ -172,17 +137,129 @@ const MOCK_RECENT_DOSSIERS: DashboardDossier[] = [
       </mat-card>
     </div>
   `,
-  styleUrls: ['./dashboard.css']
+  styles: [`
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .kpi-card {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-radius: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .kpi-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kpi-icon mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #fff;
+    }
+
+    .kpi-icon.dossiers { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .kpi-icon.actifs { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .kpi-icon.recovered { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .kpi-icon.rate { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .kpi-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    .kpi-label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+    }
+
+    .chart-card {
+      border-radius: 12px;
+    }
+
+    .chart-card mat-card-header {
+      margin-bottom: 16px;
+    }
+
+    .chart-card canvas {
+      max-height: 300px;
+    }
+
+    .recent-card {
+      border-radius: 12px;
+    }
+
+    .recent-card mat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .statut-en_cours { background: #e3f2fd !important; color: #1565c0 !important; }
+    .statut-cloture { background: #e8f5e9 !important; color: #2e7d32 !important; }
+    .statut-suspendu { background: #fff3e0 !important; color: #ef6c00 !important; }
+  `]
 })
 export class DashboardComponent implements OnInit {
   private api = inject(ApiService);
 
-  stats = signal<DashboardStats>(MOCK_STATS);
+  stats = signal<DashboardStats>({
+    totalDossiers: 0,
+    dossiersActifs: 0,
+    dossiersClotures: 0,
+    montantTotalRecupere: 0,
+    montantTotalImpaye: 0,
+    tauxRecouvrement: 0,
+    missionsEnCours: 0,
+    missionsTerminees: 0,
+    facturesEnAttente: 0,
+    facturesPayees: 0,
+    prestatairesActifs: 0,
+    clientsActifs: 0
+  });
 
-  recentDossiers = signal<DashboardDossier[]>(MOCK_RECENT_DOSSIERS);
+  recentDossiers = signal<Dossier[]>([]);
   displayedColumns = ['reference', 'client', 'montant', 'statut'];
 
-  // Chart configurations (static for minimal change)
+  
   doughnutChartType: ChartType = 'doughnut';
   doughnutChartData: ChartData<'doughnut'> = {
     labels: ['En Cours', 'Clôturés', 'Suspendus', 'En Attente'],
@@ -228,25 +305,23 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData() {
-    // Load stats from API - fallback to mock data on error
+    
     this.api.getDashboardStats().subscribe({
       next: (data) => {
         this.stats.set(data);
       },
       error: (err) => {
-        console.warn('API unavailable, using mock stats:', err.message);
-        // Keep mock data already set
+        console.error('Error loading dashboard stats:', err);
       }
     });
 
-    // Load recent dossiers from API - fallback to mock data on error
+    
     this.api.getRecentDossiers(5).subscribe({
       next: (data) => {
-        this.recentDossiers.set(data as DashboardDossier[]);
+        this.recentDossiers.set(data);
       },
       error: (err) => {
-        console.warn('API unavailable, using mock dossiers:', err.message);
-        // Keep mock data already set
+        console.error('Error loading recent dossiers:', err);
       }
     });
   }
@@ -265,4 +340,3 @@ export class DashboardComponent implements OnInit {
     return labels[statut] || statut;
   }
 }
-

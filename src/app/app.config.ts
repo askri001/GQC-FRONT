@@ -13,7 +13,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withEnabledBlockingInitialNavigation()),
 
-    // HTTP + interceptors
+    
     provideHttpClient(
       withInterceptors([
         jwtInterceptor,
@@ -21,10 +21,10 @@ export const appConfig: ApplicationConfig = {
       ])
     ),
 
-    // animations (Angular Material)
+    
     provideAnimationsAsync(),
 
-    // charts (ok)
+    
     provideCharts(withDefaultRegisterables())
   ]
 };

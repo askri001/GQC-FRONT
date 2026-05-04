@@ -113,7 +113,7 @@ export class RisqueFormDialogComponent {
       dateEcheance: [risque.dateEcheance || null],
       tauxInteret: [risque.tauxInteret || 0],
       dossierId: [risque.dossierId || null, Validators.required],
-      actif: [risque.actif !== false] // default true
+      actif: [risque.actif !== false] 
     });
   }
 

@@ -42,19 +42,19 @@
       <div class="table-container">
         <table mat-table [dataSource]="filteredDossiers" class="mat-elevation-z8">
           
-          <!-- Reference Column -->
+          
           <ng-container matColumnDef="reference">
             <th mat-header-cell *matHeaderCellDef>Référence</th>
             <td mat-cell *matCellDef="let dossier">{{ dossier.reference }}</td>
           </ng-container>
 
-          <!-- Date Column -->
+          
           <ng-container matColumnDef="dateOuverture">
             <th mat-header-cell *matHeaderCellDef>Date Ouverture</th>
             <td mat-cell *matCellDef="let dossier">{{ dossier.dateOuverture | date:'dd/MM/yy' }}</td>
           </ng-container>
 
-          <!-- Statut Column -->
+          
           <ng-container matColumnDef="statut">
             <th mat-header-cell *matHeaderCellDef>Statut</th>
             <td mat-cell *matCellDef="let dossier">
@@ -62,7 +62,7 @@
             </td>
           </ng-container>
 
-          <!-- Niveau Risque Column -->
+          
           <ng-container matColumnDef="niveauRisque">
             <th mat-header-cell *matHeaderCellDef>Risque</th>
             <td mat-cell *matCellDef="let dossier">
@@ -70,19 +70,19 @@
             </td>
           </ng-container>
 
-          <!-- Montant Initial Column -->
+          
           <ng-container matColumnDef="montantInitial">
             <th mat-header-cell *matHeaderCellDef>Montant Initial</th>
             <td mat-cell *matCellDef="let dossier">{{ dossier.montantInitial | currency:'DH':'symbol':'1.0-0' }}</td>
           </ng-container>
 
-          <!-- Montant Récupéré Column -->
+          
           <ng-container matColumnDef="montantRecupere">
             <th mat-header-cell *matHeaderCellDef>Récupéré</th>
             <td mat-cell *matCellDef="let dossier">{{ dossier.montantRecupere | currency:'DH':'symbol':'1.0-0' }}</td>
           </ng-container>
 
-          <!-- Actions Column -->
+          
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let dossier" class="dossier-row">

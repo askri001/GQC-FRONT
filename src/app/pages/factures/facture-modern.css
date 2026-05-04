@@ -1,26 +1,24 @@
-/****************************************************
- * Factures Modern — BNA Green Theme
- ****************************************************/
+
 
 .page-container {
   padding: 20px;
-  background: linear-gradient(135deg, var(--bna-bg-page) 0%, var(--bna-bg) 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
 
 .page-card {
-  background: var(--bna-white);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid var(--bna-lighter);
-  box-shadow: 0 8px 32px 0 rgba(0, 150, 110, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   padding: 32px;
   transition: all 0.3s ease;
 }
 
 .page-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(0, 150, 110, 0.2);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
 }
 
 .card-header {
@@ -34,20 +32,21 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--bna-bg);
+  background: rgba(255, 255, 255, 0.2);
   padding: 16px 24px;
   border-radius: 16px;
+  backdrop-filter: blur(10px);
 }
 
 .title-icon {
   font-size: 36px;
-  color: var(--bna-primary);
-  filter: drop-shadow(0 2px 4px rgba(0, 150, 110, 0.3));
+  color: #1e88e5;
+  filter: drop-shadow(0 2px 4px rgba(30, 136, 229, 0.3));
 }
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-dark);
+  color: #1a237e;
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -62,7 +61,7 @@
 
 .tab-header h3 {
   margin: 0;
-  color: var(--bna-dark);
+  color: #1a237e;
   font-size: 22px;
   font-weight: 500;
 }
@@ -75,13 +74,14 @@
 }
 
 mat-form-field {
-  background: var(--bna-white);
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 12px;
+  backdrop-filter: blur(10px);
   transition: all 0.2s ease;
 }
 
 mat-form-field:hover {
-  background: var(--bna-white);
+  background: rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
 }
 
@@ -91,10 +91,11 @@ mat-form-field:hover {
 }
 
 .table-container {
-  background: var(--bna-white);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 150, 110, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 mat-table {
@@ -107,153 +108,107 @@ mat-table {
   margin: 4px 0;
 }
 
-.facture-row:hover {
-  background: var(--bna-bg) !important;
-  transform: scale(1.01);
+
+
+.factures-container {
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.factures-card {
+  @extend .glass-card;
+  padding: 32px;
+}
+
+.card-header {
+  @extend .glass-header;
+}
+
+.card-header h2 {
+  margin: 0;
+  color: #1a237e;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.title-icon {
+  @extend .glass-title-icon;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+mat-form-field {
+  @extend .glass-field;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 300px;
+}
+
+.table-container {
+  @extend .glass-table;
+}
+
+.facture-row {
+  @extend .table-hover;
+}
+
+mat-table {
+  background: transparent;
 }
 
 .specialite-chip {
-  background: linear-gradient(45deg, var(--bna-bg), var(--bna-lighter)) !important;
-  color: var(--bna-primary) !important;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 20px;
+  @extend .status-chip;
   animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 150, 110, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 150, 110, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 150, 110, 0); }
-}
+.statut-payee { @extend .chip-status-payee; }
+.statut-validee { @extend .chip-status-validee; }
+.statut-en_attente { @extend .chip-status-en_attente; }
+.statut-rejetee { @extend .chip-status-rejetee; }
 
-.statut-chip {
-  font-weight: 600;
-  border-radius: 20px;
-  padding: 4px 12px;
-}
-
-.delete-action {
-  color: var(--bna-error) !important;
-  transition: color 0.2s ease;
-}
-
-.delete-action:hover {
-  color: #d32f2f !important;
-}
-
-.inline-edit-row {
-  background: var(--bna-bg);
-  border: 2px dashed var(--bna-lighter);
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 20px;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.inline-field {
-  min-width: 120px;
+mat-paginator {
+  @extend .glass-paginator;
 }
 
 .no-data-container {
-  text-align: center;
-  padding: 60px;
-  color: var(--bna-text-muted);
-  background: var(--bna-bg);
-  border-radius: 16px;
-  border: 2px dashed var(--bna-lighter);
-}
-
-.no-data-container mat-icon {
-  font-size: 64px;
-  height: 64px;
-  width: 64px;
-  margin-bottom: 16px;
-  opacity: 0.5;
+  @extend .no-data-container;
 }
 
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px;
-  color: var(--bna-text-muted);
-  background: var(--bna-bg);
-  border-radius: 16px;
+  @extend .loading-container;
 }
 
-mat-paginator {
-  background: var(--bna-bg);
-  border-radius: 12px;
-  margin-top: 24px;
+.inline-edit-row {
+  @extend .inline-edit-row;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .filters {
-    flex-direction: column;
-  }
-  
-  .search-field {
-    min-width: 100%;
-  }
-  
-  .page-card {
-    padding: 20px;
-    margin: 10px;
-  }
-}
-
-/* Success/Error Snackbars */
-.success-snackbar {
-  background: linear-gradient(45deg, var(--bna-dark), var(--bna-primary)) !important;
-  color: white !important;
-}
-
-.error-snackbar {
-  background: linear-gradient(45deg, var(--bna-error), #ef5350) !important;
-  color: white !important;
-}
-
-.info-snackbar {
-  background: linear-gradient(45deg, #2196f3, #42a5f5) !important;
-  color: white !important;
-}
-
-/* Factures specific */
 .facture-numero {
   font-weight: 600;
-  color: var(--bna-dark);
+  color: #2e7d32;
 }
 
 .montant {
   font-weight: 600;
   font-size: 15px;
-  color: var(--bna-dark);
+  color: #2e7d32;
 }
 
-.statut-payee {
-  background: linear-gradient(45deg, var(--bna-success-bg), var(--bna-lighter)) !important;
-  color: var(--bna-success) !important;
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+  .search-field {
+    min-width: 100%;
+  }
 }
 
-.statut-validee {
-  background: linear-gradient(45deg, var(--bna-bg), var(--bna-lighter)) !important;
-  color: var(--bna-primary) !important;
-}
 
-.statut-en_attente {
-  background: linear-gradient(45deg, var(--bna-warning-bg), var(--bna-lighter)) !important;
-  color: var(--bna-warning) !important;
-}
-
-.statut-rejetee {
-  background: linear-gradient(45deg, var(--bna-error-bg), var(--bna-lighter)) !important;
-  color: var(--bna-error) !important;
-}

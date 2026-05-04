@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    "**/../gac-backend-spring/": true
+  },
+  "files.watcherExclude": {
+    "**/../gac-backend-spring/**": true
+  },
+  "java.import.maven.enabled": false
+}

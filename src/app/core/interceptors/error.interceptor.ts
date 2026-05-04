@@ -11,10 +11,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'Une erreur est survenue';
 
       if (error.error instanceof ErrorEvent) {
-        // Client-side error
+        
         errorMessage = error.error.message;
       } else {
-        // Server-side error
+        
         switch (error.status) {
           case 401:
             errorMessage = 'Session expirée. Veuillez vous reconnecter.';

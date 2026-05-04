@@ -20,7 +20,7 @@ export class PrestataireService {
 
   constructor(private api: ApiService) {}
 
-  // get all prestataires
+  
   getAll(): Observable<Prestataire[]> {
 
     this.loadingSignal.set(true);
@@ -43,7 +43,7 @@ export class PrestataireService {
     );
   }
 
-  // get prestataire by id
+  
   getById(id: number): Observable<Prestataire> {
 
     return this.api.get<Prestataire>(`${this.endpoint}/${id}`).pipe(
@@ -56,7 +56,7 @@ export class PrestataireService {
     );
   }
 
-  // get prestataires by type (AVOCAT / EXPERT / HUISSIER)
+  
   getByType(type: TypePrestataire): Observable<Prestataire[]> {
 
     this.loadingSignal.set(true);
@@ -76,7 +76,7 @@ export class PrestataireService {
     );
   }
 
-  // create prestataire
+  
   create(prestataire: Prestataire): Observable<Prestataire> {
 
     this.loadingSignal.set(true);
@@ -104,7 +104,7 @@ export class PrestataireService {
     );
   }
 
-  // update prestataire
+  
   update(id: number, prestataire: Prestataire): Observable<Prestataire> {
 
     this.loadingSignal.set(true);
@@ -135,14 +135,14 @@ export class PrestataireService {
     );
   }
 
-  // change status
+  
   updateStatus(id: number, actif: boolean): Observable<Prestataire> {
 
     return this.update(id, { actif } as Prestataire);
 
   }
 
-  // delete prestataire
+  
   delete(id: number): Observable<void> {
 
     this.loadingSignal.set(true);

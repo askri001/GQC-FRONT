@@ -55,7 +55,7 @@ export class PrestatairesComponent implements OnInit {
 
   activeTab = signal(0);
 
-  // Data
+  
   avocats = signal<Prestataire[]>([]);
   filteredAvocats = signal<Prestataire[]>([]);
   experts = signal<Prestataire[]>([]);
@@ -63,12 +63,12 @@ export class PrestatairesComponent implements OnInit {
   huissiers = signal<Prestataire[]>([]);
   filteredHuissiers = signal<Prestataire[]>([]);
 
-  // Loading
+  
   loadingAvocat = signal(false);
   loadingExpert = signal(false);
   loadingHuissier = signal(false);
 
-  // Edit states
+  
   avocatsEditId = signal<number | null>(null);
   avocatsEditMode = signal(false);
   tempAvocat = signal<Partial<Prestataire> | null>(null);
@@ -81,7 +81,7 @@ export class PrestatairesComponent implements OnInit {
   huissiersEditMode = signal(false);
   tempHuissier = signal<Partial<Prestataire> | null>(null);
 
-  // Filters
+  
   avocatSearch = '';
   avocatActif = '';
   expertSearch = '';
@@ -89,7 +89,7 @@ export class PrestatairesComponent implements OnInit {
   huissierSearch = '';
   huissierActif = '';
 
-  // Pagination & Table
+  
   pageSize = 10;
   currentPage = 0;
   displayedColumns = ['adresse', 'nom', 'telephone', 'email', 'specialite', 'tarifJournalier', 'actif', 'actions'];
@@ -184,7 +184,7 @@ export class PrestatairesComponent implements OnInit {
     }
   }
 
-  // AVOCAT Inline Edit
+  
   startAvocatInlineEdit(p?: Prestataire): void {
     this.avocatsEditId.set(p?.idPrestataire || 0);
     this.tempAvocat.set(p ? { ...p } : {
@@ -224,7 +224,7 @@ export class PrestatairesComponent implements OnInit {
 
   applyAvocatFilter() { this.applyFilter('AVOCAT'); }
 
-  // EXPERT Inline Edit
+  
   startExpertInlineEdit(p?: Prestataire): void {
     this.expertsEditId.set(p?.idPrestataire || 0);
     this.tempExpert.set(p ? { ...p } : {
@@ -264,7 +264,7 @@ export class PrestatairesComponent implements OnInit {
 
   applyExpertFilter() { this.applyFilter('EXPERT'); }
 
-  // HUISSIER Inline Edit
+  
   startHuissierInlineEdit(p?: Prestataire): void {
     this.huissiersEditId.set(p?.idPrestataire || 0);
     this.tempHuissier.set(p ? { ...p } : {
@@ -304,7 +304,7 @@ export class PrestatairesComponent implements OnInit {
 
   applyHuissierFilter() { this.applyFilter('HUISSIER'); }
 
-  // Dialog / Inline trigger
+  
   openDialog(type: TypePrestataire, prestataire?: Prestataire): void {
     switch (type) {
       case 'AVOCAT':

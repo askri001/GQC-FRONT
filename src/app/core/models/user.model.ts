@@ -29,8 +29,14 @@ export interface Permission {
 
 export interface AuthResponse {
   token: string;
-  user: User;
-  expiresIn: number;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    nom?: string;
+    prenom?: string;
+    roles?: string[];
+  };
 }
 
 export interface LoginRequest {

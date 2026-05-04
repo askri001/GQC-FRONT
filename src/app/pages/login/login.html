@@ -1,9 +1,64 @@
-<h2>Login</h2>
+<div class="login-container">
+  <div class="login-background">
+    <div class="bg-pattern"></div>
+  </div>
 
-<input type="text" [(ngModel)]="username" placeholder="Username">
-<br><br>
+  <div class="login-content">
 
-<input type="password" [(ngModel)]="password" placeholder="Password">
-<br><br>
+    <div class="login-header">
+      <div class="logo">
+        <mat-icon>account_balance</mat-icon>
+      </div>
+      <h1>BNA - Gestion de Contentieux</h1>
+      <p>Banque Nationale Agricole - Système de Gestion</p>
+    </div>
 
-<button (click)="onLogin()">Login</button>
+    <mat-card class="login-card">
+
+      <mat-card-content>
+
+        <h2>Connexion BNA</h2>
+
+        <form (ngSubmit)="onLogin()" class="login-form">
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom d'utilisateur</mat-label>
+            <input matInput [(ngModel)]="username" name="username">
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <input matInput type="password"
+                   [(ngModel)]="password"
+                   name="password">
+            <mat-icon matPrefix>lock</mat-icon>
+          </mat-form-field>
+
+          @if (errorMessage()) {
+            <div class="error-message">
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <button mat-raised-button color="primary"
+                  type="submit"
+                  class="login-btn"
+                  [disabled]="loading()">
+
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Se connecter
+            }
+
+          </button>
+
+        </form>
+
+      </mat-card-content>
+
+    </mat-card>
+
+  </div>
+</div>

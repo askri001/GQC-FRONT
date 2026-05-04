@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Client } from '../models/client.model';
 
-export interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number?: number;
-  size?: number;
+export interface Client {
+  id?: number;
+  nom: string;
+  prenom: string;
+  cin: string;
+  tel: string;
+  email?: string;
+  adresse?: string;
+  active?: boolean;
 }
 
 @Injectable({
@@ -20,53 +22,27 @@ export class ClientService {
 
   constructor(private http: HttpClient) {}
 
-
-  getPaginated(
-    page: number,
-    size: number,
-    search?: string,
-    typeClient?: string,
-    active?: boolean
-  ): Observable<PageResponse<Client>> {
-
-    let params = new HttpParams()
-      .set('page', page)
-      .set('size', size);
-
-    if (search && search.trim()) {
-      params = params.set('search', search);
-    }
-
-    if (typeClient) {
-      params = params.set('type', typeClient);
-    }
-
-    if (active !== undefined && active !== null) {
-      params = params.set('active', active);
-    }
-
-    return this.http.get<PageResponse<Client>>(this.apiUrl, { params });
+  
+  getAll(): Observable<Client[]> {
+    return this.http.get<Client[]>(this.apiUrl);
   }
 
-  // ================= CREATE =================
-  create(client: Partial<Client>): Observable<Client> {
+  
+  getById(id: number): Observable<Client> {
+    return this.http.get<Client>(`${this.apiUrl}/${id}`);
+  }
+
+  
+  create(client: Client): Observable<Client> {
     return this.http.post<Client>(this.apiUrl, client);
   }
 
-  // ================= UPDATE =================
-  update(id: number, client: Partial<Client>): Observable<Client> {
+  
+  update(id: number, client: Client): Observable<Client> {
     return this.http.put<Client>(`${this.apiUrl}/${id}`, client);
   }
 
-  // ================= TOGGLE STATUS =================
-  // Uses PATCH /{id}/status with { active } — dedicated endpoint that only
-  // touches the active field. PUT /{id} is reserved for full client edits.
-  toggleStatus(id: number, active: boolean): Observable<Client> {
-    console.log('toggleStatus: PATCH /api/clients/' + id + '/status', { active });
-    return this.http.patch<Client>(`${this.apiUrl}/${id}/status`, { active });
-  }
-
-  // ================= DELETE =================
+  
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

@@ -1,27 +1,29 @@
-import { Component, signal, inject, OnInit, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { RouterModule } from '@angular/router';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
-import { MatConfirmDialogComponent } from '../../shared/mat-confirm-dialog/mat-confirm-dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 import { ClientService } from '../../core/services/client.service';
 import { Client } from '../../core/models/client.model';
-import { ClientFormDialogComponent } from './client-form-dialog';
-import { AuthService } from '../../core/services/auth.service';
-import { MaskPipe } from '../../shared/pipes/mask.pipe';
+
+interface ExtendedClient extends Client {
+  dateCreation?: string;
+}
 
 @Component({
   selector: 'app-clients',
@@ -29,303 +31,184 @@ import { MaskPipe } from '../../shared/pipes/mask.pipe';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatPaginatorModule,
-    MatDialogModule,
-    MatTabsModule,
+    MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatChipsModule,
     MatSelectModule,
-    MaskPipe
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    MatTabsModule,
+    MatCheckboxModule
   ],
   templateUrl: './client.html',
-  styleUrls: ['./client.css']
+  styleUrls: ['./client-modern.css']
 })
-export class ClientsComponent implements OnInit {
+export class ClientsComponent {
+  private clientService = inject(ClientService);
+  private snackBar = inject(MatSnackBar);
 
-  private service = inject(ClientService);
-  private snack = inject(MatSnackBar);
-  private dialog = inject(MatDialog);
-  private auth = inject(AuthService);
-
-  // ================= STATE =================
-  clients = signal<Client[]>([]);
-  totalClients = signal(0);
+  clients = signal<ExtendedClient[]>([]);
   loading = signal(false);
-  error = signal<string | null>(null);
+  editMode = signal(false);
+  editId = signal<number | null>(null);
+  tempClient = signal<Partial<Client>>({});
 
-  pageSize = signal(10);
-  currentPage = signal(0);
+  search = signal('');
+  actifFilter = signal<string>('');
 
-  search = '';
-  typeFilter = '';
-  statusFilter = '';
-  showFilters = signal(true);
+  pageSize = 10;
+  currentPage = 0;
 
-  // ================= PERMISSIONS =================
-  canCreate = computed(() =>
-    this.auth.isAuthenticated() &&
-    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_CREATE'))
-  );
-
-  canEdit = computed(() =>
-    this.auth.isAuthenticated() &&
-    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_UPDATE'))
-  );
-
-  canDelete = computed(() =>
-    this.auth.isAuthenticated() &&
-    (this.auth.hasRole('ADMIN') || this.auth.hasPermission('CLIENT_DELETE'))
-  );
-
-  // ================= TABLE =================
   displayedColumns = [
-    'identifiant',
     'nom',
-    'typeClient',
-    'cinRne',
+    'cin',
     'tel',
     'email',
+    'adresse',
+    'dateCreation',
     'active',
     'actions'
   ];
 
-  ngOnInit(): void {
+  constructor() {
     this.loadClients();
   }
 
-  // ================= LOAD =================
   loadClients(): void {
     this.loading.set(true);
-    this.error.set(null);
-
-    const type = this.typeFilter || undefined;
-
-    const status =
-      this.statusFilter === ''
-        ? undefined
-        : this.statusFilter === 'true';
-
-    const searchValue = this.search?.trim()
-      ? this.search.trim()
-      : undefined;
-    console.log('loadClients params:', { page: this.currentPage(), size: this.pageSize(), search: searchValue, type, status });
-
-
-    this.service.getPaginated(
-      this.currentPage(),
-      this.pageSize(),
-      searchValue,
-      type,
-      status
-    ).pipe(
-      finalize(() => this.loading.set(false))
-    ).subscribe({
-      next: (res: any) => {
-        this.clients.set(res.content ?? []);
-        this.totalClients.set(res.totalElements ?? 0);
-      },
-      error: (err) => {
-        let msg = 'Erreur chargement clients';
-
-        if (err?.status === 0) {
-          msg = 'Serveur indisponible (backend down)';
-        } else if (err?.status === 403) {
-          msg = 'Accès refusé (403) - problème permissions JWT';
-        } else if (err?.error?.message) {
-          msg = err.error.message;
-        }
-
-        this.error.set(msg);
-        this.clients.set([]);
-        this.totalClients.set(0);
-      }
-    });
-  }
-
-  // ================= PAGINATION =================
-  onPageChange(event: PageEvent): void {
-    this.pageSize.set(event.pageSize);
-    this.currentPage.set(event.pageIndex);
-    this.loadClients();
-  }
-
-  // ================= CREATE =================
-  openNewClient(): void {
-    if (!this.canCreate()) {
-      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
-      return;
-    }
-
-    const ref = this.dialog.open(ClientFormDialogComponent, {
-      width: '600px',
-      data: { isEdit: false, existingClients: this.clients() }
-    });
-
-    ref.afterClosed().subscribe(res => {
-      if (!res) return;
-
-      this.service.create(res).subscribe({
-        next: () => {
-          this.snack.open('Client créé', 'OK', { duration: 2000 });
-          this.loadClients();
-        },
-        error: (err) => {
-          const msg = err?.error?.message || 'Erreur création client';
-          this.snack.open(msg, 'OK', { duration: 5000 });
-        }
-      });
-    });
-  }
-
-  // ================= EDIT =================
-  openEditClient(c: Client): void {
-    if (!this.canEdit()) {
-      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
-      return;
-    }
-
-    const ref = this.dialog.open(ClientFormDialogComponent, {
-      width: '600px',
-      data: { client: c, isEdit: true, existingClients: this.clients() }
-    });
-
-    ref.afterClosed().subscribe(res => {
-      if (!res) return;
-
-      this.service.update(c.id!, res).subscribe({
-        next: () => {
-          this.snack.open('Client modifié', 'OK', { duration: 2000 });
-          this.loadClients();
-        },
-        error: (err) => {
-          const msg = err?.error?.message || 'Erreur modification client';
-          this.snack.open(msg, 'OK', { duration: 5000 });
-        }
-      });
-    });
-  }
-
-  // ================= DELETE =================
-  confirmDelete(c: Client): void {
-    if (c.id == null || c.id === undefined) {
-      console.error('confirmDelete: client id is undefined', c);
-      this.snack.open('Erreur : ID client invalide', 'OK', { duration: 3000 });
-      return;
-    }
-
-    console.log('Deleting client with id:', c.id);
-
-    if (!confirm(`Supprimer ${c.nom} ?`)) return;
-
-    this.service.delete(c.id).subscribe({
-      next: () => {
-        this.snack.open('Client supprimé', 'OK', { duration: 2000 });
-        this.loadClients();
+  this.clientService.getAll().subscribe({
+      next: (data) => {
+        this.clients.set(
+          data.map(c => ({
+            ...c,
+            active: c.active ?? true
+          }))
+        );
+        this.loading.set(false);
       },
       error: () => {
-        this.snack.open('Erreur suppression', 'OK', { duration: 3000 });
+        this.loading.set(false);
+        this.snackBar.open('Erreur chargement', 'OK');
       }
     });
   }
 
-
-  // ================= FILTERS =================
-  applyFilters(): void {
-    this.currentPage.set(0);
-    this.loadClients();
+  applyFilter(): void {
   }
 
-  toggleFilters(): void {
-    this.showFilters.update(v => !v);
+  filteredClients = computed(() => {
+    return this.clients().filter(c => {
+      const matchSearch =
+        !this.search() ||
+        (c.nom ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
+        (c.cin ?? '').toLowerCase().includes(this.search()!.toLowerCase()) ||
+        (c.tel ?? '').includes(this.search()!) ||
+        (c.email ?? '').toLowerCase().includes(this.search()!.toLowerCase());
+
+      const matchStatus =
+        this.actifFilter() === '' ||
+        c.active === (this.actifFilter() === 'true');
+
+      return matchSearch && matchStatus;
+    });
+  });
+
+  pagedClients = computed(() => {
+    const start = this.currentPage * this.pageSize;
+    return this.filteredClients().slice(start, start + this.pageSize);
+  });
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.currentPage = event.pageIndex;
   }
 
-  // ================= HELPERS =================
-  getTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      'PHYSIQUE': 'Particulier',
-      'MORALE': 'Entreprise'
-    };
-    return labels[type] || type;
-  }
-
-  // ================= MASKING =================
-  // Tracks which client ids have their sensitive field revealed.
-  // Key format: "<clientId>-cin" or "<clientId>-rne"
-  revealedFields = new Set<string>();
-
-  /** Returns masked value showing only the last `visible` chars, rest replaced with *. */
-  maskValue(value: string | undefined, visible: number): string {
-    if (!value) return '-';
-    if (value.length <= visible) return value;
-    return '*'.repeat(value.length - visible) + value.slice(-visible);
-  }
-
-  toggleReveal(clientId: number | undefined, field: string): void {
-    if (clientId == null) return;
-    const key = clientId + '-' + field;
-    if (this.revealedFields.has(key)) {
-      this.revealedFields.delete(key);
+  startInlineEdit(id?: number): void {
+    if (id) {
+      const client = this.clients().find(c => c.id === id);
+      this.tempClient.set({ ...client });
     } else {
-      this.revealedFields.add(key);
+      this.tempClient.set({
+        active: true
+      });
     }
+    this.editId.set(id ?? null);
+    this.editMode.set(true);
   }
 
-  isRevealed(clientId: number | undefined, field: string): boolean {
-    if (clientId == null) return false;
-    return this.revealedFields.has(clientId + '-' + field);
+  cancelInlineEdit(): void {
+    this.editMode.set(false);
+    this.editId.set(null);
+    this.tempClient.set({});
   }
 
-
-  // ================= TOGGLE STATUS =================
-  toggleStatus(c: Client): void {
-    if (!this.canEdit()) {
-      this.snack.open('❌ Permission refusée', 'OK', { duration: 3000 });
+  saveInlineEdit(): void {
+    const temp = this.tempClient();
+    if (!temp.nom || !temp.cin) {
+      this.snackBar.open('Nom et CIN requis', 'OK');
       return;
     }
 
-    if (c.id == null || c.id === undefined) {
-      console.error('toggleStatus: client id is undefined', c);
-      this.snack.open('Erreur : ID client invalide', 'OK', { duration: 3000 });
-      return;
-    }
+    const payload: Partial<Client> = {
+      id: this.editId() ?? undefined,
+      nom: temp.nom!,
+      prenom: temp.prenom || '',
+      cin: temp.cin!,
+      tel: temp.tel || '',
+      email: temp.email,
+      adresse: temp.adresse,
+      active: temp.active ?? true
+    };
 
-    const newStatus = !c.active;
-    const statusText = newStatus ? 'activer' : 'désactiver';
+    const request = this.editId()
+      ? this.clientService.update(this.editId()!, payload as Client)
+      : this.clientService.create(payload as Client);
 
-    const ref = this.dialog.open(MatConfirmDialogComponent, {
-      data: {
-        title: 'Confirmer le changement',
-        message: `Voulez-vous vraiment ${statusText} le client "${c.nom}" ?`,
-        confirmLabel: 'Confirmer',
-        cancelLabel: 'Annuler'
+    request.subscribe({
+      next: () => {
+        this.snackBar.open('Sauvegardé avec succès', 'OK');
+        this.loadClients();
+        this.cancelInlineEdit();
+      },
+      error: () => {
+        this.snackBar.open('Erreur sauvegarde', 'OK');
       }
     });
+  }
 
-    ref.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-
-      console.log('toggleStatus: PUT id=', c.id, ' active=', newStatus);
-
-      this.service.toggleStatus(c.id!, newStatus).subscribe({
-        next: (updated) => {
-          this.clients.update(list =>
-            list.map(item => item.id === updated.id ? { ...item, active: updated.active } : item)
-          );
-          const msg = newStatus ? 'Client activé' : 'Client désactivé';
-          this.snack.open(msg, 'OK', { duration: 2000 });
+  confirmDelete(c: ExtendedClient): void {
+    if (confirm(`Supprimer ${c.nom} ?`)) {
+      this.clientService.delete(c.id!).subscribe({
+        next: () => {
+          this.snackBar.open('Supprimé', 'OK');
+          this.loadClients();
         },
-        error: (err) => {
-          console.error('toggleStatus error:', err);
-          this.snack.open('Erreur changement statut', 'OK', { duration: 3000 });
-        }
+        error: () => this.snackBar.open('Erreur suppression', 'OK')
       });
+    }
+  }
+
+  toggleStatus(c: ExtendedClient): void {
+    const updated = { ...c, active: !c.active };
+    this.clientService.update(c.id!, updated).subscribe({
+      next: () => this.loadClients(),
+      error: () => this.snackBar.open('Erreur statut', 'OK')
     });
+  }
+
+  showDetail(c: ExtendedClient): void {
+    this.snackBar.open(
+      `${c.nom} ${c.prenom ?? ''} | ${c.tel} | ${c.email ?? '-'}`,
+      'OK',
+      { duration: 3000 }
+    );
   }
 }
+
