@@ -65,6 +65,10 @@ export class AuthService {
       }
 
       localStorage.setItem(this.ACCESS_TOKEN_KEY, response.token);
+      // Store the user id from the login response for profile access
+      if (response.user?.id) {
+        localStorage.setItem('auth_user_id', String(response.user.id));
+      }
       this.updateUserFromToken(response.token);
       this.isAuthenticatedSignal.set(true);
 
@@ -78,6 +82,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem('auth_user_id');
     this.currentUserSignal.set(null);
     this.isAuthenticatedSignal.set(false);
     this.router.navigate(['/login']);

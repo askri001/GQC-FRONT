@@ -8,6 +8,7 @@ export interface Affaire {
   tribunal: string;
   jugement?: string;
   dossierId: number;
+  prestataireId?: number;
   createdAt?: Date;
   updatedAt?: Date;
   audiences?: Audience[];

@@ -16,6 +16,7 @@ import { GarantieService } from '../../core/services/garantie.service';
 import { ApiService } from '../../core/services/api.service';
 import { Garantie, TYPE_GARANTIE_LABELS, STATUT_GARANTIE_LABELS, TypeGarantie, StatutGarantie } from '../../core/models/garantie.model';
 import { Risque } from '../../core/models/risque.model';
+import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
 @Component({
   selector: 'app-garanties',
@@ -33,7 +34,8 @@ import { Risque } from '../../core/models/risque.model';
     MatSelectModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    DrawerPanelComponent
   ],
   template: `
     <div class="page-container">
@@ -67,131 +69,103 @@ import { Risque } from '../../core/models/risque.model';
         </div>
 
         @if (loading()) {
-          <div class="loading">
-            <mat-spinner diameter="50"></mat-spinner>
-            <p>Chargement des garanties...</p>
-          </div>
+          <div class="loading"><mat-spinner diameter="50"></mat-spinner><p>Chargement...</p></div>
         } @else if (pagedGaranties().length === 0) {
-          <div class="no-data">
-            <mat-icon>verified_user</mat-icon>
-            <p>Aucune garantie trouvée</p>
-          </div>
+          <div class="no-data"><mat-icon>verified_user</mat-icon><p>Aucune garantie trouvée</p></div>
         } @else {
           <div class="table-container">
             <table mat-table [dataSource]="pagedGaranties()" class="mat-elevation-z2 full-width">
-
               <ng-container matColumnDef="typeGarantie">
                 <th mat-header-cell *matHeaderCellDef>Type</th>
                 <td mat-cell *matCellDef="let g">{{ getTypeLabel(g.typeGarantie) }}</td>
               </ng-container>
-
               <ng-container matColumnDef="description">
                 <th mat-header-cell *matHeaderCellDef>Description</th>
                 <td mat-cell *matCellDef="let g">{{ g.description }}</td>
               </ng-container>
-
               <ng-container matColumnDef="valeur">
                 <th mat-header-cell *matHeaderCellDef>Valeur</th>
                 <td mat-cell *matCellDef="let g">{{ g.valeur | number:'1.0-0' }} DT</td>
               </ng-container>
-
               <ng-container matColumnDef="statut">
                 <th mat-header-cell *matHeaderCellDef>Statut</th>
                 <td mat-cell *matCellDef="let g">
-                  <mat-chip [class]="'statut-' + g.statut?.toLowerCase()">
-                    {{ getStatutLabel(g.statut) }}
-                  </mat-chip>
+                  <mat-chip [class]="'statut-' + g.statut?.toLowerCase()">{{ getStatutLabel(g.statut) }}</mat-chip>
                 </td>
               </ng-container>
-
               <ng-container matColumnDef="risque">
                 <th mat-header-cell *matHeaderCellDef>Risque ID</th>
                 <td mat-cell *matCellDef="let g">{{ g.risqueId }}</td>
               </ng-container>
-
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let g">
-                  <button mat-icon-button color="primary" (click)="editGarantie(g)" title="Modifier">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" title="Supprimer">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                  <button mat-icon-button color="primary" (click)="editGarantie(g)"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
-
-            <mat-paginator
-              [length]="filteredGaranties().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
-          </div>
-        }
-
-        @if (editMode()) {
-          <div class="inline-edit-row">
-            <h4>{{ editId() === 0 ? 'Nouvelle' : 'Modifier' }} Garantie</h4>
-            <div class="edit-form">
-
-              <mat-form-field appearance="outline">
-                <mat-label>Risque *</mat-label>
-                <mat-select [(ngModel)]="tempGarantie().risqueId">
-                  <mat-option [value]="0" disabled>Sélectionner un risque</mat-option>
-                  @for (r of risques(); track r.id) {
-                    <mat-option [value]="r.id">Risque #{{ r.id }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Type de Garantie *</mat-label>
-                <mat-select [(ngModel)]="tempGarantie().typeGarantie">
-                  <mat-option value="HYPOTHEQUE">Hypothèque</mat-option>
-                  <mat-option value="GAGE">Gage</mat-option>
-                  <mat-option value="CAUTION">Caution</mat-option>
-                  <mat-option value="ASSURANCE">Assurance</mat-option>
-                  <mat-option value="AUTRE">Autre</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempGarantie().description" placeholder="Description *">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput type="number" [(ngModel)]="tempGarantie().valeur" placeholder="Valeur (DT) *">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Statut</mat-label>
-                <mat-select [(ngModel)]="tempGarantie().statut">
-                  <mat-option value="ACTIVE">Active</mat-option>
-                  <mat-option value="REALISEE">Réalisée</mat-option>
-                  <mat-option value="EXPIREE">Expirée</mat-option>
-                  <mat-option value="INVALIDEE">Invalidée</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-raised-button color="primary" (click)="saveGarantie()"
-                  [disabled]="!tempGarantie().typeGarantie || !tempGarantie().description || !tempGarantie().risqueId">
-                  <mat-icon>save</mat-icon> {{ editId() === 0 ? 'Créer' : 'Sauvegarder' }}
-                </button>
-                <button mat-button color="warn" (click)="cancelEdit()">
-                  <mat-icon>close</mat-icon> Annuler
-                </button>
-              </div>
-            </div>
+            <mat-paginator [length]="filteredGaranties().length" [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
           </div>
         }
       </mat-card>
     </div>
+
+    <!-- Drawer -->
+    <app-drawer-panel
+      [open]="editMode()"
+      [title]="editId() === 0 ? 'Nouvelle Garantie' : 'Modifier Garantie'"
+      icon="verified_user"
+      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+      [saveDisabled]="!tempGarantie().typeGarantie || !tempGarantie().description || !tempGarantie().risqueId"
+      [saving]="loading()"
+      (closed)="cancelEdit()"
+      (saved)="saveGarantie()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Risque *</mat-label>
+        <mat-select [(ngModel)]="tempGarantie().risqueId">
+          <mat-option [value]="0" disabled>Sélectionner un risque</mat-option>
+          @for (r of risques(); track r.id) {
+            <mat-option [value]="r.id">Risque #{{ r.id }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type de Garantie *</mat-label>
+        <mat-select [(ngModel)]="tempGarantie().typeGarantie">
+          <mat-option value="HYPOTHEQUE">Hypothèque</mat-option>
+          <mat-option value="GAGE">Gage</mat-option>
+          <mat-option value="CAUTION">Caution</mat-option>
+          <mat-option value="ASSURANCE">Assurance</mat-option>
+          <mat-option value="AUTRE">Autre</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Description *</mat-label>
+        <textarea matInput [(ngModel)]="tempGarantie().description" rows="3"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Valeur (DT) *</mat-label>
+        <input matInput type="number" [(ngModel)]="tempGarantie().valeur">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="tempGarantie().statut">
+          <mat-option value="ACTIVE">Active</mat-option>
+          <mat-option value="REALISEE">Réalisée</mat-option>
+          <mat-option value="EXPIREE">Expirée</mat-option>
+          <mat-option value="INVALIDEE">Invalidée</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </app-drawer-panel>
   `,
   styleUrls: ['./garanties.css']
 })

@@ -19,6 +19,7 @@ import { ApiService } from '../../core/services/api.service';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
 import { Client } from '../../core/models/client.model';
+import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
 @Component({
   selector: 'app-dossiers',
@@ -38,7 +39,8 @@ import { Client } from '../../core/models/client.model';
     MatSelectModule,
     MatPaginatorModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    DrawerPanelComponent
   ],
   templateUrl: "./dossiers.html",
   styleUrls: ["./dossiers-modern.css", "./dossiers.css"]
@@ -50,7 +52,8 @@ export class DossiersComponent implements OnInit {
 
   dossiers = signal<Dossier[]>([]);
   clients = signal<Client[]>([]);
-  displayedColumns: string[] = ['reference', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
+  chargeDossiers = signal<any[]>([]);
+  displayedColumns: string[] = ['reference', 'client', 'chargeDossier', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
 
   
   searchTerm = '';
@@ -66,6 +69,7 @@ export class DossiersComponent implements OnInit {
   editMode = signal(false);
   tempDossier = signal<Partial<Dossier> | null>(null);
   selectedClientId = signal<number>(0);
+  selectedChargeDossierId = signal<number>(0);
 
   
   get filteredDossiers() {
@@ -89,6 +93,20 @@ export class DossiersComponent implements OnInit {
   ngOnInit() {
     this.loadDossiers();
     this.loadClients();
+    this.loadChargeDossiers();
+  }
+
+  loadChargeDossiers() {
+    // Load all users and filter those with CHARGEDOSSIER role
+    this.api.get<any[]>('/users').subscribe({
+      next: (data) => {
+        const chargeUsers = data.filter(u =>
+          Array.isArray(u.roles) && u.roles.some((r: string) => r === 'CHARGEDOSSIER')
+        );
+        this.chargeDossiers.set(chargeUsers);
+      },
+      error: (err) => console.error('Error loading chargeDossiers', err)
+    });
   }
 
   loadClients() {
@@ -122,9 +140,10 @@ export class DossiersComponent implements OnInit {
       niveauRisque: 'FAIBLE',
       montantInitial: 0,
       montantRecupere: 0,
-      clientId: 0 
+      clientId: 0
     });
     this.selectedClientId.set(0);
+    this.selectedChargeDossierId.set(0);
     this.editMode.set(true);
   }
 
@@ -132,6 +151,7 @@ export class DossiersComponent implements OnInit {
     this.editId.set(dossier.idDossier!);
     this.tempDossier.set({ ...dossier });
     this.selectedClientId.set(dossier.clientId);
+    this.selectedChargeDossierId.set(dossier.chargeDossierId || 0);
     this.editMode.set(true);
   }
 
@@ -140,6 +160,7 @@ export class DossiersComponent implements OnInit {
     if (!temp) return;
 
     temp.clientId = this.selectedClientId();
+    temp.chargeDossierId = this.selectedChargeDossierId() || undefined;
 
     if (!temp.reference || temp.montantInitial === undefined || temp.clientId === 0) {
       this.showNotification('Référence, montant initial et client requis', 'error');
@@ -186,6 +207,7 @@ export class DossiersComponent implements OnInit {
     this.tempDossier.set(null);
     this.editMode.set(false);
     this.selectedClientId.set(0);
+    this.selectedChargeDossierId.set(0);
   }
 
   applyFilters() {
@@ -220,6 +242,17 @@ export class DossiersComponent implements OnInit {
 
   getClientLabel(client: Client): string {
     return `${client.nom}${client.prenom ? ' ' + client.prenom : ''} ${client.cin ? '(' + client.cin + ')' : ''}`.trim();
+  }
+
+  getClientName(clientId: number): string {
+    const client = this.clients().find(c => c.id === clientId);
+    return client ? `${client.nom}${client.prenom ? ' ' + client.prenom : ''}`.trim() : `#${clientId}`;
+  }
+
+  getChargeName(chargeId: number | undefined): string {
+    if (!chargeId) return '—';
+    const cd = this.chargeDossiers().find(c => c.id === chargeId);
+    return cd ? `${cd.prenom || ''} ${cd.nom || ''}`.trim() || cd.username : `#${chargeId}`;
   }
 }
 

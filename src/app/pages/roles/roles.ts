@@ -8,9 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { RoleService, RoleDTO } from '../../core/services/role.service';
+import { RoleService, RoleDTO, PermissionDTO } from '../../core/services/role.service';
+import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
 @Component({
   selector: 'app-roles',
@@ -25,8 +27,10 @@ import { RoleService, RoleDTO } from '../../core/services/role.service';
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    DrawerPanelComponent
   ],
   template: `
     <div class="page-container">
@@ -42,72 +46,75 @@ import { RoleService, RoleDTO } from '../../core/services/role.service';
         </div>
 
         @if (loading()) {
-          <div class="loading">
-            <mat-spinner diameter="50"></mat-spinner>
-            <p>Chargement des rôles...</p>
-          </div>
+          <div class="loading"><mat-spinner diameter="50"></mat-spinner><p>Chargement des rôles...</p></div>
         } @else if (roles().length === 0) {
-          <div class="no-data">
-            <mat-icon>security</mat-icon>
-            <p>Aucun rôle trouvé</p>
-          </div>
+          <div class="no-data"><mat-icon>security</mat-icon><p>Aucun rôle trouvé</p></div>
         } @else {
           <table mat-table [dataSource]="roles()" class="mat-elevation-z2 full-width">
-
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef>Nom du Rôle</th>
               <td mat-cell *matCellDef="let role"><strong>{{ role.name }}</strong></td>
             </ng-container>
-
             <ng-container matColumnDef="description">
               <th mat-header-cell *matHeaderCellDef>Description</th>
               <td mat-cell *matCellDef="let role">{{ role.description || '—' }}</td>
             </ng-container>
-
+            <ng-container matColumnDef="permissions">
+              <th mat-header-cell *matHeaderCellDef>Permissions</th>
+              <td mat-cell *matCellDef="let role">
+                @if (role.permissionIds?.length) {
+                  @for (pid of role.permissionIds; track pid) {
+                    <mat-chip>{{ getPermissionCode(pid) }}</mat-chip>
+                  }
+                } @else {
+                  <span style="color:#999">Aucune</span>
+                }
+              </td>
+            </ng-container>
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let role">
-                <button mat-icon-button color="primary" (click)="editRole(role)" title="Modifier">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deleteRole(role.idRole!)" title="Supprimer">
-                  <mat-icon>delete</mat-icon>
-                </button>
+                <button mat-icon-button color="primary" (click)="editRole(role)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button color="warn" (click)="deleteRole(role.idRole!)"><mat-icon>delete</mat-icon></button>
               </td>
             </ng-container>
-
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
         }
-
-        @if (editMode()) {
-          <div class="inline-edit-row">
-            <h4>{{ editId() === 0 ? 'Nouveau' : 'Modifier' }} Rôle</h4>
-            <div class="edit-form">
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempRole().name" placeholder="Nom du rôle *">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempRole().description" placeholder="Description">
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-raised-button color="primary" (click)="saveRole()"
-                  [disabled]="!tempRole().name">
-                  <mat-icon>save</mat-icon> {{ editId() === 0 ? 'Créer' : 'Sauvegarder' }}
-                </button>
-                <button mat-button color="warn" (click)="cancelEdit()">
-                  <mat-icon>close</mat-icon> Annuler
-                </button>
-              </div>
-            </div>
-          </div>
-        }
       </mat-card>
     </div>
+
+    <!-- Drawer -->
+    <app-drawer-panel
+      [open]="editMode()"
+      [title]="editId() === 0 ? 'Nouveau Rôle' : 'Modifier Rôle'"
+      icon="security"
+      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+      [saveDisabled]="!tempRole().name"
+      [saving]="loading()"
+      (closed)="cancelEdit()"
+      (saved)="saveRole()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nom du rôle *</mat-label>
+        <input matInput [(ngModel)]="tempRole().name">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="tempRole().description" rows="3"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Permissions</mat-label>
+        <mat-select [(ngModel)]="tempRole().permissionIds" multiple>
+          @for (p of allPermissions(); track p.idPermission) {
+            <mat-option [value]="p.idPermission">{{ p.code }} — {{ p.description || '' }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </app-drawer-panel>
   `,
   styleUrls: ['./roles.css']
 })
@@ -116,30 +123,33 @@ export class RolesComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   roles = signal<RoleDTO[]>([]);
+  allPermissions = signal<PermissionDTO[]>([]);
   loading = signal(false);
 
   editId = signal<number | null>(null);
   editMode = signal(false);
   tempRole = signal<Partial<RoleDTO>>({});
+  originalPermissionIds = signal<number[]>([]);
 
-  displayedColumns = ['name', 'description', 'actions'];
+  displayedColumns = ['name', 'description', 'permissions', 'actions'];
 
   ngOnInit() {
     this.loadRoles();
+    this.loadPermissions();
   }
 
   loadRoles() {
     this.loading.set(true);
     this.roleService.getAll().subscribe({
-      next: (data) => {
-        this.roles.set(data);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading roles', err);
-        this.loading.set(false);
-        this.showNotification('Erreur chargement rôles', 'error');
-      }
+      next: (data) => { this.roles.set(data); this.loading.set(false); },
+      error: (err) => { console.error(err); this.loading.set(false); this.showNotification('Erreur chargement rôles', 'error'); }
+    });
+  }
+
+  loadPermissions() {
+    this.roleService.getAllPermissions().subscribe({
+      next: (data) => this.allPermissions.set(data),
+      error: (err) => console.error('Error loading permissions', err)
     });
   }
 
@@ -152,6 +162,7 @@ export class RolesComponent implements OnInit {
   editRole(role: RoleDTO) {
     this.editId.set(role.idRole!);
     this.tempRole.set({ ...role });
+    this.originalPermissionIds.set([...(role.permissionIds || [])]);
     this.editMode.set(true);
   }
 
@@ -168,7 +179,23 @@ export class RolesComponent implements OnInit {
 
     this.loading.set(true);
     request.subscribe({
-      next: () => {
+      next: (saved) => {
+        const roleId = saved.idRole || this.editId()!;
+        const newIds = temp.permissionIds || [];
+        const oldIds = this.originalPermissionIds();
+
+        const toAdd = newIds.filter(id => !oldIds.includes(id));
+        const toRemove = oldIds.filter(id => !newIds.includes(id));
+
+        const ops = [
+          ...toAdd.map(pid => this.roleService.assignPermission(roleId, pid)),
+          ...toRemove.map(pid => this.roleService.removePermission(roleId, pid))
+        ];
+
+        if (ops.length > 0) {
+          ops.forEach(op => op.subscribe());
+        }
+
         this.loading.set(false);
         this.loadRoles();
         this.cancelEdit();
@@ -200,7 +227,13 @@ export class RolesComponent implements OnInit {
   cancelEdit() {
     this.editId.set(null);
     this.tempRole.set({});
+    this.originalPermissionIds.set([]);
     this.editMode.set(false);
+  }
+
+  getPermissionCode(permissionId: number): string {
+    const p = this.allPermissions().find(p => p.idPermission === permissionId);
+    return p ? p.code : `#${permissionId}`;
   }
 
   showNotification(msg: string, type: 'success' | 'error' = 'success') {

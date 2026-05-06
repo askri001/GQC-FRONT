@@ -18,6 +18,9 @@ import { AffaireService } from '../../core/services/affaire.service';
 import { ApiService } from '../../core/services/api.service';
 import { Affaire, STATUT_AFFAIRE_LABELS } from '../../core/models/affaire.model';
 import { Dossier } from '../../core/models/dossier.model';
+import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
+
+interface PrestataireRef { idPrestataire: number; nom: string; prenom: string; typePrestataire: string; }
 
 @Component({
   selector: 'app-affaires',
@@ -37,7 +40,8 @@ import { Dossier } from '../../core/models/dossier.model';
     MatSnackBarModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    DrawerPanelComponent
   ],
   template: `
     <div class="page-container">
@@ -83,125 +87,112 @@ import { Dossier } from '../../core/models/dossier.model';
         } @else {
           <div class="table-container">
             <table mat-table [dataSource]="pagedAffaires()" class="mat-elevation-z2 full-width">
-
               <ng-container matColumnDef="numeroProcedure">
                 <th mat-header-cell *matHeaderCellDef>N° Procédure</th>
                 <td mat-cell *matCellDef="let a">{{ a.numeroProcedure }}</td>
               </ng-container>
-
               <ng-container matColumnDef="dateDebut">
                 <th mat-header-cell *matHeaderCellDef>Date Début</th>
                 <td mat-cell *matCellDef="let a">{{ a.dateDebut | date:'dd/MM/yyyy' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="tribunal">
                 <th mat-header-cell *matHeaderCellDef>Tribunal</th>
                 <td mat-cell *matCellDef="let a">{{ a.tribunal }}</td>
               </ng-container>
-
               <ng-container matColumnDef="statut">
                 <th mat-header-cell *matHeaderCellDef>Statut</th>
                 <td mat-cell *matCellDef="let a">
-                  <mat-chip [class]="'statut-' + a.statut?.toLowerCase()">
-                    {{ getStatutLabel(a.statut) }}
-                  </mat-chip>
+                  <mat-chip [class]="'statut-' + a.statut?.toLowerCase()">{{ getStatutLabel(a.statut) }}</mat-chip>
                 </td>
               </ng-container>
-
               <ng-container matColumnDef="jugement">
                 <th mat-header-cell *matHeaderCellDef>Jugement</th>
                 <td mat-cell *matCellDef="let a">{{ a.jugement || '—' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="dossier">
                 <th mat-header-cell *matHeaderCellDef>Dossier</th>
                 <td mat-cell *matCellDef="let a">{{ getDossierRef(a.dossierId) }}</td>
               </ng-container>
-
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAffaire(a)" title="Modifier">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)" title="Supprimer">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                  <button mat-icon-button color="primary" (click)="editAffaire(a)"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
-
-            <mat-paginator
-              [length]="filteredAffaires().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
-          </div>
-        }
-
-        @if (editMode()) {
-          <div class="inline-edit-row">
-            <h4>{{ editId() === 0 ? 'Nouvelle' : 'Modifier' }} Affaire</h4>
-            <div class="edit-form">
-
-              <mat-form-field appearance="outline">
-                <mat-label>Dossier *</mat-label>
-                <mat-select [(ngModel)]="tempAffaire().dossierId">
-                  <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
-                  @for (d of dossiers(); track d.idDossier) {
-                    <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAffaire().numeroProcedure" placeholder="N° Procédure *">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Date Début</mat-label>
-                <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAffaire().dateDebut">
-                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-                <mat-datepicker #datePicker></mat-datepicker>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Tribunal *</mat-label>
-                <input matInput [(ngModel)]="tempAffaire().tribunal" placeholder="Nom du tribunal">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Statut</mat-label>
-                <mat-select [(ngModel)]="tempAffaire().statut">
-                  <mat-option value="INITIEE">Initiée</mat-option>
-                  <mat-option value="EN_COURS">En Cours</mat-option>
-                  <mat-option value="JUGEMENT_RENDU">Jugement Rendu</mat-option>
-                  <mat-option value="TERMINEE">Terminée</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAffaire().jugement" placeholder="Jugement">
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-raised-button color="primary" (click)="saveAffaire()"
-                  [disabled]="!tempAffaire().numeroProcedure || !tempAffaire().tribunal || !tempAffaire().dossierId">
-                  <mat-icon>save</mat-icon> {{ editId() === 0 ? 'Créer' : 'Sauvegarder' }}
-                </button>
-                <button mat-button color="warn" (click)="cancelEdit()">
-                  <mat-icon>close</mat-icon> Annuler
-                </button>
-              </div>
-            </div>
+            <mat-paginator [length]="filteredAffaires().length" [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
           </div>
         }
       </mat-card>
     </div>
+
+    <!-- Drawer -->
+    <app-drawer-panel
+      [open]="editMode()"
+      [title]="editId() === 0 ? 'Nouvelle Affaire' : 'Modifier Affaire'"
+      icon="gavel"
+      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+      [saveDisabled]="!tempAffaire().numeroProcedure || !tempAffaire().tribunal || !tempAffaire().dossierId"
+      [saving]="loading()"
+      (closed)="cancelEdit()"
+      (saved)="saveAffaire()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dossier *</mat-label>
+        <mat-select [(ngModel)]="tempAffaire().dossierId">
+          <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
+          @for (d of dossiers(); track d.idDossier) {
+            <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>N° Procédure *</mat-label>
+        <input matInput [(ngModel)]="tempAffaire().numeroProcedure">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Date Début</mat-label>
+        <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAffaire().dateDebut">
+        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+        <mat-datepicker #datePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tribunal *</mat-label>
+        <input matInput [(ngModel)]="tempAffaire().tribunal">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="tempAffaire().statut">
+          <mat-option value="INITIEE">Initiée</mat-option>
+          <mat-option value="EN_COURS">En Cours</mat-option>
+          <mat-option value="JUGEMENT_RENDU">Jugement Rendu</mat-option>
+          <mat-option value="TERMINEE">Terminée</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Jugement</mat-label>
+        <input matInput [(ngModel)]="tempAffaire().jugement">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Prestataire assigné</mat-label>
+        <mat-select [(ngModel)]="tempAffaire().prestataireId">
+          <mat-option [value]="undefined">Aucun</mat-option>
+          @for (p of prestataires(); track p.idPrestataire) {
+            <mat-option [value]="p.idPrestataire">{{ p.prenom }} {{ p.nom }} ({{ p.typePrestataire }})</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </app-drawer-panel>
   `,
   styleUrls: ['./affaires.css']
 })
@@ -212,6 +203,7 @@ export class AffairesComponent implements OnInit {
 
   affaires = signal<Affaire[]>([]);
   dossiers = signal<Dossier[]>([]);
+  prestataires = signal<PrestataireRef[]>([]);
   loading = signal(false);
 
   searchTerm = '';
@@ -235,6 +227,7 @@ export class AffairesComponent implements OnInit {
   ngOnInit() {
     this.loadAffaires();
     this.loadDossiers();
+    this.loadPrestataires();
   }
 
   loadAffaires() {
@@ -257,6 +250,13 @@ export class AffairesComponent implements OnInit {
     this.api.get<Dossier[]>('/dossiers').subscribe({
       next: (data) => this.dossiers.set(data),
       error: (err) => console.error('Error loading dossiers', err)
+    });
+  }
+
+  loadPrestataires() {
+    this.api.get<PrestataireRef[]>('/prestataires').subscribe({
+      next: (data) => this.prestataires.set(data),
+      error: (err) => console.error('Error loading prestataires', err)
     });
   }
 

@@ -47,10 +47,12 @@ export class UserService {
   }
 
   toggleStatus(id: number, currentStatus: boolean): Observable<any> {
-    return this.api.put(`/users/${id}`, { active: !currentStatus });
+    return this.api.put(`/users/${id}/toggle-status`, {});
   }
 
   assignRole(userId: number, roleId: number): Observable<any> {
     return this.api.put(`/users/${userId}/roles/${roleId}`, {});
   }
+
+  
 }

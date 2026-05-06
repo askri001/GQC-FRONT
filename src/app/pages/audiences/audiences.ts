@@ -17,6 +17,7 @@ import { AudienceService } from '../../core/services/audience.service';
 import { ApiService } from '../../core/services/api.service';
 import { Audience } from '../../core/models/audience.model';
 import { Affaire } from '../../core/models/affaire.model';
+import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
 @Component({
   selector: 'app-audiences',
@@ -35,7 +36,8 @@ import { Affaire } from '../../core/models/affaire.model';
     MatSnackBarModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    DrawerPanelComponent
   ],
   template: `
     <div class="page-container">
@@ -71,114 +73,95 @@ import { Affaire } from '../../core/models/affaire.model';
         } @else {
           <div class="table-container">
             <table mat-table [dataSource]="pagedAudiences()" class="mat-elevation-z2 full-width">
-
               <ng-container matColumnDef="dateAudience">
                 <th mat-header-cell *matHeaderCellDef>Date</th>
                 <td mat-cell *matCellDef="let a">{{ a.dateAudience | date:'dd/MM/yyyy' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="typeAudience">
                 <th mat-header-cell *matHeaderCellDef>Type</th>
                 <td mat-cell *matCellDef="let a">{{ a.typeAudience || '—' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="decision">
                 <th mat-header-cell *matHeaderCellDef>Décision</th>
                 <td mat-cell *matCellDef="let a">{{ a.decision || '—' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="observation">
                 <th mat-header-cell *matHeaderCellDef>Observation</th>
                 <td mat-cell *matCellDef="let a">{{ a.observation || '—' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="commentaire">
                 <th mat-header-cell *matHeaderCellDef>Commentaire</th>
                 <td mat-cell *matCellDef="let a">{{ a.commentaire || '—' }}</td>
               </ng-container>
-
               <ng-container matColumnDef="affaire">
                 <th mat-header-cell *matHeaderCellDef>Affaire</th>
                 <td mat-cell *matCellDef="let a">{{ getAffaireRef(a.affaireId) }}</td>
               </ng-container>
-
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAudience(a)" title="Modifier">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)" title="Supprimer">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                  <button mat-icon-button color="primary" (click)="editAudience(a)"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
-
-            <mat-paginator
-              [length]="filteredAudiences().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
-          </div>
-        }
-
-        @if (editMode()) {
-          <div class="inline-edit-row">
-            <h4>{{ editId() === 0 ? 'Nouvelle' : 'Modifier' }} Audience</h4>
-            <div class="edit-form">
-
-              <mat-form-field appearance="outline">
-                <mat-label>Affaire *</mat-label>
-                <mat-select [(ngModel)]="tempAudience().affaireId">
-                  <mat-option [value]="0" disabled>Sélectionner une affaire</mat-option>
-                  @for (af of affaires(); track af.idAffaire) {
-                    <mat-option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Date Audience *</mat-label>
-                <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAudience().dateAudience">
-                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-                <mat-datepicker #datePicker></mat-datepicker>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAudience().typeAudience" placeholder="Type d'audience">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAudience().decision" placeholder="Décision">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAudience().observation" placeholder="Observation">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="tempAudience().commentaire" placeholder="Commentaire">
-              </mat-form-field>
-
-              <div class="form-actions">
-                <button mat-raised-button color="primary" (click)="saveAudience()"
-                  [disabled]="!tempAudience().affaireId || !tempAudience().dateAudience">
-                  <mat-icon>save</mat-icon> {{ editId() === 0 ? 'Créer' : 'Sauvegarder' }}
-                </button>
-                <button mat-button color="warn" (click)="cancelEdit()">
-                  <mat-icon>close</mat-icon> Annuler
-                </button>
-              </div>
-            </div>
+            <mat-paginator [length]="filteredAudiences().length" [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
           </div>
         }
       </mat-card>
     </div>
+
+    <!-- Drawer -->
+    <app-drawer-panel
+      [open]="editMode()"
+      [title]="editId() === 0 ? 'Nouvelle Audience' : 'Modifier Audience'"
+      icon="event"
+      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+      [saveDisabled]="!tempAudience().affaireId || !tempAudience().dateAudience"
+      [saving]="loading()"
+      (closed)="cancelEdit()"
+      (saved)="saveAudience()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Affaire *</mat-label>
+        <mat-select [(ngModel)]="tempAudience().affaireId">
+          <mat-option [value]="0" disabled>Sélectionner une affaire</mat-option>
+          @for (af of affaires(); track af.idAffaire) {
+            <mat-option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Date Audience *</mat-label>
+        <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAudience().dateAudience">
+        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+        <mat-datepicker #datePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type d'audience</mat-label>
+        <input matInput [(ngModel)]="tempAudience().typeAudience">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Décision</mat-label>
+        <input matInput [(ngModel)]="tempAudience().decision">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Observation</mat-label>
+        <input matInput [(ngModel)]="tempAudience().observation">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Commentaire</mat-label>
+        <textarea matInput [(ngModel)]="tempAudience().commentaire" rows="3"></textarea>
+      </mat-form-field>
+    </app-drawer-panel>
   `,
   styles: [`
     .page-container { padding: 24px; }
@@ -191,11 +174,6 @@ import { Affaire } from '../../core/models/affaire.model';
     .loading, .no-data { display: flex; flex-direction: column; align-items: center; padding: 40px; color: #666; }
     .table-container { overflow-x: auto; }
     .full-width { width: 100%; }
-    .inline-edit-row { margin-top: 24px; padding: 16px; background: #f5f5f5; border-radius: 8px; }
-    .inline-edit-row h4 { margin: 0 0 16px 0; }
-    .edit-form { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
-    .edit-form mat-form-field { min-width: 200px; }
-    .form-actions { display: flex; gap: 8px; align-items: center; padding-top: 8px; }
   `]
 })
 export class AudiencesComponent implements OnInit {

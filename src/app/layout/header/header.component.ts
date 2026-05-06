@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,12 +6,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { ProfileDialogComponent } from '../../shared/profile-dialog/profile-dialog.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule, MatMenuModule, MatBadgeModule, MatDividerModule],
+  imports: [
+    CommonModule, RouterModule,
+    MatIconModule, MatButtonModule, MatMenuModule,
+    MatBadgeModule, MatDividerModule, MatDialogModule
+  ],
   template: `
     <header class="header">
       <div class="header-left">
@@ -45,13 +51,9 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
             </div>
             <mat-divider></mat-divider>
-            <button mat-menu-item routerLink="/profile">
+            <button mat-menu-item (click)="openProfile()">
               <mat-icon>person</mat-icon>
               <span>Mon Profil</span>
-            </button>
-            <button mat-menu-item routerLink="/settings">
-              <mat-icon>settings</mat-icon>
-              <span>Paramètres</span>
             </button>
             <mat-divider></mat-divider>
             <button mat-menu-item (click)="logout()">
@@ -68,10 +70,19 @@ import { AuthService } from '../../core/services/auth.service';
 export class HeaderComponent {
   pageTitle = input<string>('BNA Bank');
 
-  constructor(public authService: AuthService) {}
+  public authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   logout() {
     this.authService.logout();
+  }
+
+  openProfile() {
+    this.dialog.open(ProfileDialogComponent, {
+      width: '520px',
+      panelClass: 'profile-dialog-container',
+      disableClose: false
+    });
   }
 }
 

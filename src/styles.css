@@ -61,6 +61,13 @@ html, body {
   box-shadow: 0 4px 16px rgba(15, 32, 68, 0.08) !important;
 }
 
+/* Profile dialog rounded corners */
+.profile-dialog-container .mat-mdc-dialog-container {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
 .mat-mdc-raised-button.mat-primary {
   background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
   border-radius: 8px !important;

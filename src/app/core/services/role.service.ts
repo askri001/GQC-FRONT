@@ -9,11 +9,18 @@ export interface RoleDTO {
   permissionIds?: number[];
 }
 
+export interface PermissionDTO {
+  idPermission?: number;
+  code: string;
+  description?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class RoleService {
   private readonly endpoint = '/roles';
+  private readonly permEndpoint = '/permissions';
 
   constructor(private api: ApiService) {}
 
@@ -35,5 +42,17 @@ export class RoleService {
 
   delete(id: number): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  getAllPermissions(): Observable<PermissionDTO[]> {
+    return this.api.get<PermissionDTO[]>(this.permEndpoint);
+  }
+
+  assignPermission(roleId: number, permissionId: number): Observable<RoleDTO> {
+    return this.api.put<RoleDTO>(`${this.endpoint}/${roleId}/permissions/${permissionId}`, {});
+  }
+
+  removePermission(roleId: number, permissionId: number): Observable<RoleDTO> {
+    return this.api.delete<RoleDTO>(`${this.endpoint}/${roleId}/permissions/${permissionId}`);
   }
 }
