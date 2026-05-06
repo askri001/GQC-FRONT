@@ -1,602 +1,213 @@
 <div class="page-container">
-  <mat-card class="page-card">
-    <div class="card-header">
-      <div class="header-title">
-        <mat-icon class="title-icon">business</mat-icon>
-        <h2>Gestion des Prestataires</h2>
-      </div>
+  <div class="page-card">
+
+    <!-- ===== TITLE ===== -->
+    <div class="page-title">
+      <mat-icon class="title-icon">business</mat-icon>
+      <h2>Gestion des Prestataires</h2>
     </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" (selectedTabChange)="onTabChange($event)" mat-align-tabs="start" animationDuration="300ms">
-      
-      
-      <mat-tab label="Avocats ({{filteredAvocats().length}})">
-        <ng-template matTabLabel>
-          <mat-icon>gavel</mat-icon> Avocats
-        </ng-template>
-        <div class="tab-content">
-          <div class="tab-header">
-            <h3>Gestion des Avocats</h3>
-            <button mat-raised-button color="primary" (click)="openDialog('AVOCAT')">
-              <mat-icon>add</mat-icon> Nouvel Avocat
-            </button>
-          </div>
-          
-          <div class="filters">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Rechercher</mat-label>
-              <input matInput [(ngModel)]="avocatSearch" (input)="applyAvocatFilter()" placeholder="Nom, spécialité...">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Statut</mat-label>
-              <mat-select [(ngModel)]="avocatActif" (selectionChange)="applyAvocatFilter()">
-                <mat-option value="">Tous</mat-option>
-                <mat-option value="true">Actifs</mat-option>
-                <mat-option value="false">Inactifs</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          @if (loadingAvocat()) {
-            <div class="loading-container">
-              <mat-spinner diameter="50"></mat-spinner>
-              <p>Chargement des avocats...</p>
-            </div>
-          } @else if (filteredAvocats().length === 0) {
-            <div class="no-data-container">
-              <mat-icon>person_off</mat-icon>
-              <p>Aucun avocat trouvé</p>
-            </div>
-          } @else {
-            <div class="table-container">
-              <table mat-table [dataSource]="filteredAvocats()" class="mat-elevation-z8">
-                <ng-container matColumnDef="adresse">
-                  <th mat-header-cell *matHeaderCellDef>Adresse</th>
-                  <td mat-cell *matCellDef="let p">{{p.adresse}}</td>
-                </ng-container>
-                <ng-container matColumnDef="nom">
-                  <th mat-header-cell *matHeaderCellDef>Nom</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempAvocat()!.nom" placeholder="Nom">
-                      </mat-form-field>
-                    } @else {
-                      {{ getFullName(p) }}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="telephone">
-                  <th mat-header-cell *matHeaderCellDef>Téléphone</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempAvocat()!.telephone" placeholder="Tel">
-                      </mat-form-field>
-                    } @else {
-                      {{p.telephone}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef>Email</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempAvocat()!.email" placeholder="Email">
-                      </mat-form-field>
-                    } @else {
-                      {{p.email}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="specialite">
-                  <th mat-header-cell *matHeaderCellDef>Spécialité</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <mat-label>Spécialité</mat-label>
-                        <mat-select [(ngModel)]="tempAvocat()!.specialite">
-                          @for (spec of specialitesAvocat; track spec) {
-                            <mat-option [value]="spec">{{spec}}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    } @else {
-                      <mat-chip class="specialite-chip">{{p.specialite}}</mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="tarifJournalier">
-                  <th mat-header-cell *matHeaderCellDef>Tarif (DH/j)</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput type="number" [(ngModel)]="tempAvocat()!.tarifJournalier">
-                      </mat-form-field>
-                    } @else {
-                      {{p.tarifJournalier | number:'1.0-0'}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actif">
-                  <th mat-header-cell *matHeaderCellDef>Statut</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (avocatsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-checkbox [(ngModel)]="tempAvocat()!.actif"></mat-checkbox>
-                    } @else {
-                      <mat-chip [color]="p.actif ? 'primary' : 'warn'">
-                        {{p.actif ? 'Actif' : 'Inactif'}}
-                      </mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Actions</th>
-                  <td mat-cell *matCellDef="let p">
-                    <button mat-icon-button color="primary" (click)="openDialog('AVOCAT', p)" matTooltip="Modifier">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
-                      <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="confirmDelete(p)" matTooltip="Supprimer">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="prestataire-row"></tr>
-              </table>
-            </div>
-
-            <mat-paginator 
-              [length]="filteredAvocats().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25, 50]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
+    <!-- ===== TABS NAV ===== -->
+    <div class="tabs-nav">
+      @for (tab of tabs; track tab.type) {
+        <button
+          class="tab-btn"
+          [class.tab-active]="activeTab() === tab.type"
+          (click)="selectTab(tab.type)">
+          <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
+          <span>{{ tab.label }}</span>
+          @if (tabState[tab.type].total > 0) {
+            <span class="tab-badge">{{ tabState[tab.type].total }}</span>
           }
+        </button>
+      }
+    </div>
 
-          @if (avocatsEditMode()) {
-            <div class="inline-edit-row">
-              <h4>Nouvel/Modification Avocat</h4>
-              <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempAvocat()!.nom" placeholder="Nom *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempAvocat()!.prenom" placeholder="Prénom">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempAvocat()!.telephone" placeholder="Téléphone *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempAvocat()!.email" placeholder="Email *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempAvocat()!.adresse" placeholder="Adresse *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Spécialité *</mat-label>
-                  <mat-select [(ngModel)]="tempAvocat()!.specialite">
-                    @for (spec of specialitesAvocat; track spec) {
-                      <mat-option [value]="spec">{{spec}}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput type="number" [(ngModel)]="tempAvocat()!.tarifJournalier" placeholder="Tarif DH/j">
-                </mat-form-field>
-                <mat-checkbox [(ngModel)]="tempAvocat()!.actif">Actif</mat-checkbox>
-                <div>
-                  <button mat-raised-button color="primary" (click)="saveAvocatInlineEdit()" [disabled]="!tempAvocat()!.nom || !tempAvocat()!.telephone">
-                    <mat-icon>save</mat-icon> Sauvegarder
-                  </button>
-                  <button mat-button color="warn" (click)="cancelAvocatInlineEdit()">
-                    <mat-icon>close</mat-icon> Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
+    <!-- ===== TOOLBAR ===== -->
+    <div class="toolbar">
+
+      <!-- Search -->
+      <div class="search-box">
+        <input
+          class="search-input"
+          [(ngModel)]="current.search"
+          (ngModelChange)="applyFilters()"
+          placeholder="Rechercher par nom, email, spécialité…" />
+        <span class="search-icon-wrap">
+          <mat-icon>search</mat-icon>
+        </span>
+      </div>
+
+      <!-- Statut -->
+      <div class="select-wrap">
+        <label class="select-label">Statut</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="current.status" (ngModelChange)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="true">Actif</option>
+            <option value="false">Inactif</option>
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
         </div>
-      </mat-tab>
+      </div>
 
-      
-      <mat-tab label="Experts ({{filteredExperts().length}})">
-        <ng-template matTabLabel>
-          <mat-icon>science</mat-icon> Experts
-        </ng-template>
-        <div class="tab-content">
-          <div class="tab-header">
-            <h3>Gestion des Experts</h3>
-            <button mat-raised-button color="primary" (click)="openDialog('EXPERT')">
-              <mat-icon>add</mat-icon> Nouvel Expert
-            </button>
-          </div>
+      <div class="toolbar-spacer"></div>
 
-          <div class="filters">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Rechercher</mat-label>
-              <input matInput [(ngModel)]="expertSearch" (input)="applyExpertFilter()" placeholder="Nom, spécialité...">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Statut</mat-label>
-              <mat-select [(ngModel)]="expertActif" (selectionChange)="applyExpertFilter()">
-                <mat-option value="">Tous</mat-option>
-                <mat-option value="true">Actifs</mat-option>
-                <mat-option value="false">Inactifs</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+      <!-- Add button -->
+      <button class="btn-new" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        Nouveau {{ activeTabLabel() }}
+      </button>
 
-          @if (loadingExpert()) {
-            <div class="loading-container">
-              <mat-spinner diameter="50"></mat-spinner>
-              <p>Chargement des experts...</p>
-            </div>
-          } @else if (filteredExperts().length === 0) {
-            <div class="no-data-container">
-              <mat-icon>person_off</mat-icon>
-              <p>Aucun expert trouvé</p>
-            </div>
-          } @else {
-            <div class="table-container">
-              <table mat-table [dataSource]="filteredExperts()" class="mat-elevation-z8">
-                
-                <ng-container matColumnDef="adresse">
-                  <th mat-header-cell *matHeaderCellDef>Adresse</th>
-                  <td mat-cell *matCellDef="let p">{{p.adresse}}</td>
-                </ng-container>
-                <ng-container matColumnDef="nom">
-                  <th mat-header-cell *matHeaderCellDef>Nom</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempExpert()!.nom" placeholder="Nom">
-                      </mat-form-field>
-                    } @else {
-                      {{ getFullName(p) }}
-                    }
-                  </td>
-                </ng-container>
-                
-                <ng-container matColumnDef="telephone">
-                  <th mat-header-cell *matHeaderCellDef>Téléphone</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempExpert()!.telephone" placeholder="Tel">
-                      </mat-form-field>
-                    } @else {
-                      {{p.telephone}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef>Email</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempExpert()!.email" placeholder="Email">
-                      </mat-form-field>
-                    } @else {
-                      {{p.email}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="specialite">
-                  <th mat-header-cell *matHeaderCellDef>Spécialité</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <mat-label>Spécialité</mat-label>
-                        <mat-select [(ngModel)]="tempExpert()!.specialite">
-                          @for (spec of specialitesExpert; track spec) {
-                            <mat-option [value]="spec">{{spec}}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    } @else {
-                      <mat-chip class="specialite-chip">{{p.specialite}}</mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="tarifJournalier">
-                  <th mat-header-cell *matHeaderCellDef>Tarif (DH/j)</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput type="number" [(ngModel)]="tempExpert()!.tarifJournalier">
-                      </mat-form-field>
-                    } @else {
-                      {{p.tarifJournalier | number:'1.0-0'}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actif">
-                  <th mat-header-cell *matHeaderCellDef>Statut</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (expertsEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-checkbox [(ngModel)]="tempExpert()!.actif"></mat-checkbox>
-                    } @else {
-                      <mat-chip [color]="p.actif ? 'primary' : 'warn'">
-                        {{p.actif ? 'Actif' : 'Inactif'}}
-                      </mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Actions</th>
-                  <td mat-cell *matCellDef="let p">
-                    <button mat-icon-button color="primary" (click)="openDialog('EXPERT', p)" matTooltip="Modifier">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
-                      <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="confirmDelete(p)" matTooltip="Supprimer">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
+    </div>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="prestataire-row"></tr>
-              </table>
-            </div>
-            <mat-paginator 
-              [length]="filteredExperts().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25, 50]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
-          }
+    <!-- ===== TAB CONTENT ===== -->
+    <div class="tab-panel">
 
-          @if (expertsEditMode()) {
-            
-            <div class="inline-edit-row">
-              <h4>Nouvel/Modification Expert</h4>
-              <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempExpert()!.nom" placeholder="Nom *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempExpert()!.prenom" placeholder="Prénom">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempExpert()!.telephone" placeholder="Téléphone *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempExpert()!.email" placeholder="Email *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempExpert()!.adresse" placeholder="Adresse *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Spécialité *</mat-label>
-                  <mat-select [(ngModel)]="tempExpert()!.specialite">
-                    @for (spec of specialitesExpert; track spec) {
-                      <mat-option [value]="spec">{{spec}}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput type="number" [(ngModel)]="tempExpert()!.tarifJournalier" placeholder="Tarif DH/j">
-                </mat-form-field>
-                <mat-checkbox [(ngModel)]="tempExpert()!.actif">Actif</mat-checkbox>
-                <div>
-                  <button mat-raised-button color="primary" (click)="saveExpertInlineEdit()" [disabled]="!tempExpert()!.nom || !tempExpert()!.telephone">
-                    <mat-icon>save</mat-icon> Sauvegarder
-                  </button>
-                  <button mat-button color="warn" (click)="cancelExpertInlineEdit()">
-                    <mat-icon>close</mat-icon> Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
+      <!-- ERROR -->
+      @if (current.error) {
+        <div class="state-box error-box">
+          <mat-icon>error_outline</mat-icon>
+          <p>{{ current.error }}</p>
+          <button class="retry-btn" (click)="reloadCurrent()">Réessayer</button>
         </div>
-      </mat-tab>
+      }
 
-      
-      <mat-tab label="Huissiers ({{filteredHuissiers().length}})">
-        <ng-template matTabLabel>
-          <mat-icon>balance</mat-icon> Huissiers
-        </ng-template>
-        <div class="tab-content">
-          <div class="tab-header">
-            <h3>Gestion des Huissiers</h3>
-            <button mat-raised-button color="primary" (click)="openDialog('HUISSIER')">
-              <mat-icon>add</mat-icon> Nouvel Huissier
-            </button>
-          </div>
-
-          <div class="filters">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Rechercher</mat-label>
-              <input matInput [(ngModel)]="huissierSearch" (input)="applyHuissierFilter()" placeholder="Nom, spécialité...">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Statut</mat-label>
-              <mat-select [(ngModel)]="huissierActif" (selectionChange)="applyHuissierFilter()">
-                <mat-option value="">Tous</mat-option>
-                <mat-option value="true">Actifs</mat-option>
-                <mat-option value="false">Inactifs</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-@if (loadingHuissier()) {
-            <div class="loading-container">
-              <mat-spinner diameter="50"></mat-spinner>
-              <p>Chargement des huissiers...</p>
-            </div>
-          } @else if (filteredHuissiers().length === 0) {
-            <div class="no-data-container">
-              <mat-icon>person_off</mat-icon>
-              <p>Aucun huissier trouvé</p>
-            </div>
-          } @else {
-            <div class="table-container">
-              <table mat-table [dataSource]="filteredHuissiers()" class="mat-elevation-z8">
-                <ng-container matColumnDef="adresse">
-                  <th mat-header-cell *matHeaderCellDef>Adresse</th>
-                  <td mat-cell *matCellDef="let p">{{p.adresse}}</td>
-                </ng-container>
-                <ng-container matColumnDef="nom">
-                  <th mat-header-cell *matHeaderCellDef>Nom</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempHuissier()!.nom" placeholder="Nom">
-                      </mat-form-field>
-                    } @else {
-                      {{ getFullName(p) }}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="telephone">
-                  <th mat-header-cell *matHeaderCellDef>Téléphone</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempHuissier()!.telephone" placeholder="Tel">
-                      </mat-form-field>
-                    } @else {
-                      {{p.telephone}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef>Email</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput [(ngModel)]="tempHuissier()!.email" placeholder="Email">
-                      </mat-form-field>
-                    } @else {
-                      {{p.email}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="specialite">
-                  <th mat-header-cell *matHeaderCellDef>Spécialité</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <mat-label>Spécialité</mat-label>
-                        <mat-select [(ngModel)]="tempHuissier()!.specialite">
-                          @for (spec of specialitesHuissier; track spec) {
-                            <mat-option [value]="spec">{{spec}}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    } @else {
-                      <mat-chip class="specialite-chip">{{p.specialite}}</mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="tarifJournalier">
-                  <th mat-header-cell *matHeaderCellDef>Tarif (DH/j)</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-form-field appearance="outline" class="inline-field">
-                        <input matInput type="number" [(ngModel)]="tempHuissier()!.tarifJournalier">
-                      </mat-form-field>
-                    } @else {
-                      {{p.tarifJournalier | number:'1.0-0'}}
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actif">
-                  <th mat-header-cell *matHeaderCellDef>Statut</th>
-                  <td mat-cell *matCellDef="let p">
-                    @if (huissiersEditId() === (p.idPrestataire ?? 0)) {
-                      <mat-checkbox [(ngModel)]="tempHuissier()!.actif"></mat-checkbox>
-                    } @else {
-                      <mat-chip [color]="p.actif ? 'primary' : 'warn'">
-                        {{p.actif ? 'Actif' : 'Inactif'}}
-                      </mat-chip>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Actions</th>
-                  <td mat-cell *matCellDef="let p">
-                    <button mat-icon-button color="primary" (click)="openDialog('HUISSIER', p)" matTooltip="Modifier">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button [color]="p.actif ? 'warn' : 'primary'" (click)="toggleStatus(p)" matTooltip="Toggle statut">
-                      <mat-icon>{{p.actif ? 'toggle_off' : 'toggle_on'}}</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="confirmDelete(p)" matTooltip="Supprimer">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="prestataire-row"></tr>
-              </table>
-            </div>
-            <mat-paginator 
-              [length]="filteredHuissiers().length"
-              [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25, 50]"
-              (page)="onPageChange($event)">
-            </mat-paginator>
-          }
-
-@if (huissiersEditMode()) {
-            <div class="inline-edit-row">
-              <h4>Nouvel/Modification Huissier</h4>
-              <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempHuissier()!.nom" placeholder="Nom *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempHuissier()!.prenom" placeholder="Prénom">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempHuissier()!.telephone" placeholder="Téléphone *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempHuissier()!.email" placeholder="Email *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput [(ngModel)]="tempHuissier()!.adresse" placeholder="Adresse *">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Spécialité *</mat-label>
-                  <mat-select [(ngModel)]="tempHuissier()!.specialite">
-                    @for (spec of specialitesHuissier; track spec) {
-                      <mat-option [value]="spec">{{spec}}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <input matInput type="number" [(ngModel)]="tempHuissier()!.tarifJournalier" placeholder="Tarif DH/j">
-                </mat-form-field>
-                <mat-checkbox [(ngModel)]="tempHuissier()!.actif">Actif</mat-checkbox>
-                <div>
-                  <button mat-raised-button color="primary" (click)="saveHuissierInlineEdit()" [disabled]="!tempHuissier()!.nom || !tempHuissier()!.telephone">
-                    <mat-icon>save</mat-icon> Sauvegarder
-                  </button>
-                  <button mat-button color="warn" (click)="cancelHuissierInlineEdit()">
-                    <mat-icon>close</mat-icon> Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
+      <!-- LOADING -->
+      @else if (current.loading) {
+        <div class="state-box">
+          <mat-spinner diameter="44"></mat-spinner>
+          <p>Chargement…</p>
         </div>
-      </mat-tab>
-    </mat-tab-group>
-  </mat-card>
+      }
+
+      <!-- EMPTY -->
+      @else if (current.rows.length === 0) {
+        <div class="state-box empty-box">
+          <mat-icon>person_search</mat-icon>
+          <p>Aucun prestataire trouvé</p>
+        </div>
+      }
+
+      <!-- TABLE -->
+      @else {
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>NOM</th>
+                  <th>SPÉCIALITÉ</th>
+                  <th>TÉLÉPHONE</th>
+                  <th>EMAIL</th>
+                  <th>TARIF (DH/J)</th>
+                  <th>STATUT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of current.rows; track p.idPrestataire) {
+                  <tr>
+
+                    <td class="td-id">{{ p.idPrestataire }}</td>
+
+                    <td class="td-nom">{{ getFullName(p) }}</td>
+
+                    <td class="td-specialite">
+                      <span class="specialite-chip">{{ p.specialite }}</span>
+                    </td>
+
+                    <td class="td-tel">{{ p.telephone || '—' }}</td>
+
+                    <td class="td-email">{{ p.email || '—' }}</td>
+
+                    <td class="td-tarif">{{ p.tarifJournalier | number:'1.0-0' }}</td>
+
+                    <td class="td-statut">
+                      <span class="status-chip"
+                            [class.chip-active]="p.actif"
+                            [class.chip-inactive]="!p.actif">
+                        {{ p.actif ? 'Actif' : 'Inactif' }}
+                      </span>
+                    </td>
+
+                    <td class="td-actions">
+                      <button class="act-btn act-edit"
+                              (click)="openEditDialog(p)"
+                              title="Modifier">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+
+                      <button class="act-btn act-toggle"
+                              (click)="toggleStatus(p)"
+                              [class.on]="p.actif"
+                              [disabled]="togglingId() === p.idPrestataire"
+                              [title]="p.actif ? 'Désactiver' : 'Activer'">
+                        @if (togglingId() === p.idPrestataire) {
+                          <mat-spinner diameter="18" class="toggle-spinner"></mat-spinner>
+                        } @else {
+                          <mat-icon>{{ p.actif ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                        }
+                      </button>
+
+                      <button class="act-btn act-delete"
+                              (click)="confirmDelete(p)"
+                              title="Supprimer">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </td>
+
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- PAGINATOR -->
+          <div class="pager">
+            <span class="pager-info">
+              {{ current.total === 0 ? '0' : current.page * current.size + 1 }}–{{ min(current.total, (current.page + 1) * current.size) }}
+              sur {{ current.total }}
+            </span>
+
+            <div class="pager-btns">
+              <button class="pager-btn"
+                      [disabled]="current.page === 0"
+                      (click)="goToPage(current.page - 1)">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+
+              @for (n of getPageNumbers(); track n) {
+                <button class="pager-btn pager-num"
+                        [class.pager-active]="n === current.page"
+                        (click)="goToPage(n)">
+                  {{ n + 1 }}
+                </button>
+              }
+
+              <button class="pager-btn"
+                      [disabled]="current.page >= totalPages() - 1"
+                      (click)="goToPage(current.page + 1)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+
+            <div class="pager-size">
+              <span>Par page :</span>
+              <select [(ngModel)]="current.size" (ngModelChange)="onPageSizeChange($event)">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    </div><!-- /tab-panel -->
+
+  </div>
 </div>
-

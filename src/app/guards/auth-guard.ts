@@ -10,6 +10,15 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
+<<<<<<< Updated upstream
   router.navigate(['/login']);
   return false;
+=======
+  // Prevent redirect loop when already on /login
+  if (state.url === '/login') {
+    return false;
+  }
+
+  return router.createUrlTree(['/login']);
+>>>>>>> Stashed changes
 };

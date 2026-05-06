@@ -1,355 +1,284 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { finalize } from 'rxjs';
 
-import { PRESTATAIRE_SPECIALITES, TypePrestataire, Prestataire } from '../../core/models/prestataire.model';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 import { PrestataireService } from '../../core/services/prestataire.service';
+import { Prestataire, TypePrestataire } from '../../core/models/prestataire.model';
+import { PrestataireFormDialogComponent } from './prestataire-form-dialog';
+import { ConfirmPrestataireStatusDialogComponent } from './confirm-status-dialog';
+
+// ── Tab definition ─────────────────────────────────────────────
+export interface TabDef {
+  type:  TypePrestataire;
+  label: string;
+  icon:  string;
+}
 
 @Component({
   selector: 'app-prestataires',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
     FormsModule,
-    MatCardModule,
-    MatTableModule,
-    MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDialogModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule,
-    MatMenuModule,
-    MatPaginatorModule,
-    MatTabsModule,
-    MatCheckboxModule
+    MatSnackBarModule,
+    MatDialogModule,
   ],
   templateUrl: './prestataire.html',
-  styleUrls: ['./prestataire-modern.css', './prestataire.css']
+  styleUrls:   ['./prestataire.css'],
 })
 export class PrestatairesComponent implements OnInit {
+
   private prestataireService = inject(PrestataireService);
-  private snackBar = inject(MatSnackBar);
+  private snackBar           = inject(MatSnackBar);
+  private dialog             = inject(MatDialog);
+  private cdr                = inject(ChangeDetectorRef);
 
-  activeTab = signal(0);
+  // ── Tabs config ────────────────────────────────────────────────
+  readonly tabs: TabDef[] = [
+    { type: 'AVOCAT',   label: 'Avocats',   icon: 'gavel'   },
+    { type: 'HUISSIER', label: 'Huissiers', icon: 'balance' },
+    { type: 'EXPERT',   label: 'Experts',   icon: 'science' },
+  ];
 
-  
-  avocats = signal<Prestataire[]>([]);
-  filteredAvocats = signal<Prestataire[]>([]);
-  experts = signal<Prestataire[]>([]);
-  filteredExperts = signal<Prestataire[]>([]);
-  huissiers = signal<Prestataire[]>([]);
-  filteredHuissiers = signal<Prestataire[]>([]);
+  activeTab = signal<TypePrestataire>('AVOCAT');
 
-  
-  loadingAvocat = signal(false);
-  loadingExpert = signal(false);
-  loadingHuissier = signal(false);
+  // ── Per-tab state ──────────────────────────────────────────────
+  tabState: Record<TypePrestataire, {
+    rows:    Prestataire[];
+    total:   number;
+    page:    number;
+    size:    number;
+    search:  string;
+    status:  string;
+    loading: boolean;
+    error:   string | null;
+  }> = {
+    AVOCAT:   this.initTabState(),
+    HUISSIER: this.initTabState(),
+    EXPERT:   this.initTabState(),
+  };
 
-  
-  avocatsEditId = signal<number | null>(null);
-  avocatsEditMode = signal(false);
-  tempAvocat = signal<Partial<Prestataire> | null>(null);
+  allPrestataires = signal<Prestataire[]>([]);
+  togglingId      = signal<number | null>(null);
 
-  expertsEditId = signal<number | null>(null);
-  expertsEditMode = signal(false);
-  tempExpert = signal<Partial<Prestataire> | null>(null);
-
-  huissiersEditId = signal<number | null>(null);
-  huissiersEditMode = signal(false);
-  tempHuissier = signal<Partial<Prestataire> | null>(null);
-
-  
-  avocatSearch = '';
-  avocatActif = '';
-  expertSearch = '';
-  expertActif = '';
-  huissierSearch = '';
-  huissierActif = '';
-
-  
-  pageSize = 10;
-  currentPage = 0;
-  displayedColumns = ['adresse', 'nom', 'telephone', 'email', 'specialite', 'tarifJournalier', 'actif', 'actions'];
-
-  specialitesAvocat = PRESTATAIRE_SPECIALITES['AVOCAT'];
-  specialitesExpert = PRESTATAIRE_SPECIALITES['EXPERT'];
-  specialitesHuissier = PRESTATAIRE_SPECIALITES['HUISSIER'];
-
+  // ── Lifecycle ──────────────────────────────────────────────────
   ngOnInit(): void {
-    this.loadTabData('AVOCAT');
+    this.loadTab('AVOCAT');
+    this.loadAllForDialog();
   }
 
-  onTabChange(event: MatTabChangeEvent): void {
-    this.activeTab.set(event.index!);
-    const types: TypePrestataire[] = ['AVOCAT', 'EXPERT', 'HUISSIER'];
-    this.loadTabData(types[event.index!]);
+  // ── Helpers ────────────────────────────────────────────────────
+  private initTabState() {
+    return { rows: [], total: 0, page: 0, size: 10, search: '', status: '', loading: false, error: null };
   }
 
-  loadTabData(type: TypePrestataire): void {
-    const setLoading = {
-      'AVOCAT': () => this.loadingAvocat.set(true),
-      'EXPERT': () => this.loadingExpert.set(true),
-      'HUISSIER': () => this.loadingHuissier.set(true)
-    };
-    setLoading[type]?.();
+  get current() { return this.tabState[this.activeTab()]; }
 
-    this.prestataireService.getByType(type).subscribe({
-      next: (data) => {
-        const setData = {
-          'AVOCAT': () => this.avocats.set(data),
-          'EXPERT': () => this.experts.set(data),
-          'HUISSIER': () => this.huissiers.set(data)
-        };
-        setData[type]?.();
-        console.log('we re here ',type)
-        this.applyFilter(type);
-        const setLoadingOff = {
-          'AVOCAT': () => this.loadingAvocat.set(false),
-          'EXPERT': () => this.loadingExpert.set(false),
-          'HUISSIER': () => this.loadingHuissier.set(false)
-        };
-        setLoadingOff[type]?.();
-      },
-      error: (error) => {
-        console.error(error);
-        this.showNotification(`Erreur chargement ${type}`, 'error');
-        const setLoadingOff = {
-          'AVOCAT': () => this.loadingAvocat.set(false),
-          'EXPERT': () => this.loadingExpert.set(false),
-          'HUISSIER': () => this.loadingHuissier.set(false)
-        };
-        setLoadingOff[type]?.();
-      }
-    });
-  }
-
-  applyFilter(type: TypePrestataire): void {
-    switch (type) {
-      case 'AVOCAT':
-        let result = this.avocats();
-        if (this.avocatSearch) {
-          result = result.filter(p => this.getFullName(p).toLowerCase().includes(this.avocatSearch.toLowerCase()) || 
-                                     p.specialite.toLowerCase().includes(this.avocatSearch.toLowerCase()));
-        }
-        if (this.avocatActif !== '') {
-          result = result.filter(p => p.actif === (this.avocatActif === 'true'));
-        }
-        this.filteredAvocats.set(result);
-        break;
-      case 'EXPERT':
-        let result2 = this.experts();
-        if (this.expertSearch) {
-          result = result2.filter(p => this.getFullName(p).toLowerCase().includes(this.expertSearch.toLowerCase()) || 
-                                     p.specialite.toLowerCase().includes(this.expertSearch.toLowerCase()));
-        }
-        if (this.expertActif !== '') {
-          result = result2.filter(p => p.actif === (this.expertActif === 'true'));
-        }
-        this.filteredExperts.set(result2);
-        break;
-      case 'HUISSIER':
-        let result3 = this.huissiers();
-        if (this.huissierSearch) {
-          result = result3.filter(p => this.getFullName(p).toLowerCase().includes(this.huissierSearch.toLowerCase()) || 
-                                     p.specialite.toLowerCase().includes(this.huissierSearch.toLowerCase()));
-        }
-        if (this.huissierActif !== '') {
-          result = result3.filter(p => p.actif === (this.huissierActif === 'true'));
-        }
-        this.filteredHuissiers.set(result3);
-        break;
+  // ── Tab switch ─────────────────────────────────────────────────
+  selectTab(type: TypePrestataire): void {
+    if (this.activeTab() === type) return;
+    this.activeTab.set(type);
+    if (this.tabState[type].rows.length === 0 && !this.tabState[type].loading) {
+      this.loadTab(type);
     }
   }
 
-  
-  startAvocatInlineEdit(p?: Prestataire): void {
-    this.avocatsEditId.set(p?.idPrestataire || 0);
-    this.tempAvocat.set(p ? { ...p } : {
-      typePrestataire: 'AVOCAT' as const,
-      nom: '', prenom: '', telephone: '', email: '', adresse: '',
-      specialite: '', tarifJournalier: 0, actif: true
-    });
-    this.avocatsEditMode.set(true);
-  }
+  // ── Load data ──────────────────────────────────────────────────
+  loadTab(type: TypePrestataire): void {
+    const s = this.tabState[type];
+    s.loading = true;
+    s.error   = null;
 
-  saveAvocatInlineEdit(): void {
-    const temp = this.tempAvocat();
-    if (!temp) return;
-    const request = temp.idPrestataire
-      ? this.prestataireService.update(temp.idPrestataire, temp as Prestataire)
-      : this.prestataireService.create(temp as Prestataire);
-    this.loadingAvocat.set(true);
-    request.subscribe({
-      next: () => {
-        this.loadingAvocat.set(false);
-        this.loadTabData('AVOCAT');
-        this.cancelAvocatInlineEdit();
-        this.showNotification('Avocat sauvegardé', 'success');
-      },
-      error: () => {
-        this.loadingAvocat.set(false);
-        this.showNotification('Erreur sauvegarde', 'error');
-      }
-    });
-  }
+    const status = s.status === '' ? undefined : s.status === 'true';
+    const search = s.search?.trim() || undefined;
 
-  cancelAvocatInlineEdit(): void {
-    this.avocatsEditId.set(null);
-    this.tempAvocat.set(null);
-    this.avocatsEditMode.set(false);
-  }
-
-  applyAvocatFilter() { this.applyFilter('AVOCAT'); }
-
-  
-  startExpertInlineEdit(p?: Prestataire): void {
-    this.expertsEditId.set(p?.idPrestataire || 0);
-    this.tempExpert.set(p ? { ...p } : {
-      typePrestataire: 'EXPERT' as const,
-      nom: '', prenom: '', telephone: '', email: '', adresse: '',
-      specialite: '', tarifJournalier: 0, actif: true
-    });
-    this.expertsEditMode.set(true);
-  }
-
-  saveExpertInlineEdit(): void {
-    const temp = this.tempExpert();
-    if (!temp) return;
-    const request = temp.idPrestataire
-      ? this.prestataireService.update(temp.idPrestataire, temp as Prestataire)
-      : this.prestataireService.create(temp as Prestataire);
-    this.loadingExpert.set(true);
-    request.subscribe({
-      next: () => {
-        this.loadingExpert.set(false);
-        this.loadTabData('EXPERT');
-        this.cancelExpertInlineEdit();
-        this.showNotification('Expert sauvegardé', 'success');
-      },
-      error: () => {
-        this.loadingExpert.set(false);
-        this.showNotification('Erreur sauvegarde', 'error');
-      }
-    });
-  }
-
-  cancelExpertInlineEdit(): void {
-    this.expertsEditId.set(null);
-    this.tempExpert.set(null);
-    this.expertsEditMode.set(false);
-  }
-
-  applyExpertFilter() { this.applyFilter('EXPERT'); }
-
-  
-  startHuissierInlineEdit(p?: Prestataire): void {
-    this.huissiersEditId.set(p?.idPrestataire || 0);
-    this.tempHuissier.set(p ? { ...p } : {
-      typePrestataire: 'HUISSIER' as const,
-      nom: '', prenom: '', telephone: '', email: '', adresse: '',
-      specialite: '', tarifJournalier: 0, actif: true
-    });
-    this.huissiersEditMode.set(true);
-  }
-
-  saveHuissierInlineEdit(): void {
-    const temp = this.tempHuissier();
-    if (!temp) return;
-    const request = temp.idPrestataire
-      ? this.prestataireService.update(temp.idPrestataire, temp as Prestataire)
-      : this.prestataireService.create(temp as Prestataire);
-    this.loadingHuissier.set(true);
-    request.subscribe({
-      next: () => {
-        this.loadingHuissier.set(false);
-        this.loadTabData('HUISSIER');
-        this.cancelHuissierInlineEdit();
-        this.showNotification('Huissier sauvegardé', 'success');
-      },
-      error: () => {
-        this.loadingHuissier.set(false);
-        this.showNotification('Erreur sauvegarde', 'error');
-      }
-    });
-  }
-
-  cancelHuissierInlineEdit(): void {
-    this.huissiersEditId.set(null);
-    this.tempHuissier.set(null);
-    this.huissiersEditMode.set(false);
-  }
-
-  applyHuissierFilter() { this.applyFilter('HUISSIER'); }
-
-  
-  openDialog(type: TypePrestataire, prestataire?: Prestataire): void {
-    switch (type) {
-      case 'AVOCAT':
-        this.startAvocatInlineEdit(prestataire);
-        break;
-      case 'EXPERT':
-        this.startExpertInlineEdit(prestataire);
-        break;
-      case 'HUISSIER':
-        this.startHuissierInlineEdit(prestataire);
-        break;
-    }
-  }
-
-  toggleStatus(p: Prestataire): void {
-    if (confirm(`Confirmer changement statut ${this.getFullName(p)} ?`)) {
-      this.prestataireService.updateStatus(p.idPrestataire!, !p.actif).subscribe({
-        next: () => this.loadTabData(p.typePrestataire),
-        error: () => this.showNotification('Erreur statut', 'error')
+    this.prestataireService
+      .getPaginated(s.page, s.size, search, type, status)
+      .pipe(finalize(() => {
+        s.loading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (res) => {
+          s.rows  = res.content       ?? [];
+          s.total = res.totalElements ?? 0;
+        },
+        error: (err) => {
+          let msg = 'Erreur lors du chargement';
+          if (err?.status === 0)        msg = 'Serveur indisponible';
+          else if (err?.status === 403) msg = 'Accès refusé (403)';
+          else if (err?.error?.message) msg = err.error.message;
+          s.error = msg;
+          s.rows  = [];
+          s.total = 0;
+        },
       });
-    }
   }
 
+  reloadCurrent(): void { this.loadTab(this.activeTab()); }
+
+  private loadAllForDialog(): void {
+    this.prestataireService.getAll().subscribe({
+      next: (all) => this.allPrestataires.set(all),
+      error: () => {},
+    });
+  }
+
+  // ── Filters ────────────────────────────────────────────────────
+  applyFilters(): void {
+    const type = this.activeTab();
+    this.tabState[type].page = 0;
+    this.loadTab(type);
+  }
+
+  // ── Pagination ─────────────────────────────────────────────────
+  totalPages(): number {
+    const s = this.current;
+    return Math.max(1, Math.ceil(s.total / s.size));
+  }
+
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
+    this.current.page = page;
+    this.loadTab(this.activeTab());
+  }
+
+  onPageSizeChange(size: number): void {
+    this.current.size = Number(size);
+    this.current.page = 0;
+    this.loadTab(this.activeTab());
+  }
+
+  getPageNumbers(): number[] {
+    const total   = this.totalPages();
+    const current = this.current.page;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const start = Math.max(0, current - 2);
+    const end   = Math.min(total - 1, current + 2);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  min(a: number, b: number): number { return Math.min(a, b); }
+
+  // ── Dialog: Créer ──────────────────────────────────────────────
+  openCreateDialog(): void {
+    const activeType = this.activeTab();
+
+    const ref = this.dialog.open(PrestataireFormDialogComponent, {
+      width: '700px',
+      maxWidth: '95vw',
+      panelClass: 'prestataire-dialog',
+      data: {
+        isEdit: false,
+        defaultType: activeType,
+        existingPrestataires: this.allPrestataires(),
+      },
+    });
+
+    ref.afterClosed().subscribe((result?: Partial<Prestataire>) => {
+      if (!result) return;
+      this.prestataireService.create(result).subscribe({
+        next: () => {
+          this.snackBar.open('Prestataire créé avec succès', 'OK', { duration: 3000 });
+          const createdType = (result.typePrestataire ?? activeType) as TypePrestataire;
+          this.tabState[createdType].page = 0;
+          this.loadTab(createdType);
+          this.loadAllForDialog();
+          if (createdType !== this.activeTab()) this.activeTab.set(createdType);
+        },
+        error: () => this.snackBar.open('Erreur lors de la création', 'OK', { duration: 3000 }),
+      });
+    });
+  }
+
+  // ── Dialog: Modifier ───────────────────────────────────────────
+  openEditDialog(p: Prestataire): void {
+    const ref = this.dialog.open(PrestataireFormDialogComponent, {
+      width: '700px',
+      maxWidth: '95vw',
+      panelClass: 'prestataire-dialog',
+      data: { isEdit: true, prestataire: p, existingPrestataires: this.allPrestataires() },
+    });
+
+    ref.afterClosed().subscribe((result?: Partial<Prestataire>) => {
+      if (!result) return;
+      this.prestataireService.update(p.idPrestataire!, result).subscribe({
+        next: () => {
+          this.snackBar.open('Prestataire modifié avec succès', 'OK', { duration: 3000 });
+          this.loadTab(this.activeTab());
+          this.loadAllForDialog();
+        },
+        error: () => this.snackBar.open('Erreur lors de la modification', 'OK', { duration: 3000 }),
+      });
+    });
+  }
+
+  // ── Supprimer ──────────────────────────────────────────────────
   confirmDelete(p: Prestataire): void {
-    if (confirm(`Supprimer ${this.getFullName(p)} ?`)) {
-      this.prestataireService.delete(p.idPrestataire!).subscribe({
-        next: () => this.loadTabData(p.typePrestataire),
-        error: () => this.showNotification('Erreur suppression', 'error')
-      });
-    }
+    if (!confirm(`Supprimer "${this.getFullName(p)}" ? Cette action est irréversible.`)) return;
+    this.prestataireService.delete(p.idPrestataire!).subscribe({
+      next: () => {
+        this.snackBar.open('Prestataire supprimé', 'OK', { duration: 2500 });
+        this.loadTab(this.activeTab());
+        this.loadAllForDialog();
+      },
+      error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 }),
+    });
   }
 
+  // ── Toggle statut ──────────────────────────────────────────────
+  toggleStatus(p: Prestataire): void {
+    const nextActive = !p.actif;
+
+    const ref = this.dialog.open(ConfirmPrestataireStatusDialogComponent, {
+      width: '420px',
+      maxWidth: '95vw',
+      panelClass: 'confirm-status-dialog',
+      data: { activate: nextActive, prestataireName: this.getFullName(p) },
+    });
+
+    ref.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.togglingId.set(p.idPrestataire!);
+
+      this.prestataireService
+        .updateStatus(p.idPrestataire!, nextActive)
+        .pipe(finalize(() => this.togglingId.set(null)))
+        .subscribe({
+          next: (updated) => {
+            const type = this.activeTab();
+            this.tabState[type].rows = this.tabState[type].rows.map(item =>
+              item.idPrestataire === p.idPrestataire ? { ...item, actif: updated.actif } : item
+            );
+            const label = nextActive ? 'activé' : 'désactivé';
+            this.snackBar.open(`Prestataire ${label} avec succès`, 'OK', { duration: 2500 });
+          },
+          error: (err) => {
+            let msg = 'Erreur lors du changement de statut';
+            if (err?.status === 0)        msg = 'Serveur indisponible';
+            else if (err?.status === 403) msg = 'Action non autorisée';
+            else if (err?.error?.message) msg = err.error.message;
+            this.snackBar.open(msg, 'OK', { duration: 3500 });
+          },
+        });
+    });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────
   getFullName(p: Prestataire): string {
-    return `${p.prenom || ''} ${p.nom || ''}`.trim();
+    return p.prenom ? `${p.nom} ${p.prenom}` : p.nom;
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageSize = event.pageSize;
-    this.currentPage = event.pageIndex;
-  }
-
-  showNotification(msg: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass = type === 'success' ? 'success-snackbar' : 
-                      type === 'error' ? 'error-snackbar' : 'info-snackbar';
-    this.snackBar.open(msg, 'Close', { duration: 3000, panelClass });
+  activeTabLabel(): string {
+    return this.tabs.find(t => t.type === this.activeTab())?.label.replace(/s$/, '') ?? 'Prestataire';
   }
 }
-

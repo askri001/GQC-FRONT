@@ -29,14 +29,7 @@ export interface Permission {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    nom?: string;
-    prenom?: string;
-    roles?: string[];
-  };
+  user: User;
 }
 
 export interface LoginRequest {

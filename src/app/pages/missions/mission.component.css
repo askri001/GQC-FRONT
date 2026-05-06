@@ -1,5 +1,5 @@
 /* ================================================================
-   GESTION DES FACTURES — matches Client module exactly
+   GESTION DES MISSIONS — matches Client module exactly
    ================================================================ */
 
 /* ── Page background ── */
@@ -164,7 +164,7 @@
 /* ── Spacer ── */
 .toolbar-spacer { flex: 1 1 auto; }
 
-/* ── "+ Nouvelle facture" button ── */
+/* ── "+ Nouvelle mission" button ── */
 .btn-new {
   display: inline-flex;
   align-items: center;
@@ -250,13 +250,14 @@
 }
 
 /* ── Column specifics ── */
-.td-id      { width: 56px;  font-weight: 600; color: #5a8070; }
-.td-numero  { min-width: 130px; font-weight: 500; color: #1a2e28; }
-.td-date    { min-width: 110px; }
-.td-montant { min-width: 120px; font-weight: 600; color: #1a2e28; }
-.td-type    { min-width: 120px; }
-.td-statut  { min-width: 110px; }
-.td-actions { min-width: 120px; }
+.td-id          { width: 56px; font-weight: 600; color: #5a8070; }
+.td-type        { min-width: 100px; font-weight: 500; color: #1a2e28; }
+.td-dossier     { min-width: 100px; }
+.td-prestataire { min-width: 110px; }
+.td-date        { min-width: 110px; }
+.td-statut      { min-width: 110px; }
+.td-resultat    { min-width: 140px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-actions     { min-width: 120px; }
 
 /* ================================================================
    STATUS CHIP
@@ -269,12 +270,12 @@
   font-weight: 600;
 }
 
-.chip-validee {
+.chip-active {
   background: rgba(0,150,110,.12);
   color: #007A58;
 }
 
-.chip-payee {
+.chip-en_cours {
   background: rgba(0,100,200,.10);
   color: #0064c8;
 }
@@ -284,8 +285,7 @@
   color: #b36200;
 }
 
-.chip-rejetee,
-.chip-en_retard {
+.chip-inactive {
   background: rgba(198,40,40,.09);
   color: #c62828;
 }

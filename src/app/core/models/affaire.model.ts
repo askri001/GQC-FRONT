@@ -1,6 +1,7 @@
 import { Audience } from './audience.model';
 
 export interface Affaire {
+  id?: number;
   idAffaire?: number;
   numeroProcedure: string;
   dateDebut: Date;

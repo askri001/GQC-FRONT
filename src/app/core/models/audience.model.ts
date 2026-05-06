@@ -1,4 +1,5 @@
 export interface Audience {
+  id?: number;
   idAudience?: number;
   dateAudience: Date;
   typeAudience?: string;

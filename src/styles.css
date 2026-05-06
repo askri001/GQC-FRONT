@@ -1,6 +1,7 @@
 
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+<<<<<<< Updated upstream
 /* ============================================================
    BNA — Global CSS Variables
    Primary brand: BNA Green + Navy
@@ -40,6 +41,20 @@
   --bna-error-bg:     #FEE2E2;
   --bna-info:         #2563EB;
   --bna-info-bg:      #DBEAFE;
+=======
+/* ===== BNA DESIGN TOKENS ===== */
+:root {
+  --bna-primary:      #00966E;
+  --bna-dark:         #007A58;
+  --bna-darker:       #005C43;
+  --bna-light:        #4DBFA3;
+  --bna-lighter:      #B2DFD1;
+  --bna-bg:           #E6F5F0;
+  --bna-bg-page:      #F0FAF6;
+  --bna-white:        #FFFFFF;
+  --bna-text:         #1A2E28;
+  --bna-text-muted:   #6B8C82;
+>>>>>>> Stashed changes
 }
 
 * {

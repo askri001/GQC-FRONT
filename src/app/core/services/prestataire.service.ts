@@ -1,7 +1,17 @@
 import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { Prestataire, TypePrestataire } from '../models/prestataire.model';
+import { environment } from '../../../environments/environment';
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +28,7 @@ export class PrestataireService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private http: HttpClient) {}
 
   
   getAll(): Observable<Prestataire[]> {
@@ -40,6 +50,35 @@ export class PrestataireService {
         return of([]);
       })
 
+    );
+  }
+
+  
+  getPaginated(
+    page: number,
+    size: number,
+    search?: string,
+    type?: TypePrestataire,
+    actif?: boolean
+  ): Observable<PageResponse<Prestataire>> {
+    
+    let params: any = { page, size };
+    
+    if (search) params.search = search;
+    if (type) params.type = type;
+    if (actif !== undefined) params.actif = actif;
+
+    return this.api.get<PageResponse<Prestataire>>(`${this.endpoint}/paginated`, params).pipe(
+      catchError(error => {
+        console.error('Erreur chargement paginé prestataires', error);
+        return of({
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          size: size,
+          number: page
+        });
+      })
     );
   }
 
@@ -77,7 +116,7 @@ export class PrestataireService {
   }
 
   
-  create(prestataire: Prestataire): Observable<Prestataire> {
+  create(prestataire: Partial<Prestataire>): Observable<Prestataire> {
 
     this.loadingSignal.set(true);
 
@@ -98,14 +137,14 @@ export class PrestataireService {
 
         this.errorSignal.set('Erreur lors de la création');
 
-        return of({} as Prestataire);
+        throw error;
       })
 
     );
   }
 
   
-  update(id: number, prestataire: Prestataire): Observable<Prestataire> {
+  update(id: number, prestataire: Partial<Prestataire>): Observable<Prestataire> {
 
     this.loadingSignal.set(true);
 
@@ -129,7 +168,7 @@ export class PrestataireService {
 
         this.errorSignal.set('Erreur lors de la modification');
 
-        return of({} as Prestataire);
+        throw error;
       })
 
     );
@@ -137,9 +176,24 @@ export class PrestataireService {
 
   
   updateStatus(id: number, actif: boolean): Observable<Prestataire> {
+    // Backend uses @RequestParam — send actif as query parameter, not JSON body
+    const url = `${environment.apiUrl}${this.endpoint}/${id}/status?actif=${actif}`;
 
-    return this.update(id, { actif } as Prestataire);
+    return this.http.put<Prestataire>(url, null).pipe(
 
+      tap(updated => {
+        this.prestatairesSignal.update(list =>
+          list.map(p => p.idPrestataire === id ? updated : p)
+        );
+      }),
+
+      catchError(error => {
+        console.error('Erreur changement statut prestataire', error);
+        this.errorSignal.set('Erreur lors du changement de statut');
+        throw error;
+      })
+
+    );
   }
 
   

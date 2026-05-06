@@ -1,4 +1,5 @@
 export interface Dossier {
+  id?: number;
   idDossier?: number;
   reference: string;
   dateOuverture: Date;

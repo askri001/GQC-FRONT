@@ -105,7 +105,7 @@ export const routes: Routes = [
       {
         path: 'missions',
         loadComponent: () =>
-          import('./pages/missions/missions.component')
+          import('./pages/missions/mission.component')
             .then(m => m.MissionsComponent),
         canActivate: [RoleGuard],
         data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }

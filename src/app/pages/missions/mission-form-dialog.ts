@@ -1,27 +1,25 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { Mission } from '../../../app/core/models';
-import type { TypeMission, StatutMission } from '../../../app/core/models/mission.model';
-import { TYPE_MISSION_LABELS, STATUT_MISSION_LABELS } from '../../../app/core/models/mission.model';
+import {
+  Mission,
+  StatutMission,
+  TypeMission,
+  STATUT_MISSION_LABELS,
+  TYPE_MISSION_LABELS,
+} from '../../core/models';
 
-interface DialogData {
+export interface MissionFormDialogData {
   isEdit: boolean;
   mission?: Mission;
-}
-
-interface Option {
-  value: string;
-  label: string;
 }
 
 @Component({
@@ -29,68 +27,87 @@ interface Option {
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    FormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
     MatIconModule,
-    MatDatepickerModule,
-    MatNativeDateModule
+    MatSnackBarModule,
   ],
   templateUrl: './mission-form-dialog.html',
-  styleUrls: ['./mission-form-dialog.css']
+  styleUrls: ['./mission-form-dialog.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class MissionFormDialogComponent {
-  fb = inject(FormBuilder);
-  data = inject(MAT_DIALOG_DATA) as DialogData;
+
+  data      = inject<MissionFormDialogData>(MAT_DIALOG_DATA);
   dialogRef = inject(MatDialogRef<MissionFormDialogComponent>);
+  snackBar  = inject(MatSnackBar);
 
-  form = this.fb.group({
-    typeMission: ['', Validators.required],
-    dateDebut: ['', Validators.required],
-    dateFin: [''],
-    statut: ['', Validators.required],
-    dossierId: [''],
-    prestataireId: [''],
-    resultat: ['']
-  });
+  // ── Lookup data ────────────────────────────────────────────────
+  statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+  types: TypeMission[]     = ['HUISSIER', 'EXPERT', 'AVOCAT'];
 
-  isLoading = signal<boolean>(false);
+  statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
+  typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
 
-  typesMission: Option[] = Object.entries(TYPE_MISSION_LABELS).map(([value, label]) => ({
-    value,
-    label: label as string
-  }));
+  // ── Form model ─────────────────────────────────────────────────
+  form = {
+    typeMission:  this.data.mission?.typeMission  ?? 'HUISSIER' as TypeMission,
+    statut:       this.data.mission?.statut       ?? 'EN_ATTENTE' as StatutMission,
+    dateDebut:    this.toDateString(this.data.mission?.dateDebut) ?? this.toDateString(new Date())!,
+    dateFin:      this.toDateString(this.data.mission?.dateFin)  ?? '',
+    dossierId:    this.data.mission?.dossierId    ?? null as number | null,
+    prestataireId: this.data.mission?.prestataireId ?? null as number | null,
+    resultat:     this.data.mission?.resultat     ?? '',
+  };
 
-  statutsMission: Option[] = Object.entries(STATUT_MISSION_LABELS).map(([value, label]) => ({
-    value,
-    label: label as string
-  }));
+  isLoading = false;
 
-  constructor() {
-    if (this.data.mission) {
-      this.form.patchValue({
-        typeMission: this.data.mission.typeMission,
-        dateDebut: this.data.mission.dateDebut ? this.data.mission.dateDebut.toISOString().split('T')[0] : '',
-        dateFin: this.data.mission.dateFin ? this.data.mission.dateFin.toISOString().split('T')[0] : '',
-        statut: this.data.mission.statut,
-        dossierId: this.data.mission.dossierId ? this.data.mission.dossierId.toString() : '',
-        prestataireId: this.data.mission.prestataireId ? this.data.mission.prestataireId.toString() : '',
-        resultat: this.data.mission.resultat || ''
-      });
+  get isEdit(): boolean { return !!this.data.mission; }
+
+  // ── Submit ─────────────────────────────────────────────────────
+  onSubmit(): void {
+    if (this.isLoading) return;
+
+    const f = this.form;
+
+    // Validation
+    if (!f.typeMission) {
+      this.snackBar.open('Le type de mission est requis.', 'OK', { duration: 3000 });
+      return;
     }
+    if (!f.dateDebut) {
+      this.snackBar.open('La date de début est requise.', 'OK', { duration: 3000 });
+      return;
+    }
+    if (!f.statut) {
+      this.snackBar.open('Le statut est requis.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.isLoading = true;
+
+    const result: Partial<Mission> = {
+      typeMission:   f.typeMission,
+      statut:        f.statut,
+      dateDebut:     new Date(f.dateDebut),
+      dateFin:       f.dateFin ? new Date(f.dateFin) : undefined,
+      dossierId:     f.dossierId    ? Number(f.dossierId)    : undefined,
+      prestataireId: f.prestataireId ? Number(f.prestataireId) : undefined,
+      resultat:      f.resultat?.trim() || undefined,
+    };
+
+    this.dialogRef.close(result);
   }
 
-  onSubmit(): void {
-    if (this.form.valid) {
-      this.isLoading.set(true);
-      setTimeout(() => {
-        this.dialogRef.close(this.form.value);
-        this.isLoading.set(false);
-      }, 1000);
-    }
+  // ── Helpers ────────────────────────────────────────────────────
+  private toDateString(date?: Date | string): string | undefined {
+    if (!date) return undefined;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return undefined;
+    return d.toISOString().substring(0, 10);
   }
 }
-

@@ -1,0 +1,110 @@
+<h2 mat-dialog-title>
+  {{ isEdit ? 'Modifier' : 'Nouveau' }} Prestataire
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid" autocomplete="off">
+
+    <!-- TYPE DE PRESTATAIRE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Type de prestataire</mat-label>
+      <mat-icon matPrefix>category</mat-icon>
+      <mat-select formControlName="typePrestataire" (selectionChange)="onTypeChange()">
+        <mat-option value="AVOCAT">Avocat</mat-option>
+        <mat-option value="HUISSIER">Huissier</mat-option>
+        <mat-option value="EXPERT">Expert</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- NOM -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Nom</mat-label>
+      <mat-icon matPrefix>person</mat-icon>
+      <input matInput formControlName="nom">
+    </mat-form-field>
+
+    <!-- PRENOM -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Prénom</mat-label>
+      <mat-icon matPrefix>person_outline</mat-icon>
+      <input matInput formControlName="prenom">
+    </mat-form-field>
+
+    <!-- TELEPHONE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Téléphone</mat-label>
+      <mat-icon matPrefix>phone</mat-icon>
+      <input matInput formControlName="telephone" placeholder="Ex: 20123456">
+    </mat-form-field>
+
+    <!-- EMAIL -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Email</mat-label>
+      <mat-icon matPrefix>email</mat-icon>
+      <input matInput type="email" formControlName="email">
+    </mat-form-field>
+
+    <!-- ADRESSE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Adresse</mat-label>
+      <mat-icon matPrefix>location_on</mat-icon>
+      <input matInput formControlName="adresse">
+    </mat-form-field>
+
+    <!-- SPECIALITE — options dynamiques selon le type -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Spécialité</mat-label>
+      <mat-icon matPrefix>work</mat-icon>
+      <mat-select formControlName="specialite">
+        @for (spec of getSpecialites(); track spec) {
+          <mat-option [value]="spec">{{ spec }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- TARIF JOURNALIER -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Tarif journalier</mat-label>
+      <mat-icon matPrefix>payments</mat-icon>
+      <input matInput type="number" formControlName="tarifJournalier" min="0" step="0.01">
+      <span matSuffix>TND</span>
+    </mat-form-field>
+
+    <!-- STATUT ACTIF — mat-slide-toggle bound to reactive form -->
+    <div class="bna-field bna-toggle-field">
+      <span class="toggle-label">Statut</span>
+      <div class="toggle-row">
+        <mat-slide-toggle
+          formControlName="actif"
+          color="primary">
+        </mat-slide-toggle>
+        <span class="toggle-text"
+              [class.text-active]="form.get('actif')?.value"
+              [class.text-inactive]="!form.get('actif')?.value">
+          {{ form.get('actif')?.value ? 'Actif' : 'Inactif' }}
+        </span>
+      </div>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button" [disabled]="isLoading()">
+    Annuler
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="isLoading() || form.invalid">
+    @if (isLoading()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+      Enregistrement...
+    } @else {
+      {{ isEdit ? 'Modifier' : 'Créer' }}
+    }
+  </button>
+</mat-dialog-actions>

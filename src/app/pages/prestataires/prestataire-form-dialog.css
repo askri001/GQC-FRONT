@@ -1,21 +1,18 @@
-/* ================================================================
-   MISSION DIALOG — mirrors client-form-dialog.css exactly
-   ================================================================ */
 
 :root {
-  --bna-primary:  #00966E;
-  --bna-dark:     #007A58;
-  --bna-darker:   #005C43;
-  --bna-light:    #4DBFA3;
-  --bna-lighter:  #B2DFD1;
-  --bna-bg:       #E6F5F0;
+  --bna-primary:   #00966E;
+  --bna-dark:      #007A58;
+  --bna-darker:    #005C43;
+  --bna-light:     #4DBFA3;
+  --bna-lighter:   #B2DFD1;
+  --bna-bg:        #E6F5F0;
 }
 
-.mission-dialog .mat-mdc-dialog-container {
+.prestataire-dialog .mat-mdc-dialog-container {
   --mdc-dialog-container-color: transparent;
 }
 
-.mission-dialog .mdc-dialog__surface {
+.prestataire-dialog .mdc-dialog__surface {
   background: #ffffff !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -25,7 +22,7 @@
 /* ============================================
    DIALOG TITLE
    ============================================ */
-.mission-dialog .mdc-dialog__title {
+.prestataire-dialog .mdc-dialog__title {
   margin: 0 !important;
   padding: 20px 24px 16px !important;
   color: var(--bna-dark) !important;
@@ -38,7 +35,7 @@
   gap: 12px !important;
 }
 
-.mission-dialog .mdc-dialog__title::before {
+.prestataire-dialog .mdc-dialog__title::before {
   content: '';
   display: inline-block;
   width: 4px;
@@ -51,9 +48,11 @@
 /* ============================================
    DIALOG CONTENT
    ============================================ */
-.mission-dialog .mdc-dialog__content {
+.prestataire-dialog .mdc-dialog__content {
   padding: 24px !important;
   color: #333 !important;
+  max-height: 70vh !important;
+  overflow-y: auto !important;
 }
 
 /* ============================================
@@ -66,23 +65,27 @@
 }
 
 /* ============================================
-   FORM FIELDS
+   FORM FIELDS — supported MDC variables only
    ============================================ */
 .bna-field {
   width: 100%;
 
+  /* Shape */
   --mdc-outlined-text-field-container-shape: 8px;
 
-  --mdc-outlined-text-field-outline-color:       var(--bna-lighter);
-  --mdc-outlined-text-field-hover-outline-color:  var(--bna-light);
-  --mdc-outlined-text-field-focus-outline-color:  var(--bna-primary);
+  /* Outline colors */
+  --mdc-outlined-text-field-outline-color: var(--bna-lighter);
+  --mdc-outlined-text-field-hover-outline-color: var(--bna-light);
+  --mdc-outlined-text-field-focus-outline-color: var(--bna-primary);
 
-  --mdc-outlined-text-field-label-text-color:       var(--bna-dark);
-  --mdc-outlined-text-field-hover-label-text-color:  var(--bna-primary);
-  --mdc-outlined-text-field-focus-label-text-color:  var(--bna-primary);
+  /* Label colors */
+  --mdc-outlined-text-field-label-text-color: var(--bna-dark);
+  --mdc-outlined-text-field-hover-label-text-color: var(--bna-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--bna-primary);
 
+  /* Input text */
   --mdc-outlined-text-field-input-text-color: #333;
-  --mdc-outlined-text-field-caret-color:      var(--bna-primary);
+  --mdc-outlined-text-field-caret-color: var(--bna-primary);
 }
 
 /* ============================================
@@ -103,14 +106,14 @@
 /* ============================================
    DIALOG ACTIONS
    ============================================ */
-.mission-dialog .mdc-dialog__actions {
+.prestataire-dialog .mdc-dialog__actions {
   padding: 16px 24px !important;
   border-top: 1px solid var(--bna-lighter) !important;
   gap: 12px !important;
 }
 
 /* Cancel button */
-.mission-dialog .mdc-dialog__actions button[mat-button] {
+.prestataire-dialog .mdc-dialog__actions button[mat-button] {
   color: #555 !important;
   border-radius: 8px !important;
   padding: 8px 20px !important;
@@ -118,36 +121,53 @@
   transition: all 0.2s ease !important;
 }
 
-.mission-dialog .mdc-dialog__actions button[mat-button]:hover {
+.prestataire-dialog .mdc-dialog__actions button[mat-button]:hover:not([disabled]) {
   background: var(--bna-bg) !important;
   color: var(--bna-dark) !important;
   transform: translateY(-1px);
 }
 
 /* Primary action button */
-.mission-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"] {
+.prestataire-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"] {
   background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
   border-radius: 8px !important;
   padding: 8px 24px !important;
   font-weight: 500 !important;
   box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
   transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
-.mission-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:hover:not([disabled]) {
+.prestataire-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:hover:not([disabled]) {
   background: linear-gradient(135deg, var(--bna-darker) 0%, var(--bna-dark) 100%) !important;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 150, 110, 0.4) !important;
 }
 
-.mission-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:active:not([disabled]) {
+.prestataire-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:active:not([disabled]) {
   transform: translateY(0);
+}
+
+.prestataire-dialog .mdc-dialog__actions button[mat-raised-button][color="primary"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Button spinner */
+.btn-spinner {
+  display: inline-block;
+}
+
+::ng-deep .btn-spinner circle {
+  stroke: #fff !important;
 }
 
 /* ============================================
    ANIMATIONS
    ============================================ */
-.mission-dialog .mdc-dialog__content {
+.prestataire-dialog .mdc-dialog__content {
   animation: fadeInUp 0.3s ease-out;
 }
 
@@ -165,22 +185,69 @@
     gap: 12px;
   }
 
-  .mission-dialog .mdc-dialog__title {
+  .prestataire-dialog .mdc-dialog__title {
     font-size: 18px !important;
     padding: 16px 20px 12px !important;
   }
 
-  .mission-dialog .mdc-dialog__content {
+  .prestataire-dialog .mdc-dialog__content {
     padding: 20px !important;
   }
 
-  .mission-dialog .mdc-dialog__actions {
+  .prestataire-dialog .mdc-dialog__actions {
     padding: 12px 20px !important;
     flex-direction: column-reverse !important;
     align-items: stretch !important;
   }
 
-  .mission-dialog .mdc-dialog__actions button {
+  .prestataire-dialog .mdc-dialog__actions button {
     width: 100%;
   }
 }
+
+/* ============================================
+   STATUT TOGGLE — mat-slide-toggle
+   ============================================ */
+.bna-toggle-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 1px solid var(--bna-lighter);
+  border-radius: 8px;
+  background: #fafafa;
+  min-height: 56px;
+}
+
+.toggle-label {
+  font-size: 12px;
+  color: var(--bna-dark);
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Colour the slide-toggle track when checked */
+.bna-toggle-field .mat-mdc-slide-toggle.mat-primary {
+  --mdc-switch-selected-track-color:       var(--bna-primary);
+  --mdc-switch-selected-handle-color:      #fff;
+  --mdc-switch-selected-hover-track-color: var(--bna-dark);
+  --mdc-switch-selected-focus-track-color: var(--bna-dark);
+  --mdc-switch-unselected-track-color:     #ccc;
+  --mdc-switch-unselected-handle-color:    #fff;
+}
+
+.toggle-text {
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.text-active   { color: var(--bna-primary); }
+.text-inactive { color: #aaa; }

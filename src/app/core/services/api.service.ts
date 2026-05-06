@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Dossier } from '../models/dossier.model';
 import { DashboardStats } from '../models/dashboard.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -21,7 +22,14 @@ export class ApiService {
     return this.http.get<Dossier[]>(`${this.baseUrl}/dossiers/recent?limit=${limit}`);
   }
 
-  get<T>(endpoint: string): Observable<T> {
+  get<T>(endpoint: string, params?: Record<string, any>): Observable<T> {
+    if (params) {
+      const query = Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join('&');
+      return this.http.get<T>(`${this.baseUrl}${endpoint}${query ? '?' + query : ''}`);
+    }
     return this.http.get<T>(`${this.baseUrl}${endpoint}`);
   }
 

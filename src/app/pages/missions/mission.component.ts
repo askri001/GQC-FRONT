@@ -10,18 +10,18 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import {
-  Facture,
-  StatutFacture,
-  TypeFacture,
-  STATUT_FACTURE_LABELS,
-  TYPE_FACTURE_LABELS
+  Mission,
+  StatutMission,
+  TypeMission,
+  STATUT_MISSION_LABELS,
+  TYPE_MISSION_LABELS,
 } from '../../core/models';
 
-import { FactureService } from '../../core/services/facture.service';
-import { FactureFormDialogComponent } from './facture-form-dialog';
+import { MissionService } from '../../core/services/mission.service';
+import { MissionFormDialogComponent } from './mission-form-dialog';
 
 @Component({
-  selector: 'app-factures',
+  selector: 'app-missions',
   standalone: true,
   imports: [
     CommonModule,
@@ -33,18 +33,18 @@ import { FactureFormDialogComponent } from './facture-form-dialog';
     MatSnackBarModule,
     MatDialogModule,
   ],
-  templateUrl: './facture.html',
-  styleUrls: ['./facture.css'],
+  templateUrl: './mission.component.html',
+  styleUrls: ['./mission.component.css'],
 })
-export class FacturesComponent implements OnInit {
+export class MissionsComponent implements OnInit {
 
-  private factureService = inject(FactureService);
+  private missionService = inject(MissionService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
 
   // ── State ──────────────────────────────────────────────────────
-  factures         = signal<Facture[]>([]);
-  filteredFactures = signal<Facture[]>([]);
+  missions         = signal<Mission[]>([]);
+  filteredMissions = signal<Mission[]>([]);
   isLoading        = signal(false);
   error            = signal<string | null>(null);
 
@@ -59,71 +59,71 @@ export class FacturesComponent implements OnInit {
   currentPage   = signal(0);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutFacture[] = ['EN_ATTENTE', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
-  types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
+  statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+  types: TypeMission[]     = ['HUISSIER', 'EXPERT', 'AVOCAT'];
 
-  statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
-  typeLabels   = TYPE_FACTURE_LABELS   as Record<TypeFacture, string>;
+  statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
+  typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
 
   // ── Lifecycle ──────────────────────────────────────────────────
-  ngOnInit(): void { this.loadFactures(); }
+  ngOnInit(): void { this.loadMissions(); }
 
   // ── Load ───────────────────────────────────────────────────────
-  loadFactures(): void {
+  loadMissions(): void {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.factureService.getAll()
+    this.missionService.getAll()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (data) => {
-          this.factures.set(data || []);
+          this.missions.set(data || []);
           this.applyFilter();
         },
         error: (err) => {
-          let msg = 'Erreur lors du chargement des factures';
+          let msg = 'Erreur lors du chargement des missions';
           if (err?.status === 0)        msg = 'Serveur indisponible';
           else if (err?.status === 403) msg = 'Accès refusé (403)';
           else if (err?.error?.message) msg = err.error.message;
           this.error.set(msg);
-          this.factures.set([]);
-          this.filteredFactures.set([]);
+          this.missions.set([]);
+          this.filteredMissions.set([]);
         },
       });
   }
 
   // ── Filters ────────────────────────────────────────────────────
   applyFilter(): void {
-    let result = [...this.factures()];
+    let result = [...this.missions()];
 
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
-      result = result.filter(f =>
-        f.numero?.toLowerCase().includes(q) ||
-        f.montant?.toString().includes(q)
+      result = result.filter(m =>
+        m.typeMission?.toLowerCase().includes(q) ||
+        m.resultat?.toLowerCase().includes(q)
       );
     }
 
     if (this.statusFilter) {
-      result = result.filter(f => f.statut === this.statusFilter);
+      result = result.filter(m => m.statut === this.statusFilter);
     }
 
     if (this.typeFilter) {
-      result = result.filter(f => f.typeFacture === this.typeFilter);
+      result = result.filter(m => m.typeMission === this.typeFilter);
     }
 
-    this.filteredFactures.set(result);
+    this.filteredMissions.set(result);
     this.currentPage.set(0);
   }
 
   // ── Pagination ─────────────────────────────────────────────────
-  pagedFactures(): Facture[] {
+  pagedMissions(): Mission[] {
     const start = this.currentPage() * this.pageSize();
-    return this.filteredFactures().slice(start, start + this.pageSize());
+    return this.filteredMissions().slice(start, start + this.pageSize());
   }
 
   totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredFactures().length / this.pageSize()));
+    return Math.max(1, Math.ceil(this.filteredMissions().length / this.pageSize()));
   }
 
   goToPage(page: number): void {
@@ -148,32 +148,31 @@ export class FacturesComponent implements OnInit {
   min(a: number, b: number): number { return Math.min(a, b); }
 
   // ── Status chip CSS class ──────────────────────────────────────
-  getStatutClass(statut: StatutFacture): string {
-    const map: Record<StatutFacture, string> = {
-      VALIDEE:    'chip-validee',
-      PAYEE:      'chip-payee',
+  getStatutClass(statut: StatutMission): string {
+    const map: Record<StatutMission, string> = {
+      TERMINEE:   'chip-active',
+      EN_COURS:   'chip-en_cours',
       EN_ATTENTE: 'chip-en_attente',
-      REJETEE:    'chip-rejetee',
-      EN_RETARD:  'chip-rejetee',
+      ANNULEE:    'chip-inactive',
     };
     return map[statut] ?? '';
   }
 
   // ── Dialog: Create ─────────────────────────────────────────────
-  openNewFacture(): void {
-    const ref = this.dialog.open(FactureFormDialogComponent, {
+  openAddDialog(): void {
+    const ref = this.dialog.open(MissionFormDialogComponent, {
       width: '600px',
       maxWidth: '95vw',
-      panelClass: 'facture-dialog',
+      panelClass: 'mission-dialog',
       data: { isEdit: false },
     });
 
-    ref.afterClosed().subscribe((result?: Partial<Facture>) => {
+    ref.afterClosed().subscribe((result?: Partial<Mission>) => {
       if (!result) return;
-      this.factureService.create(result).subscribe({
+      this.missionService.create(result).subscribe({
         next: () => {
-          this.snackBar.open('Facture créée avec succès', 'OK', { duration: 3000 });
-          this.loadFactures();
+          this.snackBar.open('Mission créée avec succès', 'OK', { duration: 3000 });
+          this.loadMissions();
         },
         error: () => this.snackBar.open('Erreur lors de la création', 'OK', { duration: 3000 }),
       });
@@ -181,20 +180,20 @@ export class FacturesComponent implements OnInit {
   }
 
   // ── Dialog: Edit ───────────────────────────────────────────────
-  openEditFacture(f: Facture): void {
-    const ref = this.dialog.open(FactureFormDialogComponent, {
+  openEditDialog(m: Mission): void {
+    const ref = this.dialog.open(MissionFormDialogComponent, {
       width: '600px',
       maxWidth: '95vw',
-      panelClass: 'facture-dialog',
-      data: { facture: f, isEdit: true },
+      panelClass: 'mission-dialog',
+      data: { mission: m, isEdit: true },
     });
 
-    ref.afterClosed().subscribe((result?: Partial<Facture>) => {
+    ref.afterClosed().subscribe((result?: Partial<Mission>) => {
       if (!result) return;
-      this.factureService.update(f.id!, result).subscribe({
+      this.missionService.update(m.id!, result).subscribe({
         next: () => {
-          this.snackBar.open('Facture modifiée avec succès', 'OK', { duration: 3000 });
-          this.loadFactures();
+          this.snackBar.open('Mission modifiée avec succès', 'OK', { duration: 3000 });
+          this.loadMissions();
         },
         error: () => this.snackBar.open('Erreur lors de la modification', 'OK', { duration: 3000 }),
       });
@@ -202,24 +201,24 @@ export class FacturesComponent implements OnInit {
   }
 
   // ── Toggle status ──────────────────────────────────────────────
-  toggleStatus(f: Facture): void {
-    const newStatus: StatutFacture = f.statut === 'EN_ATTENTE' ? 'VALIDEE' : 'EN_ATTENTE';
-    this.factureService.updateStatus(f.id!, newStatus).subscribe({
+  toggleStatus(m: Mission): void {
+    const next: StatutMission = m.statut === 'EN_ATTENTE' ? 'EN_COURS' : 'EN_ATTENTE';
+    this.missionService.updateStatus(m.id!, next).subscribe({
       next: () => {
         this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 });
-        this.loadFactures();
+        this.loadMissions();
       },
       error: () => this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 }),
     });
   }
 
   // ── Delete ─────────────────────────────────────────────────────
-  confirmDelete(f: Facture): void {
-    if (!confirm(`Supprimer la facture "${f.numero}" ? Cette action est irréversible.`)) return;
-    this.factureService.delete(f.id!).subscribe({
+  confirmDelete(m: Mission): void {
+    if (!confirm(`Supprimer la mission "${this.typeLabels[m.typeMission]}" ? Cette action est irréversible.`)) return;
+    this.missionService.delete(m.id!).subscribe({
       next: () => {
-        this.snackBar.open('Facture supprimée', 'OK', { duration: 2500 });
-        this.loadFactures();
+        this.snackBar.open('Mission supprimée', 'OK', { duration: 2500 });
+        this.loadMissions();
       },
       error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 }),
     });

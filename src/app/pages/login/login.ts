@@ -53,7 +53,7 @@ export class LoginComponent {
       });
 
       const role = this.authService.getPrimaryRole();
-      if (role === 'ROLE_CHARGEDOSSIER') {
+      if (role === 'CHARGEDOSSIER' || role === 'ROLE_CHARGEDOSSIER') {
         this.router.navigate(['/dossiers']);
       } else {
         this.router.navigate(['/dashboard']);

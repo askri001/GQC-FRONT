@@ -3,8 +3,8 @@
 
     <!-- ===== TITLE ===== -->
     <div class="page-title">
-      <mat-icon class="title-icon">receipt_long</mat-icon>
-      <h2>Gestion des Factures</h2>
+      <mat-icon class="title-icon">assignment</mat-icon>
+      <h2>Gestion des Missions</h2>
     </div>
 
     <!-- ===== TOOLBAR ===== -->
@@ -52,10 +52,10 @@
 
       <div class="toolbar-spacer"></div>
 
-      <!-- Nouvelle facture -->
-      <button class="btn-new" (click)="openNewFacture()">
+      <!-- Nouvelle mission -->
+      <button class="btn-new" (click)="openAddDialog()">
         <mat-icon>add</mat-icon>
-        Nouvelle facture
+        Nouvelle mission
       </button>
 
     </div>
@@ -65,7 +65,7 @@
       <div class="state-box error-box">
         <mat-icon>error_outline</mat-icon>
         <p>{{ error() }}</p>
-        <button class="retry-btn" (click)="loadFactures()">Réessayer</button>
+        <button class="retry-btn" (click)="loadMissions()">Réessayer</button>
       </div>
     }
 
@@ -78,10 +78,10 @@
     }
 
     <!-- ===== EMPTY ===== -->
-    @else if (pagedFactures().length === 0) {
+    @else if (pagedMissions().length === 0) {
       <div class="state-box empty-box">
-        <mat-icon>receipt_long</mat-icon>
-        <p>Aucune facture trouvée</p>
+        <mat-icon>assignment</mat-icon>
+        <p>Aucune mission trouvée</p>
       </div>
     }
 
@@ -94,53 +94,61 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>N° FACTURE</th>
-                <th>DATE</th>
-                <th>MONTANT</th>
                 <th>TYPE</th>
+                <th>DOSSIER</th>
+                <th>PRESTATAIRE</th>
+                <th>DATE DÉBUT</th>
+                <th>DATE FIN</th>
                 <th>STATUT</th>
+                <th>RÉSULTAT</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              @for (f of pagedFactures(); track f.id) {
+              @for (m of pagedMissions(); track m.id) {
                 <tr>
 
                   <!-- ID -->
-                  <td class="td-id">{{ f.id }}</td>
-
-                  <!-- N° FACTURE -->
-                  <td class="td-numero">{{ f.numero }}</td>
-
-                  <!-- DATE -->
-                  <td class="td-date">{{ f.dateEmission | date:'dd/MM/yyyy' }}</td>
-
-                  <!-- MONTANT -->
-                  <td class="td-montant">{{ f.montant | number:'1.2-2' }} DT</td>
+                  <td class="td-id">{{ m.id }}</td>
 
                   <!-- TYPE -->
-                  <td class="td-type">{{ typeLabels[f.typeFacture] }}</td>
+                  <td class="td-type">{{ typeLabels[m.typeMission] }}</td>
+
+                  <!-- DOSSIER -->
+                  <td class="td-dossier">{{ m.dossierId ? 'DOS-' + m.dossierId : '—' }}</td>
+
+                  <!-- PRESTATAIRE -->
+                  <td class="td-prestataire">{{ m.prestataireId ? 'P-' + m.prestataireId : '—' }}</td>
+
+                  <!-- DATE DÉBUT -->
+                  <td class="td-date">{{ m.dateDebut | date:'dd/MM/yyyy' }}</td>
+
+                  <!-- DATE FIN -->
+                  <td class="td-date">{{ m.dateFin ? (m.dateFin | date:'dd/MM/yyyy') : '—' }}</td>
 
                   <!-- STATUT -->
                   <td class="td-statut">
-                    <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
-                      {{ statutLabels[f.statut] }}
+                    <span class="status-chip" [ngClass]="getStatutClass(m.statut)">
+                      {{ statutLabels[m.statut] }}
                     </span>
                   </td>
 
+                  <!-- RÉSULTAT -->
+                  <td class="td-resultat">{{ m.resultat || '—' }}</td>
+
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier">
+                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button
                       class="act-btn act-toggle"
-                      (click)="toggleStatus(f)"
-                      [class.on]="f.statut === 'VALIDEE' || f.statut === 'PAYEE'"
-                      [title]="f.statut === 'EN_ATTENTE' ? 'Valider' : 'Mettre en attente'">
-                      <mat-icon>{{ f.statut === 'EN_ATTENTE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+                      (click)="toggleStatus(m)"
+                      [class.on]="m.statut === 'EN_COURS' || m.statut === 'TERMINEE'"
+                      [title]="m.statut === 'EN_ATTENTE' ? 'Démarrer' : 'Mettre en attente'">
+                      <mat-icon>{{ m.statut === 'EN_ATTENTE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
                     </button>
-                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer">
+                    <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>
@@ -154,8 +162,8 @@
         <!-- PAGINATOR -->
         <div class="pager">
           <span class="pager-info">
-            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredFactures().length, (currentPage() + 1) * pageSize()) }}
-            sur {{ filteredFactures().length }}
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredMissions().length, (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredMissions().length }}
           </span>
           <div class="pager-btns">
             <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">

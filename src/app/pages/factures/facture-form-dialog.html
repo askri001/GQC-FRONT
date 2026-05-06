@@ -1,15 +1,29 @@
 <h2 mat-dialog-title>
-  {{ data.isEdit ? 'Modifier' : 'Nouvelle' }} Mission
+  {{ data.isEdit ? 'Modifier' : 'Nouvelle' }} Facture
 </h2>
 
 <mat-dialog-content>
   <div class="form-grid">
 
-    <!-- TYPE DE MISSION -->
+    <!-- NUMÉRO -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Type de mission</mat-label>
+      <mat-label>Numéro</mat-label>
+      <mat-icon matPrefix>confirmation_number</mat-icon>
+      <input matInput [(ngModel)]="form.numero">
+    </mat-form-field>
+
+    <!-- MONTANT -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Montant (DT)</mat-label>
+      <mat-icon matPrefix>attach_money</mat-icon>
+      <input matInput type="number" [(ngModel)]="form.montant">
+    </mat-form-field>
+
+    <!-- TYPE -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>Type</mat-label>
       <mat-icon matPrefix>category</mat-icon>
-      <mat-select [(ngModel)]="form.typeMission">
+      <mat-select [(ngModel)]="form.typeFacture">
         @for (type of types; track type) {
           <mat-option [value]="type">{{ typeLabels[type] }}</mat-option>
         }
@@ -27,18 +41,25 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- DATE DÉBUT -->
+    <!-- DATE D'ÉMISSION -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Date de début</mat-label>
+      <mat-label>Date d'émission</mat-label>
       <mat-icon matPrefix>calendar_today</mat-icon>
-      <input matInput type="date" [(ngModel)]="form.dateDebut">
+      <input matInput type="date" [(ngModel)]="form.dateEmission">
     </mat-form-field>
 
-    <!-- DATE FIN -->
+    <!-- DATE D'ÉCHÉANCE -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Date de fin (optionnel)</mat-label>
+      <mat-label>Date d'échéance</mat-label>
       <mat-icon matPrefix>event</mat-icon>
-      <input matInput type="date" [(ngModel)]="form.dateFin">
+      <input matInput type="date" [(ngModel)]="form.dateEcheance">
+    </mat-form-field>
+
+    <!-- ID MISSION -->
+    <mat-form-field appearance="outline" class="bna-field">
+      <mat-label>ID Mission (optionnel)</mat-label>
+      <mat-icon matPrefix>work_outline</mat-icon>
+      <input matInput type="number" [(ngModel)]="form.missionId">
     </mat-form-field>
 
     <!-- ID DOSSIER -->
@@ -46,20 +67,6 @@
       <mat-label>ID Dossier (optionnel)</mat-label>
       <mat-icon matPrefix>folder_open</mat-icon>
       <input matInput type="number" [(ngModel)]="form.dossierId">
-    </mat-form-field>
-
-    <!-- ID PRESTATAIRE -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>ID Prestataire (optionnel)</mat-label>
-      <mat-icon matPrefix>person_outline</mat-icon>
-      <input matInput type="number" [(ngModel)]="form.prestataireId">
-    </mat-form-field>
-
-    <!-- RÉSULTAT -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Résultat (optionnel)</mat-label>
-      <mat-icon matPrefix>description</mat-icon>
-      <input matInput [(ngModel)]="form.resultat">
     </mat-form-field>
 
   </div>
