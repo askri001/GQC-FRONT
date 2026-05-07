@@ -100,7 +100,7 @@
                 <th>DATE DÉBUT</th>
                 <th>DATE FIN</th>
                 <th>STATUT</th>
-                <th>RÉSULTAT</th>
+                <th>RÉSULTAT / COMMENTAIRE</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -115,7 +115,7 @@
                   <td class="td-type">{{ typeLabels[m.typeMission] }}</td>
 
                   <!-- DOSSIER -->
-                  <td class="td-dossier">{{ m.dossierId ? 'DOS-' + m.dossierId : '—' }}</td>
+                  <td class="td-dossier">{{ m.dossierId ? m.dossierId : '—' }}</td>
 
                   <!-- PRESTATAIRE -->
                   <td class="td-prestataire">{{ m.prestataireId ? 'P-' + m.prestataireId : '—' }}</td>
@@ -133,21 +133,39 @@
                     </span>
                   </td>
 
-                  <!-- RÉSULTAT -->
-                  <td class="td-resultat">{{ m.resultat || '—' }}</td>
+                  <!-- RÉSULTAT / COMMENTAIRE -->
+                  <td class="td-resultat">
+                    @if (m.resultat) {
+                      <span title="Résultat">{{ m.resultat }}</span>
+                    } @else if (m.commentaire) {
+                      <span style="color:#7aada0;font-style:italic" title="Commentaire">{{ m.commentaire }}</span>
+                    } @else {
+                      <span>—</span>
+                    }
+                  </td>
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
                     <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button
-                      class="act-btn act-toggle"
-                      (click)="toggleStatus(m)"
-                      [class.on]="m.statut === 'EN_COURS' || m.statut === 'TERMINEE'"
-                      [title]="m.statut === 'EN_ATTENTE' ? 'Démarrer' : 'Mettre en attente'">
-                      <mat-icon>{{ m.statut === 'EN_ATTENTE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
-                    </button>
+                    @if (m.statut === 'EN_ATTENTE') {
+                      <button
+                        class="act-btn act-toggle"
+                        (click)="toggleStatus(m)"
+                        title="Démarrer (EN_COURS)">
+                        <mat-icon>play_arrow</mat-icon>
+                      </button>
+                    }
+                    @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE') {
+                      <button
+                        class="act-btn act-delete"
+                        (click)="annulerMission(m)"
+                        title="Annuler la mission"
+                        style="color:#c62828">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    }
                     <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer">
                       <mat-icon>delete_outline</mat-icon>
                     </button>

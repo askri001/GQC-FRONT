@@ -104,12 +104,13 @@ export class PrestatairesComponent implements OnInit {
       .getPaginated(s.page, s.size, search, type, status)
       .pipe(finalize(() => {
         s.loading = false;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }))
       .subscribe({
         next: (res) => {
           s.rows  = res.content       ?? [];
           s.total = res.totalElements ?? 0;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           let msg = 'Erreur lors du chargement';

@@ -19,10 +19,7 @@ export class FactureService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  constructor(private api: ApiService) {
-    
-    this.getAll().subscribe();
-  }
+  constructor(private api: ApiService) {}
 
   
   getAll(): Observable<Facture[]> {

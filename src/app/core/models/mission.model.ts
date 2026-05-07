@@ -5,6 +5,7 @@ export interface Mission {
   dateFin?: Date;
   statut: StatutMission;
   resultat?: string;
+  commentaire?: string;
   dossierId?: number;
   affaireId?: number;
   prestataireId?: number;

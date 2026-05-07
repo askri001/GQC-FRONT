@@ -43,7 +43,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
     DrawerPanelComponent
   ],
   templateUrl: "./dossiers.html",
-  styleUrls: ["./dossiers-modern.css", "./dossiers.css"]
+  styleUrls: ["./dossiers.css"]
 })
 export class DossiersComponent implements OnInit {
   private dossierService = inject(DossierService);
@@ -101,7 +101,9 @@ export class DossiersComponent implements OnInit {
     this.api.get<any[]>('/users').subscribe({
       next: (data) => {
         const chargeUsers = data.filter(u =>
-          Array.isArray(u.roles) && u.roles.some((r: string) => r === 'CHARGEDOSSIER')
+          Array.isArray(u.roles) && u.roles.some((r: string) =>
+            r === 'ROLE_CHARGEDOSSIER' || r === 'CHARGEDOSSIER'
+          )
         );
         this.chargeDossiers.set(chargeUsers);
       },
@@ -254,5 +256,160 @@ export class DossiersComponent implements OnInit {
     const cd = this.chargeDossiers().find(c => c.id === chargeId);
     return cd ? `${cd.prenom || ''} ${cd.nom || ''}`.trim() || cd.username : `#${chargeId}`;
   }
-}
 
+  exportPdf(dossier: Dossier): void {
+    const client    = this.getClientName(dossier.clientId);
+    const charge    = this.getChargeName(dossier.chargeDossierId);
+    const statut    = this.getStatutLabel(dossier.statut);
+    const risque    = this.getRisqueLabel(dossier.niveauRisque);
+    const dateOuv   = dossier.dateOuverture
+      ? new Date(dossier.dateOuverture).toLocaleDateString('fr-TN')
+      : '—';
+    const dateClo   = dossier.dateCloture
+      ? new Date(dossier.dateCloture).toLocaleDateString('fr-TN')
+      : '—';
+    const montantI  = new Intl.NumberFormat('fr-TN', { style: 'currency', currency: 'TND', maximumFractionDigits: 0 }).format(dossier.montantInitial ?? 0);
+    const montantR  = new Intl.NumberFormat('fr-TN', { style: 'currency', currency: 'TND', maximumFractionDigits: 0 }).format(dossier.montantRecupere ?? 0);
+    const taux      = dossier.montantInitial
+      ? ((dossier.montantRecupere ?? 0) / dossier.montantInitial * 100).toFixed(1) + '%'
+      : '0%';
+    const now       = new Date().toLocaleDateString('fr-TN', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8"/>
+        <title>Dossier ${dossier.reference}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 40px; }
+
+          /* Header */
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00966E; padding-bottom: 20px; margin-bottom: 28px; }
+          .header-left h1 { font-size: 22px; color: #00966E; font-weight: 700; }
+          .header-left p  { font-size: 12px; color: #666; margin-top: 4px; }
+          .header-right   { text-align: right; font-size: 12px; color: #555; }
+          .header-right .ref { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+
+          /* Section title */
+          .section-title { font-size: 13px; font-weight: 700; color: #00966E; text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid #00966E; padding-left: 10px; margin: 24px 0 12px; }
+
+          /* Grid */
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; }
+          .field { display: flex; flex-direction: column; }
+          .field label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+          .field span  { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+
+          /* Badges */
+          .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+          .badge-en_cours   { background: #e0f5ee; color: #00966E; }
+          .badge-cloture    { background: #d1fae5; color: #059669; }
+          .badge-suspendu   { background: #fef3c7; color: #d97706; }
+          .badge-transfere  { background: #f3e5f5; color: #7b1fa2; }
+          .badge-en_attente { background: #f5f5f5; color: #616161; }
+          .badge-faible     { background: #d1fae5; color: #059669; }
+          .badge-moyen      { background: #fef3c7; color: #d97706; }
+          .badge-eleve      { background: #fee2e2; color: #dc2626; }
+          .badge-critique   { background: #fee2e2; color: #dc2626; font-weight: 800; }
+
+          /* Financial table */
+          .fin-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          .fin-table th { background: #00966E; color: #fff; padding: 9px 14px; text-align: left; font-size: 12px; font-weight: 600; }
+          .fin-table td { padding: 9px 14px; border-bottom: 1px solid #e8f3ee; font-size: 13px; }
+          .fin-table tr:last-child td { border-bottom: none; font-weight: 700; background: #f0faf6; }
+
+          /* Progress bar */
+          .progress-wrap { margin-top: 10px; }
+          .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #555; margin-bottom: 4px; }
+          .progress-bar { height: 10px; background: #e0f5ee; border-radius: 5px; overflow: hidden; }
+          .progress-fill { height: 100%; background: #00966E; border-radius: 5px; }
+
+          /* Footer */
+          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 11px; color: #999; }
+
+          @media print {
+            body { padding: 20px; }
+            @page { margin: 15mm; size: A4; }
+          }
+        </style>
+      </head>
+      <body>
+
+        <!-- HEADER -->
+        <div class="header">
+          <div class="header-left">
+            <h1>Dossier Contentieux</h1>
+            <p>Gestion Administrative des Contentieux — BNA</p>
+          </div>
+          <div class="header-right">
+            <div class="ref">${dossier.reference}</div>
+            <div style="margin-top:6px">Généré le ${now}</div>
+          </div>
+        </div>
+
+        <!-- INFORMATIONS GÉNÉRALES -->
+        <div class="section-title">Informations Générales</div>
+        <div class="grid">
+          <div class="field"><label>Client</label><span>${client}</span></div>
+          <div class="field"><label>Chargé de Dossier</label><span>${charge}</span></div>
+          <div class="field"><label>Date d'Ouverture</label><span>${dateOuv}</span></div>
+          <div class="field"><label>Date de Clôture</label><span>${dateClo}</span></div>
+          <div class="field">
+            <label>Statut</label>
+            <span><span class="badge badge-${dossier.statut?.toLowerCase().replace('_','-')}">${statut}</span></span>
+          </div>
+          <div class="field">
+            <label>Niveau de Risque</label>
+            <span><span class="badge badge-${dossier.niveauRisque?.toLowerCase()}">${risque}</span></span>
+          </div>
+        </div>
+
+        <!-- SITUATION FINANCIÈRE -->
+        <div class="section-title">Situation Financière</div>
+        <table class="fin-table">
+          <thead>
+            <tr><th>Indicateur</th><th>Montant</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Montant Initial</td><td>${montantI}</td></tr>
+            <tr><td>Montant Récupéré</td><td>${montantR}</td></tr>
+            <tr><td>Taux de Recouvrement</td><td>${taux}</td></tr>
+          </tbody>
+        </table>
+
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span>Progression du recouvrement</span>
+            <span>${taux}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${Math.min(100, parseFloat(taux))}%"></div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+          <span>Document généré automatiquement — BNA Gestion des Contentieux</span>
+          <span>Réf: ${dossier.reference} | ID: ${dossier.idDossier}</span>
+        </div>
+
+      </body>
+      </html>
+    `;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) {
+      this.showNotification('Veuillez autoriser les popups pour générer le PDF', 'error');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 500);
+  }
+
+}

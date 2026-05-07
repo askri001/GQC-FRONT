@@ -2,7 +2,6 @@ import { Injectable, signal } from '@angular/core';
 import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import type { Mission, StatutMission } from '../models';
-import { TypeMission } from '../models/mission.model';
 
 const MOCK_MISSIONS: Mission[] = [
   { id: 1, typeMission: 'AVOCAT', dateDebut: new Date('2024-01-15'), dateFin: new Date('2024-03-15'), statut: 'TERMINEE', dossierId: 1 },
@@ -122,104 +121,6 @@ export class MissionService {
     return this.update(id, { statut });
   }
 
-  
-  private getMockMissions(): Mission[] {
-    return [
-{ 
-        id: 1, 
-        typeMission: 'HUISSIER', 
-        dateDebut: new Date('2024-01-10'), 
-        dateFin: new Date('2024-01-15'), 
-        statut: 'TERMINEE',
-        resultat: 'Mission effectuée avec succès',
-        dossierId: 1,
-        prestataireId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        dossier: {
-          id: 1,
-          reference: 'DOS-2024-001',
-          client: { nom: 'Client', prenom: 'A' }
-        },
-        prestataire: {
-          id: 1,
-          nom: 'Mansouri',
-          prenom: 'Mohamed',
-          typePrestataire: 'HUISSIER'
-        }
-      },
-{ 
-        id: 2, 
-        typeMission: 'EXPERT',
-        dateDebut: new Date('2024-02-01'), 
-        dateFin: new Date('2024-02-20'), 
-        statut: 'EN_COURS',
-        resultat: '',
-        dossierId: 2,
-        prestataireId: 2,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        dossier: {
-          id: 2,
-          reference: 'DOS-2024-002',
-          client: { nom: 'Client', prenom: 'B' }
-        },
-        prestataire: {
-          id: 2,
-          nom: 'Ben Ali',
-          prenom: 'Salah',
-          typePrestataire: 'EXPERT'
-        }
-      },
-      { 
-        id: 3, 
-        typeMission: 'AVOCAT', 
-        dateDebut: new Date('2024-03-01'), 
-        statut: 'EN_ATTENTE',
-        resultat: '',
-        dossierId: 3,
-        prestataireId: 3,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        dossier: {
-          id: 3,
-          reference: 'DOS-2024-003',
-          client: { nom: 'Sassi', prenom: 'Ali' }
-        },
-        prestataire: {
-          id: 3,
-          nom: 'Khaled',
-          prenom: 'Youssef',
-          typePrestataire: 'AVOCAT'
-        }
-      },
-      { 
-        id: 4, 
-        typeMission: 'HUISSIER', 
-        dateDebut: new Date('2024-01-20'), 
-        dateFin: new Date('2024-02-10'), 
-        statut: 'TERMINEE',
-        resultat: 'Mission terminée',
-        dossierId: 4,
-        prestataireId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        dossier: {
-          id: 4,
-          reference: 'DOS-2024-004',
-          client: { nom: 'Ben Hamida', prenom: 'Sami' }
-        },
-        prestataire: {
-          id: 1,
-          nom: 'Mansouri',
-          prenom: 'Mohamed',
-          typePrestataire: 'HUISSIER'
-        }
-      }
-    ];
-  }
-
-  
   clearError(): void {
     this.errorSignal.set(null);
   }

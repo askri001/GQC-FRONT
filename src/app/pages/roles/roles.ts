@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -193,7 +194,9 @@ export class RolesComponent implements OnInit {
         ];
 
         if (ops.length > 0) {
-          ops.forEach(op => op.subscribe());
+          forkJoin(ops).subscribe({
+            error: () => this.showNotification('Erreur assignation permissions', 'error')
+          });
         }
 
         this.loading.set(false);

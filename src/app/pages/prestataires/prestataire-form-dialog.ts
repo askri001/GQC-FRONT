@@ -125,7 +125,8 @@ export class PrestataireFormDialogComponent implements OnInit {
 
     // ── Build payload — actif is always a strict boolean ──────────────────
     const payload: Partial<Prestataire> = {
-      typePrestataire: raw.typePrestataire,
+      type:            raw.typePrestataire,  // backend DTO field is "type", not "typePrestataire"
+      typePrestataire: raw.typePrestataire,  // keep for Angular model compatibility
       nom:             raw.nom.trim(),
       prenom:          raw.prenom.trim(),
       telephone:       telTrimmed,
@@ -133,7 +134,7 @@ export class PrestataireFormDialogComponent implements OnInit {
       adresse:         raw.adresse.trim(),
       specialite:      raw.specialite,
       tarifJournalier: Number(raw.tarifJournalier),
-      actif:           raw.actif === true || raw.actif === 'true', // force boolean
+      actif:           raw.actif === true || raw.actif === 'true',
     };
 
     // Debug — remove after confirming fix

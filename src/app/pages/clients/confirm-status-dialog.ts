@@ -94,8 +94,8 @@ export interface ConfirmStatusDialogData {
       border-radius: 16px 16px 0 0;
     }
 
-    .csd-activate::before  { background: #00966E; }
-    .csd-deactivate::before { background: #c62828; }
+    .csd-activate::before  { background: none; }
+    .csd-deactivate::before { background: none; }
 
     /* ── Icon ── */
     .csd-icon-wrap {

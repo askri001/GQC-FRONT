@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -310,7 +311,9 @@ export class UsersComponent implements OnInit {
             this.userService.assignRole(this.editId(), roleId)
           );
           if (roleAssignments.length > 0) {
-            roleAssignments.forEach((req: any) => req.subscribe());
+            forkJoin(roleAssignments).subscribe({
+              error: () => this.showNotification('Erreur assignation rôles', 'error')
+            });
           }
           this.loading.set(false);
           this.closeDrawer();

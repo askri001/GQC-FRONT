@@ -281,6 +281,7 @@ export class DashboardComponent implements OnInit {
   };
 
   lineChartType: ChartType = 'line';
+  // Placeholder data — connect to a real trend endpoint when available
   lineChartData: ChartData<'line'> = {
     labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
     datasets: [{

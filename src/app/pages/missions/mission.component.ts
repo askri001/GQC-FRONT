@@ -60,7 +60,7 @@ export class MissionsComponent implements OnInit {
 
   // ── Lookup data ────────────────────────────────────────────────
   statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
-  types: TypeMission[]     = ['HUISSIER', 'EXPERT', 'AVOCAT'];
+  types: TypeMission[]     = ['HUISSIER', 'EXPERT'];
 
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
   typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
@@ -202,13 +202,32 @@ export class MissionsComponent implements OnInit {
 
   // ── Toggle status ──────────────────────────────────────────────
   toggleStatus(m: Mission): void {
-    const next: StatutMission = m.statut === 'EN_ATTENTE' ? 'EN_COURS' : 'EN_ATTENTE';
+    // Workflow: EN_ATTENTE → EN_COURS → (edit dialog for TERMINEE) | ANNULEE
+    if (m.statut === 'TERMINEE' || m.statut === 'ANNULEE') return;
+    const next: StatutMission = m.statut === 'EN_ATTENTE' ? 'EN_COURS' : 'EN_COURS';
+    // For EN_COURS → TERMINEE, open edit dialog so résultat can be entered
+    if (m.statut === 'EN_COURS') {
+      this.openEditDialog(m);
+      return;
+    }
     this.missionService.updateStatus(m.id!, next).subscribe({
       next: () => {
         this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 });
         this.loadMissions();
       },
       error: () => this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Annuler mission ────────────────────────────────────────────
+  annulerMission(m: Mission): void {
+    if (!confirm(`Annuler la mission "${this.typeLabels[m.typeMission]}" ?`)) return;
+    this.missionService.updateStatus(m.id!, 'ANNULEE').subscribe({
+      next: () => {
+        this.snackBar.open('Mission annulée', 'OK', { duration: 2500 });
+        this.loadMissions();
+      },
+      error: () => this.snackBar.open('Erreur lors de l\'annulation', 'OK', { duration: 3000 }),
     });
   }
 

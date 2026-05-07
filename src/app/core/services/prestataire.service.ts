@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { Prestataire, TypePrestataire } from '../models/prestataire.model';
 import { environment } from '../../../environments/environment';
@@ -38,6 +38,12 @@ export class PrestataireService {
 
     return this.api.get<Prestataire[]>(this.endpoint).pipe(
 
+      map(data => (data ?? []).map(p => ({
+        ...p,
+        idPrestataire: p.idPrestataire ?? (p as any).id,
+        typePrestataire: (p.typePrestataire ?? (p as any).type) as TypePrestataire,
+      }))),
+
       tap(data => {
         this.prestatairesSignal.set(data);
         this.loadingSignal.set(false);
@@ -61,23 +67,45 @@ export class PrestataireService {
     type?: TypePrestataire,
     actif?: boolean
   ): Observable<PageResponse<Prestataire>> {
-    
-    let params: any = { page, size };
-    
-    if (search) params.search = search;
-    if (type) params.type = type;
-    if (actif !== undefined) params.actif = actif;
+    // Backend has no /paginated endpoint — use /type/{type} or /getAll, filter client-side
+    const source$ = type
+      ? this.api.get<Prestataire[]>(`${this.endpoint}/type/${type}`)
+      : this.api.get<Prestataire[]>(this.endpoint);
 
-    return this.api.get<PageResponse<Prestataire>>(`${this.endpoint}/paginated`, params).pipe(
+    return source$.pipe(
+      map(all => {
+        let filtered = (all ?? []).map(p => ({
+          ...p,
+          // normalise: backend returns "id" and "type", map to Angular field names
+          idPrestataire: p.idPrestataire ?? (p as any).id,
+          typePrestataire: (p.typePrestataire ?? (p as any).type) as TypePrestataire,
+        }));
+
+        if (search?.trim()) {
+          const s = search.trim().toLowerCase();
+          filtered = filtered.filter(p =>
+            p.nom?.toLowerCase().includes(s) ||
+            p.email?.toLowerCase().includes(s) ||
+            p.specialite?.toLowerCase().includes(s)
+          );
+        }
+
+        if (actif !== undefined) {
+          filtered = filtered.filter(p => p.actif === actif);
+        }
+
+        const start = page * size;
+        return {
+          content: filtered.slice(start, start + size),
+          totalElements: filtered.length,
+          totalPages: Math.ceil(filtered.length / size),
+          size,
+          number: page,
+        };
+      }),
       catchError(error => {
         console.error('Erreur chargement paginé prestataires', error);
-        return of({
-          content: [],
-          totalElements: 0,
-          totalPages: 0,
-          size: size,
-          number: page
-        });
+        return of({ content: [], totalElements: 0, totalPages: 0, size, number: page });
       })
     );
   }

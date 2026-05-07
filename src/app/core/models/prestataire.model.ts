@@ -1,6 +1,8 @@
 export interface Prestataire {
-  idPrestataire?: number;
-  typePrestataire: TypePrestataire;
+  idPrestataire?: number;  // mapped from backend "id"
+  id?: number;             // backend field name (also accepted)
+  typePrestataire: TypePrestataire;  // mapped from backend "type"
+  type?: string;           // backend field name (also accepted)
   nom: string;
   prenom: string;
   telephone: string;

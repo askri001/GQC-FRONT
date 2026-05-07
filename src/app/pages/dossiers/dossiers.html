@@ -97,6 +97,9 @@
               <button mat-icon-button color="warn" (click)="deleteDossier(dossier.idDossier!)" title="Supprimer">
                 <mat-icon>delete</mat-icon>
               </button>
+              <button mat-icon-button style="color:#c0392b" (click)="exportPdf(dossier)" title="Exporter PDF">
+                <mat-icon>picture_as_pdf</mat-icon>
+              </button>
             </td>
           </ng-container>
 
