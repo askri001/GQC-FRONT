@@ -4,25 +4,12 @@ import { Observable } from 'rxjs';
 import { Client } from '../models/client.model';
 import { environment } from '../../../environments/environment';
 
-<<<<<<< Updated upstream
-export interface Client {
-  id?: number;
-  nom: string;
-  prenom?: string;
-  cin?: string;
-  tel: string;
-  email?: string;
-  adresse?: string;
-  active?: boolean;
-  typeClient?: string;
-=======
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
   number?: number;
   size?: number;
->>>>>>> Stashed changes
 }
 
 @Injectable({

@@ -1,15 +1,16 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
-<<<<<<< Updated upstream
-import { User, AuthResponse, LoginRequest, Role } from '../models';
 import { catchError, of, firstValueFrom } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
+
+import { AuthResponse, LoginRequest, Role, User } from '../models';
+
 
 interface CustomJwtPayload {
   sub?: string;
   username?: string;
-  roles: string[];
+  roles?: string[];
   email?: string;
   firstName?: string;
   lastName?: string;
@@ -17,21 +18,13 @@ interface CustomJwtPayload {
   family_name?: string;
   [key: string]: any;
 }
-=======
-import { User, AuthResponse, LoginRequest } from '../models';
-import { tap, catchError, of, firstValueFrom } from 'rxjs';
->>>>>>> Stashed changes
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-<<<<<<< Updated upstream
   private readonly ACCESS_TOKEN_KEY = 'access_token';
-=======
-
   private readonly TOKEN_KEY = 'auth_token';
->>>>>>> Stashed changes
   private readonly USER_KEY = 'auth_user';
 
   private currentUserSignal = signal<User | null>(null);
@@ -44,7 +37,6 @@ export class AuthService {
     private api: ApiService,
     private router: Router
   ) {
-<<<<<<< Updated upstream
     this.initializeAuth();
   }
 
@@ -53,146 +45,121 @@ export class AuthService {
     const accessToken = this.getAccessToken();
 
     if (storedUserStr && accessToken) {
-=======
-    this.loadFromStorage();
+      this.loadFromStorage();
+    }
   }
-
-  /* ---------------- INIT ---------------- */
 
   private loadFromStorage(): void {
     const storedUser = localStorage.getItem(this.USER_KEY);
-    const token = localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY) || this.getAccessToken();
 
-    // Reject stale mock tokens — they start with 'mock-'
     if (!token || token.startsWith('mock-')) {
       this.clearStorage();
       return;
     }
 
-    if (storedUser && token) {
->>>>>>> Stashed changes
+    if (storedUser) {
       try {
         const user: User = JSON.parse(storedUser);
         this.currentUserSignal.set(user);
         this.isAuthenticatedSignal.set(true);
       } catch {
-<<<<<<< Updated upstream
         this.logout();
-=======
         this.clearStorage();
->>>>>>> Stashed changes
       }
     }
   }
 
-<<<<<<< Updated upstream
+  //isAuthenticated(): boolean {
+    //return this.isAuthenticatedSignal();
+  //}
+
   async login(credentials: LoginRequest): Promise<boolean> {
     try {
-      const response = await firstValueFrom(
-        this.api.post<AuthResponse>('/auth/login', credentials).pipe(
-          catchError(() => of(null as any))
-        )
-      );
+      const response = await firstValueFrom(this.api.post<AuthResponse>('/auth/login', credentials));
 
-      if (!response || !response.token) {
+      if (!response || !(response as any).token) {
         throw new Error('Login response invalid');
       }
 
-      localStorage.setItem(this.ACCESS_TOKEN_KEY, response.token);
-      // Store the user id from the login response for profile access
-      if (response.user?.id) {
-        localStorage.setItem('auth_user_id', String(response.user.id));
+      // Your backend seems to return a `token` field.
+      const token = (response as any).token as string;
+
+      localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+      if ((response as any).user?.id) {
+        localStorage.setItem('auth_user_id', String((response as any).user.id));
       }
-      this.updateUserFromToken(response.token);
-      this.isAuthenticatedSignal.set(true);
-=======
-  /* ---------------- LOGIN ---------------- */
 
-  async login(credentials: LoginRequest): Promise<boolean> {
-    try {
-      const response = await firstValueFrom(
-        this.api.post<any>('/auth/login', credentials)
-      );
+      // Prefer user object from backend if present.
+      const userFromApi: User | null = (response as any).user
+        ? {
+            id: (response as any).user.id,
+            username: (response as any).user.username,
+            email: (response as any).user.email,
+            firstName: (response as any).user.prenom || (response as any).user.firstName || '',
+            lastName: (response as any).user.nom || (response as any).user.lastName || '',
+            active: true,
+            roles: [...new Set<string>((response as any).user.roles || [])].map((r: any) => ({
+              name: typeof r === 'string' ? r : r.name,
+              permissions: []
+            })) as Role[]
+          }
+        : null;
 
-      // Map backend DTO → Angular User model
-      // Backend roles are strings like "ROLE_ADMIN"
-      const mappedUser: User = {
-        id: response.user?.id,
-        username: response.user?.username,
-        email: response.user?.email,
-        firstName: response.user?.prenom || response.user?.firstName || '',
-        lastName: response.user?.nom   || response.user?.lastName  || '',
-        active: true,
-        roles: [...new Set<string>(response.user?.roles || [])]   // deduplicate
-          .map((r: any) => ({
-            name: typeof r === 'string' ? r : r.name,
-            permissions: []
-          }))
-      };
->>>>>>> Stashed changes
+      if (userFromApi) {
+        this.setAuth(token, userFromApi);
+      } else {
+        this.updateUserFromToken(token);
+      }
 
-      this.setAuth(response.token, mappedUser);
       return true;
-<<<<<<< Updated upstream
-    } catch (error) {
-      console.error('Login error', error);
-      throw new Error('Identifiants invalides');
-=======
-    } catch (apiError: any) {
-      const msg = apiError?.error?.message
-        || apiError?.message
-        || 'Identifiants incorrects ou serveur indisponible.';
+    } catch (error: any) {
+      const msg = error?.error?.message || error?.message || 'Identifiants invalides';
       throw new Error(msg);
->>>>>>> Stashed changes
     }
   }
 
   logout(): void {
-<<<<<<< Updated upstream
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem('auth_user_id');
-=======
+
     this.clearStorage();
->>>>>>> Stashed changes
     this.currentUserSignal.set(null);
     this.isAuthenticatedSignal.set(false);
+
     this.router.navigate(['/login']);
   }
 
-<<<<<<< Updated upstream
   getAccessToken(): string | null {
     return localStorage.getItem(this.ACCESS_TOKEN_KEY);
-=======
-  /* ---------------- TOKEN ---------------- */
+  }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
->>>>>>> Stashed changes
+    return localStorage.getItem(this.TOKEN_KEY) || this.getAccessToken();
   }
 
   getUserRoles(): string[] {
-<<<<<<< Updated upstream
     const token = this.getAccessToken();
-    if (!token) return [];
-
-    try {
-      const payload = jwtDecode<CustomJwtPayload>(token);
-      const roles = Array.isArray(payload.roles) ? payload.roles : [];
-      return roles.map((r: string) => r.startsWith('ROLE_') ? r : `ROLE_${r}`);
-    } catch {
-      return [];
+    if (token) {
+      try {
+        const payload = jwtDecode<CustomJwtPayload>(token);
+        const roles = Array.isArray(payload.roles) ? payload.roles : [];
+        return roles.map((r: string) => (r.startsWith('ROLE_') ? r : `ROLE_${r}`));
+      } catch {
+      }
     }
-=======
-    const roles = this.currentUserSignal()?.roles?.map(r => r.name) || [];
-    // Normalize: ensure both "ADMIN" and "ROLE_ADMIN" formats are covered
+
+    const rolesFromUser = this.currentUserSignal()?.roles?.map(r => r.name) || [];
     const normalized: string[] = [];
-    roles.forEach(r => {
+
+    rolesFromUser.forEach(r => {
       normalized.push(r);
       if (!r.startsWith('ROLE_')) normalized.push(`ROLE_${r}`);
     });
+
     return normalized;
->>>>>>> Stashed changes
   }
 
   hasRole(role: string): boolean {
@@ -203,30 +170,47 @@ export class AuthService {
     return roles.some(r => this.hasRole(r));
   }
 
-<<<<<<< Updated upstream
   getPrimaryRole(): string | null {
     const roles = this.getUserRoles();
-    const priority = ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'];
-=======
+    const priority = [
+      'ADMIN',
+      'ROLE_ADMIN',
+      'RESPONSABLE',
+      'ROLE_RESPONSABLE',
+      'CHARGEDOSSIER',
+      'ROLE_CHARGEDOSSIER'
+    ];
+
+    for (const role of priority) {
+      if (roles.includes(role)) return role;
+    }
+
+    return roles[0] || null;
+  }
+
   hasPermission(code: string): boolean {
     const user = this.currentUserSignal();
     if (!user?.roles) return false;
+
     return user.roles.some(role =>
       role.permissions?.some(p => p.code === code)
     );
   }
 
-  getPrimaryRole(): string | null {
-    const roles = this.getUserRoles();
-    const priority = ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE', 'CHARGEDOSSIER', 'ROLE_CHARGEDOSSIER'];
->>>>>>> Stashed changes
-    for (const role of priority) {
-      if (roles.includes(role)) return role;
-    }
-    return roles[0] || null;
+  refreshUser(): void {
+    this.api
+      .get<User>('/auth/me')
+      .pipe(
+        // backend may return a user; token is already stored
+        catchError(() => of(null as any))
+      )
+      .subscribe(user => {
+        if (!user) return;
+        const token = this.getToken() || '';
+        this.setAuth(token, user);
+      });
   }
 
-<<<<<<< Updated upstream
   private updateUserFromToken(token: string): void {
     try {
       const payload = jwtDecode<CustomJwtPayload>(token);
@@ -234,34 +218,25 @@ export class AuthService {
         username: payload.sub || payload.username || '',
         email: payload.email || '',
         firstName: payload.firstName || payload.given_name || '',
-        lastName: payload.family_name || payload.lastName || '',
+        lastName: payload.lastName || payload.family_name || '',
         active: true,
         roles: (payload.roles || []).map((r: string) => ({
           name: r.startsWith('ROLE_') ? r : `ROLE_${r}`
-        } as Role))
+        })) as Role[]
       };
+
       this.currentUserSignal.set(user);
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     } catch (error) {
-      console.error('Token decode error:', error);
+      // ignore
     }
-=======
-  /* ---------------- REFRESH USER ---------------- */
-
-  refreshUser(): void {
-    this.api.get<User>('/auth/me')
-      .pipe(
-        tap(user => this.setAuth(this.getToken() || '', user)),
-        catchError(() => of(null))
-      )
-      .subscribe();
   }
-
-  /* ---------------- HELPERS ---------------- */
 
   private setAuth(token: string, user: User): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+
     this.currentUserSignal.set(user);
     this.isAuthenticatedSignal.set(true);
   }
@@ -269,6 +244,6 @@ export class AuthService {
   private clearStorage(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
->>>>>>> Stashed changes
   }
 }
+

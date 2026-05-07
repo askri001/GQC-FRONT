@@ -1,11 +1,8 @@
-# Client Fix Progress
+# Fix build (merge conflicts + syntax errors)
 
-## Steps:
-- [x] 1. Update ClientService: Add signals, loading, error handling, mock data fallback
-- [ ] 2. Update clients.ts: Import MatDialog + ClientFormDialogComponent, replace inline edit with dialog
-- [ ] 3. Fix clients.ts CSS import to './client.css'
-- [ ] 4. Update client.html: Remove inline edit sections, add dialog trigger buttons
-- [ ] 5. Test: ng serve --open, navigate /clients, verify mocks + dialog work
-- [ ] 6. Complete
+- [x] Fix merge conflict / unreachable code in `src/app/guards/auth-guard.ts`.
+- [ ] Fix merge conflict / syntax errors in `src/app/core/services/auth.service.ts` (restore a single coherent implementation).
+- [ ] Fix unbalanced braces in `src/styles.css` (remove conflict markers / corrupted sections).
+- [ ] Re-run `npm run test` to confirm TypeScript + CSS compile.
+- [ ] If still failing: address secondary spec/import errors (e.g. `App`, `Dashboard`, `Auth` exports) after the above blockers are resolved.
 
-Current status: Step 1 complete, Step 2 next

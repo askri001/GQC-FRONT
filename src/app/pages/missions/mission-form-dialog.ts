@@ -59,7 +59,7 @@ export class MissionFormDialogComponent {
     statut:       this.data.mission?.statut       ?? 'EN_ATTENTE' as StatutMission,
     dateDebut:    this.toDateString(this.data.mission?.dateDebut) ?? this.toDateString(new Date())!,
     dateFin:      this.toDateString(this.data.mission?.dateFin)  ?? '',
-    dossierId:    this.data.mission?.dossierId    ?? null as number | null,
+    dossierId:    this.data.mission?.affaireId    ?? null as number | null,
     prestataireId: this.data.mission?.prestataireId ?? null as number | null,
     resultat:     this.data.mission?.resultat     ?? '',
   };
@@ -95,7 +95,7 @@ export class MissionFormDialogComponent {
       statut:        f.statut,
       dateDebut:     new Date(f.dateDebut),
       dateFin:       f.dateFin ? new Date(f.dateFin) : undefined,
-      dossierId:     f.dossierId    ? Number(f.dossierId)    : undefined,
+      affaireId:     f.dossierId    ? Number(f.dossierId)    : undefined,
       prestataireId: f.prestataireId ? Number(f.prestataireId) : undefined,
       resultat:      f.resultat?.trim() || undefined,
     };

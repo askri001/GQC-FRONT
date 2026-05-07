@@ -2,23 +2,12 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../core/services/auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = (route) => {
   const router = inject(Router);
   const authService = inject(AuthService);
 
-  if (authService.isAuthenticated()) {
-    return true;
-  }
-
-<<<<<<< Updated upstream
-  router.navigate(['/login']);
-  return false;
-=======
-  // Prevent redirect loop when already on /login
-  if (state.url === '/login') {
-    return false;
-  }
-
-  return router.createUrlTree(['/login']);
->>>>>>> Stashed changes
+  return authService.isAuthenticated()
+    ? true
+    : router.createUrlTree(['/login']);
 };
+

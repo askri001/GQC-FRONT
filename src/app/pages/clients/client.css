@@ -1,15 +1,10 @@
-/* ================================================================
-   GESTION DES CLIENTS — matches screenshot exactly
-   ================================================================ */
 
-/* ── Page background ── */
 .page-container {
   min-height: 100vh;
   padding: 32px 28px;
   background: #eef4f1;
 }
 
-/* ── White card ── */
 .page-card {
   background: #ffffff;
   border-radius: 14px;
@@ -19,9 +14,7 @@
   margin: 0 auto;
 }
 
-/* ================================================================
-   TITLE  — centered, icon left of text
-   ================================================================ */
+
 .page-title {
   display: flex;
   align-items: center;
@@ -39,22 +32,13 @@
 
 .page-title h2 {
   margin: 0;
-<<<<<<< Updated upstream
-  color: var(--bna-navy);
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-=======
   font-size: 26px;
   font-weight: 700;
   color: #1a2e28;
   letter-spacing: -0.3px;
->>>>>>> Stashed changes
 }
 
-/* ================================================================
-   TOOLBAR  — search | dropdown | dropdown | [spacer] | button
-   ================================================================ */
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -63,7 +47,6 @@
   margin-bottom: 32px;
 }
 
-/* ── Search box ── */
 .search-box {
   position: relative;
   display: flex;
@@ -116,124 +99,7 @@
   flex-direction: column;
 }
 
-<<<<<<< Updated upstream
-.table-container {
-  background: var(--bna-white);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 150, 110, 0.08);
-  position: relative;
-}
-
-
-.table-container table.mat-mdc-table .mat-mdc-header-row {
-  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-navy-mid) 100%) !important;
-  height: 56px;
-}
-
-.table-container table.mat-mdc-table .mat-mdc-header-cell {
-  color: var(--bna-white) !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: none !important;
-  padding: 0 16px !important;
-}
-
-
-.table-container table.mat-mdc-table .mat-mdc-row {
-  transition: all 0.2s ease;
-  border-radius: 12px;
-  margin: 4px 8px;
-  height: 56px;
-  background: var(--bna-bg);
-}
-
-.table-container table.mat-mdc-table .mat-mdc-row:hover {
-  background: var(--bna-lighter) !important;
-  transform: scale(1.005);
-  box-shadow: 0 2px 8px rgba(0, 150, 110, 0.1);
-}
-
-.table-container table.mat-mdc-table .mat-mdc-cell {
-  color: var(--bna-text);
-  font-size: 14px;
-  padding: 0 16px !important;
-  border-bottom: none !important;
-}
-
-
-.table-container table.mat-mdc-table {
-  background: transparent;
-  border-collapse: separate;
-  border-spacing: 0 4px;
-}
-
-
-.table-container mat-chip {
-  font-weight: 500;
-  font-size: 12px;
-  border-radius: 20px;
-}
-
-
-.id-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.id-badge.cin {
-  background: var(--bna-bg);
-  color: var(--bna-primary);
-}
-
-.id-badge.rne {
-  background: var(--bna-bg);
-  color: var(--bna-primary);
-}
-
-
-.table-container button[mat-icon-button][color="primary"] {
-  color: var(--bna-primary) !important;
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button][color="primary"]:hover {
-  background: var(--bna-bg);
-  transform: scale(1.1);
-}
-
-.table-container button[mat-icon-button][color="warn"] {
-  color: var(--bna-error) !important;
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button][color="warn"]:hover {
-  background: var(--bna-error-bg);
-  transform: scale(1.1);
-}
-
-
-.table-container button[mat-icon-button]:not([color]) {
-  color: var(--bna-text-muted);
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button]:not([color]):hover {
-  background: var(--bna-bg);
-  color: var(--bna-primary);
-  transform: scale(1.1);
-}
-
-
-.table-loading-overlay {
-=======
 .select-label {
->>>>>>> Stashed changes
   position: absolute;
   top: -9px;
   left: 10px;
@@ -321,9 +187,7 @@
 
 .btn-new:active { transform: translateY(0); }
 
-/* ================================================================
-   TABLE CARD
-   ================================================================ */
+
 .table-card {
   border-radius: 10px;
   border: 1px solid #d4e8e0;
@@ -333,14 +197,12 @@
 
 .table-scroll { overflow-x: auto; }
 
-/* ── Table ── */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
 
-/* Header */
 .data-table thead tr {
   background: #00966E;
 }
@@ -357,7 +219,6 @@
   border: none;
 }
 
-/* Body rows */
 .data-table tbody tr {
   border-bottom: 1px solid #e8f3ee;
   transition: background .12s;
@@ -373,7 +234,6 @@
   vertical-align: middle;
 }
 
-/* ── Column specifics ── */
 .td-id    { width: 56px;  font-weight: 600; color: #5a8070; }
 .td-nom   { min-width: 120px; font-weight: 500; color: #1a2e28; }
 .td-type  { min-width: 110px; }

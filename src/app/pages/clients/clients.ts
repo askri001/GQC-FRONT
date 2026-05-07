@@ -12,17 +12,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ClientService } from '../../core/services/client.service';
-<<<<<<< Updated upstream
-import { Client } from '../../core/services/client.service';
 
 interface ExtendedClient extends Client {
   dateCreation?: string;
 }
-=======
+
 import { Client } from '../../core/models/client.model';
 import { ClientFormDialogComponent } from './client-form-dialog';
 import { ConfirmStatusDialogComponent } from './confirm-status-dialog';
->>>>>>> Stashed changes
 
 @Component({
   selector: 'app-clients',
@@ -236,7 +233,6 @@ export class ClientsComponent implements OnInit {
     });
   }
 
-  // ── CIN / RNE reveal ───────────────────────────────────────────
   isRevealed(id: number): boolean { return this.revealedIds.has(id); }
 
   toggleReveal(id: number): void {
@@ -249,7 +245,6 @@ export class ClientsComponent implements OnInit {
     return '•'.repeat(Math.max(0, value.length - 3)) + value.slice(-3);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────
   getTypeLabel(type: string): string {
     return type === 'PHYSIQUE' ? 'Particulier' : 'Entreprise';
   }

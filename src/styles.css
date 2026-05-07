@@ -1,24 +1,17 @@
 
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-<<<<<<< Updated upstream
-/* ============================================================
-   BNA — Global CSS Variables
-   Primary brand: BNA Green + Navy
-   ============================================================ */
+
 :root {
-  /* BNA Green — actions, accents, buttons */
   --bna-primary:      #00966E;
   --bna-primary-dark: #007A58;
   --bna-primary-bright: #00C48C;
   --bna-primary-light: #E0F5EE;
 
-  /* Navy — sidebar, headers, depth */
   --bna-navy:         #0F2044;
   --bna-navy-mid:     #1A3A6B;
   --bna-navy-light:   #2A5298;
 
-  /* Keep old names mapped to new values for compatibility */
   --bna-dark:         #0F2044;
   --bna-darker:       #091529;
   --bna-light:        #00C48C;
@@ -26,13 +19,11 @@
   --bna-bg:           #F0FAF6;
   --bna-bg-page:      #F4F6F9;
 
-  /* Neutrals */
   --bna-white:        #FFFFFF;
   --bna-text:         #1A1F2E;
   --bna-text-muted:   #6B7280;
   --bna-border:       #E5E7EB;
 
-  /* Semantic */
   --bna-success:      #059669;
   --bna-success-bg:   #D1FAE5;
   --bna-warning:      #D97706;
@@ -41,8 +32,7 @@
   --bna-error-bg:     #FEE2E2;
   --bna-info:         #2563EB;
   --bna-info-bg:      #DBEAFE;
-=======
-/* ===== BNA DESIGN TOKENS ===== */
+
 :root {
   --bna-primary:      #00966E;
   --bna-dark:         #007A58;
@@ -54,7 +44,6 @@
   --bna-white:        #FFFFFF;
   --bna-text:         #1A2E28;
   --bna-text-muted:   #6B8C82;
->>>>>>> Stashed changes
 }
 
 * {
@@ -325,5 +314,4 @@ h1, h2, h3, h4, h5, h6 {
   .search-field { min-width: 100%; }
   .glass-card { padding: 20px; margin: 10px; }
 }
-
 

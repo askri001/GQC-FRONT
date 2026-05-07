@@ -1,20 +1,13 @@
 export interface Facture {
   id?: number;
+  idFacture?: number;
   numero: string;
   dateEmission: Date;
-  dateEcheance?: Date;   // ✅ تمت إضافتها
   montant: number;
   statut: StatutFacture;
   typeFacture: TypeFacture;
   missionId?: number;
-  dossierId?: number;
-  prestataireId?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-
   mission?: any;
-  dossier?: any;
-  prestataire?: any;
 }
 
 export type StatutFacture =

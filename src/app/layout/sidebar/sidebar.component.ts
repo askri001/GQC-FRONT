@@ -67,7 +67,6 @@ export class SidebarComponent {
   collapsed = signal(false);
 
   navItems: NavItem[] = [
-<<<<<<< Updated upstream
     { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] },
     { label: 'Utilisateurs',        icon: 'people',        route: '/users',        roles: ['ROLE_ADMIN'] },
     { label: 'Rôles & Permissions', icon: 'security',      route: '/roles',        roles: ['ROLE_ADMIN'] },
@@ -81,21 +80,6 @@ export class SidebarComponent {
     { label: 'Avocats',             icon: 'gavel',         route: '/avocats',      roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] },
     { label: 'Missions',            icon: 'assignment',    route: '/missions',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN'] }
-=======
-    { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Utilisateurs',        icon: 'people',        route: '/users',        roles: ['ADMIN', 'ROLE_ADMIN'] },
-    { label: 'Rôles & Permissions', icon: 'security',      route: '/roles',        roles: ['ADMIN', 'ROLE_ADMIN'] },
-    { label: 'Clients',             icon: 'person_add',    route: '/clients',      roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Dossiers',            icon: 'folder',        route: '/dossiers',     roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE', 'CHARGEDOSSIER', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Risques',             icon: 'warning',       route: '/risques',      roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Garanties',           icon: 'verified_user', route: '/garanties',    roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Affaires',            icon: 'gavel',         route: '/affaires',     roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Audiences',           icon: 'event',         route: '/audiences',    roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE', 'CHARGEDOSSIER', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Prestataires',        icon: 'business',      route: '/prestataires', roles: ['ADMIN', 'ROLE_ADMIN'] },
-    { label: 'Avocats',             icon: 'gavel',         route: '/avocats',      roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE'] },
-    { label: 'Missions',            icon: 'assignment',    route: '/missions',     roles: ['ADMIN', 'ROLE_ADMIN', 'RESPONSABLE', 'ROLE_RESPONSABLE', 'CHARGEDOSSIER', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ADMIN', 'ROLE_ADMIN'] }
->>>>>>> Stashed changes
   ];
 
   filteredNavItems(): NavItem[] {
@@ -105,13 +89,7 @@ export class SidebarComponent {
       return item.roles.some(r => roles.includes(r));
     });
   }
-<<<<<<< Updated upstream
 
-  isActive(route: string): boolean {
-    return this.router.url.startsWith(route);
-  }
-=======
->>>>>>> Stashed changes
 
   isActive(route: string): boolean {
     return this.router.url.startsWith(route);
