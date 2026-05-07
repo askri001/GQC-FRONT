@@ -63,7 +63,7 @@ import { DashboardStats, Dossier } from '../../core/models';
             <mat-icon>trending_up</mat-icon>
           </div>
           <div class="kpi-content">
-            <span class="kpi-value">{{ stats().tauxRecouvrement }}%</span>
+            <span class="kpi-value">{{ formatPercentage(stats().tauxRecouvrement) }}%</span>
             <span class="kpi-label">Taux de Recouvrement</span>
           </div>
         </mat-card>
@@ -154,12 +154,15 @@ import { DashboardStats, Dossier } from '../../core/models';
       padding: 24px;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 20px;
       border-radius: 12px;
       transition: transform 0.2s, box-shadow 0.2s;
+      text-align: center;
     }
 
     .kpi-card:hover {
+
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
@@ -337,6 +340,14 @@ export class DashboardComponent implements OnInit {
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('fr-TN', { style: 'currency', currency: 'TND', maximumFractionDigits: 0 }).format(value);
   }
+
+  formatPercentage(value: number): string {
+    return new Intl.NumberFormat('fr-TN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  }
+
 
   getStatutLabel(statut: string): string {
     const labels: Record<string, string> = {
