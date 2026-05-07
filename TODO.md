@@ -1,8 +1,7 @@
-# Fix build (merge conflicts + syntax errors)
+# TODO
 
-- [x] Fix merge conflict / unreachable code in `src/app/guards/auth-guard.ts`.
-- [ ] Fix merge conflict / syntax errors in `src/app/core/services/auth.service.ts` (restore a single coherent implementation).
-- [ ] Fix unbalanced braces in `src/styles.css` (remove conflict markers / corrupted sections).
-- [ ] Re-run `npm run test` to confirm TypeScript + CSS compile.
-- [ ] If still failing: address secondary spec/import errors (e.g. `App`, `Dashboard`, `Auth` exports) after the above blockers are resolved.
+- [x] Analyze risque creation UI
+- [x] Replace “dossierId” input with “dossier reference” selection/entry and resolve dossierId before save (drawer + dialog)
+- [x] Update both drawer UI (risques.ts) and dialog UI (risque-form-dialog.ts)
+- [ ] Run unit/build checks (npm run build) to ensure compilation passes
 

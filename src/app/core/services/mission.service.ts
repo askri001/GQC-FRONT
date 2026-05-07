@@ -1,14 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap, catchError, throwError, of } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { ApiService } from './api.service';
 import type { Mission, StatutMission } from '../models';
 
-const MOCK_MISSIONS: Mission[] = [
-  { id: 1, typeMission: 'AVOCAT', dateDebut: new Date('2024-01-15'), dateFin: new Date('2024-03-15'), statut: 'TERMINEE', dossierId: 1 },
-  { id: 2, typeMission: 'EXPERT', dateDebut: new Date('2024-02-01'), dateFin: new Date('2024-04-01'), statut: 'EN_COURS', dossierId: 2 },
-  { id: 3, typeMission: 'HUISSIER', dateDebut: new Date('2024-03-10'), dateFin: new Date('2024-06-10'), statut: 'EN_COURS', dossierId: 3 },
-  { id: 4, typeMission: 'AVOCAT', dateDebut: new Date('2024-04-01'), dateFin: new Date('2024-05-01'), statut: 'EN_ATTENTE', dossierId: 4 }
-];
+
 
 @Injectable({
   providedIn: 'root'
@@ -39,10 +34,10 @@ export class MissionService {
         this.loadingSignal.set(false);
       }),
       catchError(error => {
-        console.warn('API unavailable, using mock missions');
-        this.missionsSignal.set(MOCK_MISSIONS);
+        console.error('Error loading missions:', error);
+        this.errorSignal.set('Erreur lors du chargement des missions');
         this.loadingSignal.set(false);
-        return of(MOCK_MISSIONS);
+        return throwError(() => error);
       })
     );
   }

@@ -146,7 +146,7 @@ export class MissionFormDialogComponent implements OnInit {
   }
 
   getMissionLabel(m: Mission): string {
-    return `Mission #${m.id} — ${m.typeMission}${m.dossierId ? ' (Dossier ' + m.dossierId + ')' : ''}`;
+    return `Mission #${m.id} — ${m.typeMission}${m.affaireId ? ' (Affaire ' + m.affaireId + ')' : ''}`;
   }
 
   // ── Load TERMINEE affaires ─────────────────────────────────────

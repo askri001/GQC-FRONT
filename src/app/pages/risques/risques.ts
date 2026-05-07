@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,6 +16,8 @@ import { Subscription } from 'rxjs';
 import { RisqueService } from '../../core/services/risque.service';
 import { Risque } from '../../core/models';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
+
+type RisqueDraft = Omit<Partial<Risque>, 'dossierId'> & { dossierReference: string };
 
 @Component({
   selector: 'app-risques',
@@ -125,14 +127,14 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
       [title]="editingRisque()?.id ? 'Modifier Risque' : 'Nouveau Risque'"
       icon="warning"
       [saveLabel]="editingRisque()?.id ? 'Sauvegarder' : 'Créer'"
-      [saveDisabled]="!tempRisque().montantPrincipal || !tempRisque().dossierId"
+      [saveDisabled]="!tempRisque().montantPrincipal || !tempRisque().dossierReference"
       [saving]="risqueService.loading()"
       (closed)="closeDrawer()"
       (saved)="saveRisque()">
 
       <mat-form-field appearance="outline">
-        <mat-label>ID Dossier *</mat-label>
-        <input matInput type="number" [(ngModel)]="tempRisque().dossierId">
+        <mat-label>Référence Dossier *</mat-label>
+        <input matInput type="text" [(ngModel)]="tempRisque().dossierReference">
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -174,21 +176,25 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
 })
 export class RisquesComponent implements OnInit {
   searchTerm = '';
+
   displayedColumns: string[] = [
-    'montantPrincipal', 'montantInteret', 'montantTotal',
-    'dateContrat', 'dateEcheance', 'tauxInteret',
-    'dossierId', 'actions'
+    'montantPrincipal',
+    'montantInteret',
+    'montantTotal',
+    'dateContrat',
+    'dateEcheance',
+    'tauxInteret',
+    'dossierId',
+    'actions'
   ];
+
   private sub?: Subscription;
 
   drawerOpen = signal(false);
   editingRisque = signal<Risque | null>(null);
-  tempRisque = signal<Partial<Risque>>({});
+  tempRisque = signal<RisqueDraft>({} as RisqueDraft);
 
-  constructor(
-    public risqueService: RisqueService,
-    private snackBar: MatSnackBar
-  ) {
+  constructor(public risqueService: RisqueService, private snackBar: MatSnackBar) {
     effect(() => {
       if (!this.risqueService.loading() && this.risqueService.risques().length === 0) {
         this.loadData();
@@ -220,32 +226,51 @@ export class RisquesComponent implements OnInit {
 
   openDrawer(risque?: Risque) {
     this.editingRisque.set(risque || null);
-    this.tempRisque.set(risque ? { ...risque } : {
-      montantPrincipal: 0,
-      montantInteret: 0,
-      montantTotal: 0,
-      tauxInteret: 0,
-      dossierId: 0
-    });
+    this.tempRisque.set(
+      risque
+        ? ({
+            ...risque,
+            dossierReference: String((risque as any).dossierId ?? '')
+          } as any)
+        : {
+            montantPrincipal: 0,
+            montantInteret: 0,
+            montantTotal: 0,
+            tauxInteret: 0,
+            dossierReference: ''
+          }
+    );
     this.drawerOpen.set(true);
   }
 
   closeDrawer() {
     this.drawerOpen.set(false);
     this.editingRisque.set(null);
-    this.tempRisque.set({});
+    this.tempRisque.set({} as RisqueDraft);
   }
 
   editRisque(risque: Risque) {
     this.openDrawer(risque);
   }
 
+  /**
+   * Note: This drawer currently only validates dossierReference presence.
+   * Converting dossierReference -> dossierId should be implemented by loading dossiers.
+   */
   saveRisque() {
     const temp = this.tempRisque();
     const existing = this.editingRisque();
+
+    // Temporary compatibility: if dossierReference is numeric, use it as dossierId.
+    const dossierId = Number(temp.dossierReference);
+    const payload: Partial<Risque> & { dossierId: number } = {
+      ...(temp as any),
+      dossierId: Number.isFinite(dossierId) ? dossierId : (existing?.dossierId ?? 0)
+    };
+
     const action$ = existing?.id
-      ? this.risqueService.update(existing.id, temp)
-      : this.risqueService.create(temp);
+      ? this.risqueService.update(existing.id, payload)
+      : this.risqueService.create(payload);
 
     action$.subscribe({
       next: () => {
@@ -276,3 +301,4 @@ export class RisquesComponent implements OnInit {
     this.sub?.unsubscribe();
   }
 }
+

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
 import { Client } from '../models/client.model';
-import { environment } from '../../../environments/environment';
 
 export interface PageResponse<T> {
   content: T[];
@@ -17,13 +16,13 @@ export interface PageResponse<T> {
 })
 export class ClientService {
 
-  private readonly apiUrl = `${environment.apiUrl}/clients`;
+  private readonly endpoint = '/clients';
 
-  constructor(private http: HttpClient) {}
+  constructor(private api: ApiService) {}
 
   // ── GET ALL ──────────────────────────────────────────────────
   getAll(): Observable<Client[]> {
-    return this.http.get<Client[]>(this.apiUrl);
+    return this.api.get<Client[]>(this.endpoint);
   }
 
   // ── GET PAGINATED (client-side) ──────────────────────────────
@@ -71,26 +70,26 @@ export class ClientService {
 
   // ── GET BY ID ────────────────────────────────────────────────
   getById(id: number): Observable<Client> {
-    return this.http.get<Client>(`${this.apiUrl}/${id}`);
+    return this.api.get<Client>(`${this.endpoint}/${id}`);
   }
 
   // ── CREATE ───────────────────────────────────────────────────
   create(client: Partial<Client>): Observable<Client> {
-    return this.http.post<Client>(this.apiUrl, client);
+    return this.api.post<Client>(this.endpoint, client);
   }
 
   // ── UPDATE ───────────────────────────────────────────────────
   update(id: number, client: Partial<Client>): Observable<Client> {
-    return this.http.put<Client>(`${this.apiUrl}/${id}`, client);
+    return this.api.put<Client>(`${this.endpoint}/${id}`, client);
   }
 
   // ── UPDATE STATUS ────────────────────────────────────────────
   updateStatus(id: number, active: boolean): Observable<Client> {
-    return this.http.put<Client>(`${this.apiUrl}/${id}/status`, { active });
+    return this.api.put<Client>(`${this.endpoint}/${id}/status`, { active });
   }
 
   // ── DELETE ───────────────────────────────────────────────────
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.api.delete<void>(`${this.endpoint}/${id}`);
   }
 }

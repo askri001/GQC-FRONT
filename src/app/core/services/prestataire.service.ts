@@ -204,10 +204,8 @@ export class PrestataireService {
 
   
   updateStatus(id: number, actif: boolean): Observable<Prestataire> {
-    // Backend uses @RequestParam — send actif as query parameter, not JSON body
-    const url = `${environment.apiUrl}${this.endpoint}/${id}/status?actif=${actif}`;
-
-    return this.http.put<Prestataire>(url, null).pipe(
+    // Backend uses @RequestParam actif — pass it in the URL, body is empty
+    return this.api.put<Prestataire>(`${this.endpoint}/${id}/status?actif=${actif}`, {}).pipe(
 
       tap(updated => {
         this.prestatairesSignal.update(list =>
