@@ -1,9 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { Prestataire, TypePrestataire } from '../models/prestataire.model';
-import { environment } from '../../../environments/environment';
 
 interface PageResponse<T> {
   content: T[];
@@ -28,7 +26,7 @@ export class PrestataireService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  constructor(private api: ApiService, private http: HttpClient) {}
+  constructor(private api: ApiService) {}
 
   
   getAll(): Observable<Prestataire[]> {

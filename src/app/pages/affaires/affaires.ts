@@ -20,7 +20,7 @@ import { Affaire, STATUT_AFFAIRE_LABELS } from '../../core/models/affaire.model'
 import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
-interface PrestataireRef { idPrestataire: number; nom: string; prenom: string; typePrestataire: string; }
+interface PrestataireRef { id: number; nom: string; prenom: string; type: string; }
 
 @Component({
   selector: 'app-affaires',
@@ -187,8 +187,8 @@ interface PrestataireRef { idPrestataire: number; nom: string; prenom: string; t
         <mat-label>Prestataire assigné</mat-label>
         <mat-select [(ngModel)]="tempAffaire().prestataireId">
           <mat-option [value]="undefined">Aucun</mat-option>
-          @for (p of prestataires(); track p.idPrestataire) {
-            <mat-option [value]="p.idPrestataire">{{ p.prenom }} {{ p.nom }} ({{ p.typePrestataire }})</mat-option>
+          @for (p of prestataires(); track p.id) {
+            <mat-option [value]="p.id">{{ p.prenom }} {{ p.nom }} ({{ p.type }})</mat-option>
           }
         </mat-select>
       </mat-form-field>

@@ -211,7 +211,7 @@ export class PrestatairesComponent implements OnInit {
 
     ref.afterClosed().subscribe((result?: Partial<Prestataire>) => {
       if (!result) return;
-      this.prestataireService.update(p.idPrestataire!, result).subscribe({
+      this.prestataireService.update(p.idPrestataire ?? p.id!, result).subscribe({
         next: () => {
           this.snackBar.open('Prestataire modifié avec succès', 'OK', { duration: 3000 });
           this.loadTab(this.activeTab());
@@ -225,7 +225,7 @@ export class PrestatairesComponent implements OnInit {
   // ── Supprimer ──────────────────────────────────────────────────
   confirmDelete(p: Prestataire): void {
     if (!confirm(`Supprimer "${this.getFullName(p)}" ? Cette action est irréversible.`)) return;
-    this.prestataireService.delete(p.idPrestataire!).subscribe({
+    this.prestataireService.delete(p.idPrestataire ?? p.id!).subscribe({
       next: () => {
         this.snackBar.open('Prestataire supprimé', 'OK', { duration: 2500 });
         this.loadTab(this.activeTab());
@@ -249,7 +249,7 @@ export class PrestatairesComponent implements OnInit {
     ref.afterClosed().subscribe((confirmed: boolean) => {
       if (!confirmed) return;
 
-      this.togglingId.set(p.idPrestataire!);
+      this.togglingId.set(p.idPrestataire ?? p.id!);
 
       this.prestataireService
         .updateStatus(p.idPrestataire!, nextActive)

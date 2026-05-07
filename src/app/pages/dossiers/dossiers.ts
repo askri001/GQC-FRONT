@@ -247,12 +247,16 @@ export class DossiersComponent implements OnInit {
   }
 
   getClientName(clientId: number): string {
+    const d = this.dossiers().find(d => d.clientId === clientId);
+    if (d?.clientNom) return `${d.clientNom}${d.clientPrenom ? ' ' + d.clientPrenom : ''}`.trim();
     const client = this.clients().find(c => c.id === clientId);
     return client ? `${client.nom}${client.prenom ? ' ' + client.prenom : ''}`.trim() : `#${clientId}`;
   }
 
   getChargeName(chargeId: number | undefined): string {
     if (!chargeId) return '—';
+    const d = this.dossiers().find(d => d.chargeDossierId === chargeId);
+    if (d?.chargeDossierNom) return `${d.chargeDossierPrenom || ''} ${d.chargeDossierNom}`.trim();
     const cd = this.chargeDossiers().find(c => c.id === chargeId);
     return cd ? `${cd.prenom || ''} ${cd.nom || ''}`.trim() || cd.username : `#${chargeId}`;
   }

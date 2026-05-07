@@ -9,29 +9,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RoleService, RoleDTO, PermissionDTO } from '../../core/services/role.service';
-import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
+import { RoleFormDialogComponent } from './role-form-dialog';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    DrawerPanelComponent
+    CommonModule, FormsModule, MatCardModule, MatTableModule, MatButtonModule,
+    MatIconModule, MatChipsModule, MatFormFieldModule, MatInputModule,
+    MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule
   ],
   template: `
     <div class="page-container">
@@ -41,7 +31,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon class="title-icon">security</mat-icon>
             <h2>Gestion des Rôles</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createRole()">
+          <button mat-raised-button color="primary" (click)="openCreate()">
             <mat-icon>add</mat-icon> Nouveau Rôle
           </button>
         </div>
@@ -75,7 +65,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let role">
-                <button mat-icon-button color="primary" (click)="editRole(role)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button color="primary" (click)="openEdit(role)"><mat-icon>edit</mat-icon></button>
                 <button mat-icon-button color="warn" (click)="deleteRole(role.idRole!)"><mat-icon>delete</mat-icon></button>
               </td>
             </ng-container>
@@ -85,52 +75,17 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
         }
       </mat-card>
     </div>
-
-    <!-- Drawer -->
-    <app-drawer-panel
-      [open]="editMode()"
-      [title]="editId() === 0 ? 'Nouveau Rôle' : 'Modifier Rôle'"
-      icon="security"
-      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
-      [saveDisabled]="!tempRole().name"
-      [saving]="loading()"
-      (closed)="cancelEdit()"
-      (saved)="saveRole()">
-
-      <mat-form-field appearance="outline">
-        <mat-label>Nom du rôle *</mat-label>
-        <input matInput [(ngModel)]="tempRole().name">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Description</mat-label>
-        <textarea matInput [(ngModel)]="tempRole().description" rows="3"></textarea>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Permissions</mat-label>
-        <mat-select [(ngModel)]="tempRole().permissionIds" multiple>
-          @for (p of allPermissions(); track p.idPermission) {
-            <mat-option [value]="p.idPermission">{{ p.code }} — {{ p.description || '' }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </app-drawer-panel>
   `,
   styleUrls: ['./roles.css']
 })
 export class RolesComponent implements OnInit {
   private roleService = inject(RoleService);
-  private snackBar = inject(MatSnackBar);
+  private snackBar    = inject(MatSnackBar);
+  private dialog      = inject(MatDialog);
 
-  roles = signal<RoleDTO[]>([]);
+  roles          = signal<RoleDTO[]>([]);
   allPermissions = signal<PermissionDTO[]>([]);
-  loading = signal(false);
-
-  editId = signal<number | null>(null);
-  editMode = signal(false);
-  tempRole = signal<Partial<RoleDTO>>({});
-  originalPermissionIds = signal<number[]>([]);
+  loading        = signal(false);
 
   displayedColumns = ['name', 'description', 'permissions', 'actions'];
 
@@ -143,95 +98,67 @@ export class RolesComponent implements OnInit {
     this.loading.set(true);
     this.roleService.getAll().subscribe({
       next: (data) => { this.roles.set(data); this.loading.set(false); },
-      error: (err) => { console.error(err); this.loading.set(false); this.showNotification('Erreur chargement rôles', 'error'); }
+      error: () => { this.loading.set(false); this.showNotification('Erreur chargement rôles', 'error'); }
     });
   }
 
   loadPermissions() {
     this.roleService.getAllPermissions().subscribe({
       next: (data) => this.allPermissions.set(data),
-      error: (err) => console.error('Error loading permissions', err)
+      error: () => {}
     });
   }
 
-  createRole() {
-    this.editId.set(0);
-    this.tempRole.set({ name: '', description: '' });
-    this.editMode.set(true);
+  openCreate() {
+    const ref = this.dialog.open(RoleFormDialogComponent, {
+      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { isEdit: false, allPermissions: this.allPermissions() }
+    });
+    ref.afterClosed().subscribe(result => { if (result) this.saveRole(null, result); });
   }
 
-  editRole(role: RoleDTO) {
-    this.editId.set(role.idRole!);
-    this.tempRole.set({ ...role });
-    this.originalPermissionIds.set([...(role.permissionIds || [])]);
-    this.editMode.set(true);
+  openEdit(role: RoleDTO) {
+    const ref = this.dialog.open(RoleFormDialogComponent, {
+      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { isEdit: true, role, allPermissions: this.allPermissions() }
+    });
+    ref.afterClosed().subscribe(result => { if (result) this.saveRole(role, result); });
   }
 
-  saveRole() {
-    const temp = this.tempRole();
-    if (!temp.name) {
-      this.showNotification('Le nom du rôle est requis', 'error');
-      return;
-    }
-
-    const request = this.editId() === 0
-      ? this.roleService.create(temp)
-      : this.roleService.update(this.editId()!, temp);
+  saveRole(original: RoleDTO | null, form: any) {
+    const request = original
+      ? this.roleService.update(original.idRole!, form)
+      : this.roleService.create(form);
 
     this.loading.set(true);
     request.subscribe({
       next: (saved) => {
-        const roleId = saved.idRole || this.editId()!;
-        const newIds = temp.permissionIds || [];
-        const oldIds = this.originalPermissionIds();
-
-        const toAdd = newIds.filter(id => !oldIds.includes(id));
+        const roleId = saved.idRole || original?.idRole!;
+        const newIds: number[] = form.permissionIds || [];
+        const oldIds: number[] = original?.permissionIds || [];
+        const toAdd    = newIds.filter(id => !oldIds.includes(id));
         const toRemove = oldIds.filter(id => !newIds.includes(id));
-
         const ops = [
           ...toAdd.map(pid => this.roleService.assignPermission(roleId, pid)),
           ...toRemove.map(pid => this.roleService.removePermission(roleId, pid))
         ];
-
         if (ops.length > 0) {
-          forkJoin(ops).subscribe({
-            error: () => this.showNotification('Erreur assignation permissions', 'error')
-          });
+          forkJoin(ops).subscribe({ error: () => this.showNotification('Erreur assignation permissions', 'error') });
         }
-
         this.loading.set(false);
         this.loadRoles();
-        this.cancelEdit();
         this.showNotification('Rôle sauvegardé', 'success');
       },
-      error: (err) => {
-        this.loading.set(false);
-        console.error('Save error', err);
-        this.showNotification('Erreur sauvegarde', 'error');
-      }
+      error: () => { this.loading.set(false); this.showNotification('Erreur sauvegarde', 'error'); }
     });
   }
 
   deleteRole(id: number) {
-    if (confirm('Confirmer la suppression de ce rôle ?')) {
-      this.roleService.delete(id).subscribe({
-        next: () => {
-          this.loadRoles();
-          this.showNotification('Rôle supprimé', 'success');
-        },
-        error: (err) => {
-          console.error('Delete error', err);
-          this.showNotification('Erreur suppression', 'error');
-        }
-      });
-    }
-  }
-
-  cancelEdit() {
-    this.editId.set(null);
-    this.tempRole.set({});
-    this.originalPermissionIds.set([]);
-    this.editMode.set(false);
+    if (!confirm('Confirmer la suppression de ce rôle ?')) return;
+    this.roleService.delete(id).subscribe({
+      next: () => { this.loadRoles(); this.showNotification('Rôle supprimé', 'success'); },
+      error: () => this.showNotification('Erreur suppression', 'error')
+    });
   }
 
   getPermissionCode(permissionId: number): string {
@@ -240,7 +167,6 @@ export class RolesComponent implements OnInit {
   }
 
   showNotification(msg: string, type: 'success' | 'error' = 'success') {
-    const panelClass = type === 'success' ? 'success-snackbar' : 'error-snackbar';
-    this.snackBar.open(msg, 'Close', { duration: 3000, panelClass });
+    this.snackBar.open(msg, 'Fermer', { duration: 3000, panelClass: type === 'success' ? 'success-snackbar' : 'error-snackbar' });
   }
 }

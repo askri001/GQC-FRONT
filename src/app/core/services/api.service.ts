@@ -18,6 +18,10 @@ export class ApiService {
     return this.http.get<DashboardStats>(`${this.baseUrl}/dashboard/stats`);
   }
 
+  getMonthlyRecovery(): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(`${this.baseUrl}/dashboard/monthly-recovery`);
+  }
+
   getRecentDossiers(limit: number = 5): Observable<Dossier[]> {
     return this.http.get<Dossier[]>(`${this.baseUrl}/dossiers/recent?limit=${limit}`);
   }

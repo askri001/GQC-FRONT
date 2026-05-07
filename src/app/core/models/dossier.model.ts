@@ -9,7 +9,11 @@ export interface Dossier {
   montantInitial: number;
   montantRecupere: number;
   clientId: number;
+  clientNom?: string;
+  clientPrenom?: string;
   chargeDossierId?: number;
+  chargeDossierNom?: string;
+  chargeDossierPrenom?: string;
 }
 
 export const DOSSIER_STATUT_LABELS = {

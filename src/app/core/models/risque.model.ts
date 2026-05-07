@@ -4,7 +4,7 @@ export interface Risque {
   montantInteret: number;
   montantTotal: number;
   tauxInteret: number;
-  periode?: string;
+  periode?: number;
   dateContrat: Date;
   dateDeblocage?: Date;
   dateEcheance: Date;

@@ -90,7 +90,7 @@ export const routes: Routes = [
           import('./pages/risques/risques')
             .then(m => m.RisquesComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {
@@ -99,7 +99,7 @@ export const routes: Routes = [
           import('./pages/garanties/garanties')
             .then(m => m.GarantiesComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {
@@ -126,7 +126,7 @@ export const routes: Routes = [
           import('./pages/affaires/affaires')
             .then(m => m.AffairesComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {

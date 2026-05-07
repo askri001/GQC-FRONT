@@ -113,7 +113,7 @@ import { DashboardStats, Dossier } from '../../core/models';
 
             <ng-container matColumnDef="client">
               <th mat-header-cell *matHeaderCellDef>Client</th>
-              <td mat-cell *matCellDef="let dossier">{{ dossier.client?.nom }} {{ dossier.client?.prenom }}</td>
+              <td mat-cell *matCellDef="let dossier">{{ dossier.clientNom }} {{ dossier.clientPrenom }}</td>
             </ng-container>
 
             <ng-container matColumnDef="montant">
@@ -312,7 +312,6 @@ export class DashboardComponent implements OnInit {
     this.api.getDashboardStats().subscribe({
       next: (data) => {
         this.stats.set(data);
-        // Update doughnut chart with real data
         this.doughnutChartData = {
           labels: ['En Cours', 'Clôturés', 'Autres'],
           datasets: [{
@@ -323,18 +322,31 @@ export class DashboardComponent implements OnInit {
           }]
         };
       },
-      error: (err) => {
-        console.error('Error loading dashboard stats:', err);
-      }
+      error: (err) => console.error('Error loading dashboard stats:', err)
+    });
+
+    this.api.getMonthlyRecovery().subscribe({
+      next: (data) => {
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        this.lineChartData = {
+          labels,
+          datasets: [{
+            label: 'Montant Récupéré',
+            data: values,
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        };
+      },
+      error: (err) => console.error('Error loading monthly recovery:', err)
     });
 
     this.api.getRecentDossiers(5).subscribe({
-      next: (data) => {
-        this.recentDossiers.set(data);
-      },
-      error: (err) => {
-        console.error('Error loading recent dossiers:', err);
-      }
+      next: (data) => this.recentDossiers.set(data),
+      error: (err) => console.error('Error loading recent dossiers:', err)
     });
   }
 

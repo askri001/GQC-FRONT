@@ -1,143 +1,115 @@
-import { Component, Inject, signal } from '@angular/core';
+import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { RoleDTO } from '../../core/services/role.service';
 
-export interface UserFormData {
-  mode: 'create' | 'edit';
+export interface UserFormDialogData {
+  isEdit: boolean;
   user?: any;
-  roles: any[];
+  availableRoles: RoleDTO[];
+  currentRoleIds: number[];
 }
 
 @Component({
   selector: 'app-user-form-dialog',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
-    CommonModule,
-    FormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatIconModule
+    CommonModule, FormsModule, MatDialogModule, MatButtonModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule, MatSnackBarModule
   ],
   template: `
-    <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nouvel Utilisateur' : 'Modifier Utilisateur' }}</h2>
+    <h2 mat-dialog-title>{{ data.isEdit ? 'Modifier' : 'Nouvel' }} Utilisateur</h2>
+
     <mat-dialog-content>
-      <div class="form-grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Nom d'utilisateur</mat-label>
-          <input matInput [(ngModel)]="form.username" name="username" [disabled]="data.mode === 'edit'">
-        </mat-form-field>
+      <div class="bna-form-grid">
 
-        <mat-form-field appearance="outline">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" [(ngModel)]="form.email" name="email">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Prénom</mat-label>
-          <input matInput [(ngModel)]="form.prenom" name="prenom">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Nom</mat-label>
-          <input matInput [(ngModel)]="form.nom" name="nom">
-        </mat-form-field>
-
-        @if (data.mode === 'create') {
-          <mat-form-field appearance="outline">
-            <mat-label>Mot de passe</mat-label>
-            <input matInput type="password" [(ngModel)]="form.password" name="password">
+        @if (!data.isEdit) {
+          <mat-form-field appearance="outline" class="bna-field">
+            <mat-label>Nom d'utilisateur *</mat-label>
+            <mat-icon matPrefix>account_circle</mat-icon>
+            <input matInput [(ngModel)]="form.username" placeholder="Ex: jdupont">
           </mat-form-field>
         }
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="bna-field">
+          <mat-label>Prénom</mat-label>
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <input matInput [(ngModel)]="form.prenom">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="bna-field">
+          <mat-label>Nom</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput [(ngModel)]="form.nom">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="bna-field" [class.bna-full]="data.isEdit">
+          <mat-label>Email *</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" [(ngModel)]="form.email">
+        </mat-form-field>
+
+        @if (!data.isEdit) {
+          <mat-form-field appearance="outline" class="bna-field">
+            <mat-label>Mot de passe *</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput type="password" [(ngModel)]="form.password">
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="bna-field bna-full">
           <mat-label>Rôles</mat-label>
-          <mat-select [(ngModel)]="form.roleIds" name="roleIds" multiple>
-            @for (role of data.roles; track role.id_role || role.id) {
-              <mat-option [value]="role.id_role || role.id">{{ role.name }}</mat-option>
+          <mat-icon matPrefix>security</mat-icon>
+          <mat-select [(ngModel)]="form.roleIds" multiple>
+            @for (role of data.availableRoles; track role.idRole) {
+              <mat-option [value]="role.idRole">{{ role.name }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
+
       </div>
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!isValid()">
-        {{ data.mode === 'create' ? 'Créer' : 'Enregistrer' }}
+      <button mat-button mat-dialog-close type="button">Annuler</button>
+      <button mat-raised-button color="primary" (click)="onSubmit()"
+        [disabled]="data.isEdit ? !form.email : !form.username || !form.email || !form.password">
+        {{ data.isEdit ? 'Modifier' : 'Créer' }}
       </button>
     </mat-dialog-actions>
-  `,
-  styles: [`
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      min-width: 500px;
-      padding-top: 10px;
-    }
-    @media (max-width: 600px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-        min-width: auto;
-      }
-    }
-  `]
+  `
 })
 export class UserFormDialogComponent {
+  data      = inject<UserFormDialogData>(MAT_DIALOG_DATA);
+  dialogRef = inject(MatDialogRef<UserFormDialogComponent>);
+  snackBar  = inject(MatSnackBar);
+
   form = {
-    username: '',
-    email: '',
-    prenom: '',
-    nom: '',
+    username: this.data.user?.username ?? '',
+    prenom:   this.data.user?.prenom   ?? '',
+    nom:      this.data.user?.nom      ?? '',
+    email:    this.data.user?.email    ?? '',
     password: '',
-    roleIds: [] as number[]
+    roleIds:  [...this.data.currentRoleIds]
   };
 
-  constructor(
-    public dialogRef: MatDialogRef<UserFormDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: UserFormData
-  ) {
-    if (data.mode === 'edit' && data.user) {
-      this.form.username = data.user.username || '';
-      this.form.email = data.user.email || '';
-      this.form.prenom = data.user.prenom || data.user.firstName || '';
-      this.form.nom = data.user.nom || data.user.lastName || '';
-      this.form.roleIds = this.extractRoleIds(data.user);
+  onSubmit(): void {
+    if (!this.form.email?.trim()) {
+      this.snackBar.open('L\'email est requis', 'OK', { duration: 3000 });
+      return;
     }
-  }
-
-  private extractRoleIds(user: any): number[] {
-    if (user.roleIds) return user.roleIds;
-    if (user.roles && Array.isArray(user.roles)) {
-      return user.roles
-        .filter((r: any) => r && (r.id_role || r.id))
-        .map((r: any) => r.id_role || r.id);
+    if (!this.data.isEdit && !this.form.password?.trim()) {
+      this.snackBar.open('Le mot de passe est requis', 'OK', { duration: 3000 });
+      return;
     }
-    return [];
-  }
-
-  isValid(): boolean {
-    if (this.data.mode === 'create') {
-      return !!(this.form.username && this.form.email && this.form.prenom && this.form.nom && this.form.password);
-    }
-    return !!(this.form.email && this.form.prenom && this.form.nom);
-  }
-
-  onCancel(): void {
-    this.dialogRef.close();
-  }
-
-  onSave(): void {
     this.dialogRef.close(this.form);
   }
 }
