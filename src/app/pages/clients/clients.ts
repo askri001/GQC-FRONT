@@ -12,11 +12,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ClientService } from '../../core/services/client.service';
-
-interface ExtendedClient extends Client {
-  dateCreation?: string;
-}
-
 import { Client } from '../../core/models/client.model';
 import { ClientFormDialogComponent } from './client-form-dialog';
 import { ConfirmStatusDialogComponent } from './confirm-status-dialog';

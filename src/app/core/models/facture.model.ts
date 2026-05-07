@@ -3,10 +3,12 @@ export interface Facture {
   idFacture?: number;
   numero: string;
   dateEmission: Date;
+  dateEcheance?: Date;
   montant: number;
   statut: StatutFacture;
   typeFacture: TypeFacture;
   missionId?: number;
+  dossierId?: number;
   mission?: any;
 }
 

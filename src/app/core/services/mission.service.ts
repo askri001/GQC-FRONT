@@ -44,7 +44,6 @@ export class MissionService {
         this.missionsSignal.set(MOCK_MISSIONS);
         this.loadingSignal.set(false);
         return of(MOCK_MISSIONS);
-        return throwError(() => error);
       })
     );
   }

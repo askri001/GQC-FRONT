@@ -39,17 +39,10 @@
 
 .page-title h2 {
   margin: 0;
-<<<<<<< Updated upstream
-  color: var(--bna-navy);
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-=======
   font-size: 26px;
   font-weight: 700;
   color: #1a2e28;
   letter-spacing: -0.3px;
->>>>>>> Stashed changes
 }
 
 /* ================================================================
@@ -62,38 +55,8 @@
   margin-bottom: 24px;
 }
 
-<<<<<<< Updated upstream
-.tab-header h3 {
-  margin: 0;
-  color: var(--bna-dark);
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.tab-header button[mat-raised-button][color="primary"] {
-  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-primary) 100%) !important;
-  border-radius: 10px !important;
-  padding: 8px 20px !important;
-  font-weight: 500 !important;
-  box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
-  transition: all 0.2s ease !important;
-}
-
-.tab-header button[mat-raised-button][color="primary"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 150, 110, 0.4) !important;
-}
-
-/* ── Filters bar ─────────────────────────────────── */
-.filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-=======
 .tab-btn {
   display: inline-flex;
->>>>>>> Stashed changes
   align-items: center;
   gap: 7px;
   padding: 14px 40px;
@@ -208,111 +171,7 @@
   flex-direction: column;
 }
 
-<<<<<<< Updated upstream
-.table-container {
-  background: var(--bna-white);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 150, 110, 0.08);
-  position: relative;
-}
-
-/* ── Table header row ────────────────────────────── */
-.table-container table.mat-mdc-table .mat-mdc-header-row {
-  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-navy-mid) 100%) !important;
-  height: 56px;
-}
-
-.table-container table.mat-mdc-table .mat-mdc-header-cell {
-  color: var(--bna-white) !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: none !important;
-  padding: 0 16px !important;
-}
-
-/* ── Table data rows ─────────────────────────────── */
-.table-container table.mat-mdc-table .mat-mdc-row,
-.table-container table.mat-mdc-table .prestataire-row {
-  transition: all 0.2s ease;
-  border-radius: 12px;
-  margin: 4px 8px;
-  height: 56px;
-  background: var(--bna-bg);
-}
-
-.table-container table.mat-mdc-table .mat-mdc-row:hover,
-.table-container table.mat-mdc-table .prestataire-row:hover {
-  background: var(--bna-lighter) !important;
-  transform: scale(1.005);
-  box-shadow: 0 2px 8px rgba(0, 150, 110, 0.1);
-}
-
-.table-container table.mat-mdc-table .mat-mdc-cell {
-  color: var(--bna-text);
-  font-size: 14px;
-  padding: 0 16px !important;
-  border-bottom: none !important;
-}
-
-.table-container table.mat-mdc-table {
-  background: transparent;
-  border-collapse: separate;
-  border-spacing: 0 4px;
-}
-
-/* ── Chips ───────────────────────────────────────── */
-.table-container mat-chip {
-  font-weight: 500;
-  font-size: 12px;
-  border-radius: 20px;
-}
-
-.specialite-chip {
-  background: var(--bna-bg) !important;
-  color: var(--bna-primary) !important;
-  font-size: 12px;
-}
-
-/* ── Action buttons ──────────────────────────────── */
-.table-container button[mat-icon-button][color="primary"] {
-  color: var(--bna-primary) !important;
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button][color="primary"]:hover {
-  background: var(--bna-bg);
-  transform: scale(1.1);
-}
-
-.table-container button[mat-icon-button][color="warn"] {
-  color: var(--bna-error) !important;
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button][color="warn"]:hover {
-  background: var(--bna-error-bg);
-  transform: scale(1.1);
-}
-
-.table-container button[mat-icon-button]:not([color]) {
-  color: var(--bna-text-muted);
-  transition: all 0.2s ease;
-}
-
-.table-container button[mat-icon-button]:not([color]):hover {
-  background: var(--bna-bg);
-  color: var(--bna-primary);
-  transform: scale(1.1);
-}
-
-/* ── Loading overlay ─────────────────────────────── */
-.table-loading-overlay {
-=======
-.select-label {
->>>>>>> Stashed changes
+@media (max-width: 768px) {
   position: absolute;
   top: -9px;
   left: 10px;
@@ -621,16 +480,6 @@
   .page-card { padding: 24px 18px; }
 }
 
-<<<<<<< Updated upstream
-.inline-edit-row button[mat-raised-button][color="primary"] {
-  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-primary) 100%) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0, 150, 110, 0.3) !important;
-}
-
-/* ── Responsive ──────────────────────────────────── */
-=======
->>>>>>> Stashed changes
 @media (max-width: 768px) {
   .tabs-nav { overflow-x: auto; padding-bottom: 2px; }
   .tab-btn  { padding: 8px 14px; font-size: 13px; }

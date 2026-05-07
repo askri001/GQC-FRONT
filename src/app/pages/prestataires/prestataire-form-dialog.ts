@@ -137,7 +137,7 @@ export class PrestataireFormDialogComponent implements OnInit {
     };
 
     // Debug — remove after confirming fix
-    console.log('ACTIF:', payload.actif, typeof payload.actif);
+    // console.log('ACTIF:', payload.actif, typeof payload.actif);
 
     this.dialogRef.close(payload);
   }
