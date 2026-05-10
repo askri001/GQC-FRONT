@@ -19,6 +19,7 @@ import {
 
 import { MissionService } from '../../core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-missions',
@@ -41,6 +42,7 @@ export class MissionsComponent implements OnInit {
   private missionService = inject(MissionService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
+  readonly authService   = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   missions         = signal<Mission[]>([]);

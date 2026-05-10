@@ -27,3 +27,14 @@
   width: 100%;
 }
 
+
+.search-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-field {
+  min-width: 200px;
+}

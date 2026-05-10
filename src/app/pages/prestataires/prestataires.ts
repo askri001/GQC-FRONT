@@ -12,6 +12,7 @@ import { PrestataireService } from '../../core/services/prestataire.service';
 import { Prestataire, TypePrestataire } from '../../core/models/prestataire.model';
 import { PrestataireFormDialogComponent } from './prestataire-form-dialog';
 import { ConfirmPrestataireStatusDialogComponent } from './confirm-status-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 // ── Tab definition ─────────────────────────────────────────────
 export interface TabDef {
@@ -40,6 +41,7 @@ export class PrestatairesComponent implements OnInit {
   private snackBar           = inject(MatSnackBar);
   private dialog             = inject(MatDialog);
   private cdr                = inject(ChangeDetectorRef);
+  readonly authService       = inject(AuthService);
 
   // ── Tabs config ────────────────────────────────────────────────
   readonly tabs: TabDef[] = [

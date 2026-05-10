@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { RisqueService } from '../../core/services/risque.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Risque } from '../../core/models';
 import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
@@ -49,7 +50,7 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
             <h2>Gestion des Risques</h2>
             <p class="subtitle">{{ filteredRisques().length }} risque(s) trouvé(s)</p>
           </div>
-          <button mat-raised-button color="primary" (click)="openDrawer()">
+          <button mat-raised-button color="primary" (click)="openDrawer()" *ngIf="!authService.isAdmin()">
             <mat-icon>add</mat-icon> Nouveau Risque
           </button>
         </div>
@@ -66,6 +67,15 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
             <mat-label>Rechercher</mat-label>
             <input matInput [(ngModel)]="searchTerm" placeholder="Montant, date, dossier...">
             <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Dossier</mat-label>
+            <mat-select [(ngModel)]="dossierFilter" (selectionChange)="loadData()">
+              <mat-option [value]="0">Tous les dossiers</mat-option>
+              @for (d of dossiers(); track d.idDossier) {
+                <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+              }
+            </mat-select>
           </mat-form-field>
         </div>
 
@@ -105,12 +115,12 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let r">
-                  <button mat-icon-button color="primary" (click)="editRisque(r)"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteRisque(r.id!)"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editRisque(r)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteRisque(r.id!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="risque-row"></tr>
+              <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: cols;" class="risque-row"></tr>
             </table>
           </div>
         }
@@ -183,17 +193,18 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
 })
 export class RisquesComponent implements OnInit {
   searchTerm = '';
+  dossierFilter = 0;
 
   displayedColumns: string[] = [
-    'montantPrincipal',
-    'montantInteret',
-    'montantTotal',
-    'dateContrat',
-    'dateEcheance',
-    'tauxInteret',
-    'dossierId',
-    'actions'
+    'montantPrincipal', 'montantInteret', 'montantTotal',
+    'dateContrat', 'dateEcheance', 'tauxInteret', 'dossierId', 'actions'
   ];
+
+  get cols(): string[] {
+    return this.authService.isAdmin()
+      ? this.displayedColumns.filter(c => c !== 'actions')
+      : this.displayedColumns;
+  }
 
   private sub?: Subscription;
 
@@ -202,7 +213,7 @@ export class RisquesComponent implements OnInit {
   tempRisque = signal<RisqueDraft>({} as RisqueDraft);
   dossiers = signal<Dossier[]>([]);
 
-  constructor(public risqueService: RisqueService, private snackBar: MatSnackBar, private api: ApiService) {
+  constructor(public risqueService: RisqueService, private snackBar: MatSnackBar, private api: ApiService, public authService: AuthService) {
     effect(() => {
       if (!this.risqueService.loading() && this.risqueService.risques().length === 0) {
         this.loadData();
@@ -227,7 +238,10 @@ export class RisquesComponent implements OnInit {
   }
 
   loadData() {
-    this.sub = this.risqueService.getAll().subscribe();
+    const obs = this.dossierFilter
+      ? this.risqueService.getByDossierId(this.dossierFilter)
+      : this.risqueService.getAll();
+    this.sub = obs.subscribe();
   }
 
   refreshData() {

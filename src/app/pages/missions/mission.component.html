@@ -53,7 +53,7 @@
       <div class="toolbar-spacer"></div>
 
       <!-- Nouvelle mission -->
-      <button class="btn-new" (click)="openAddDialog()">
+      <button class="btn-new" (click)="openAddDialog()" *ngIf="!authService.isAdmin()">
         <mat-icon>add</mat-icon>
         Nouvelle mission
       </button>
@@ -146,10 +146,10 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier">
+                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier" *ngIf="!authService.isAdmin()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    @if (m.statut === 'EN_ATTENTE') {
+                    @if (m.statut === 'EN_ATTENTE' && !authService.isAdmin()) {
                       <button
                         class="act-btn act-toggle"
                         (click)="toggleStatus(m)"
@@ -157,7 +157,7 @@
                         <mat-icon>play_arrow</mat-icon>
                       </button>
                     }
-                    @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE') {
+                    @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE' && !authService.isAdmin()) {
                       <button
                         class="act-btn act-delete"
                         (click)="annulerMission(m)"
@@ -166,7 +166,7 @@
                         <mat-icon>cancel</mat-icon>
                       </button>
                     }
-                    <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer">
+                    <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer" *ngIf="!authService.isAdmin()">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>

@@ -16,6 +16,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { DossierService } from '../../core/services/dossier.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { RouterModule } from '@angular/router';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
 import { Client } from '../../core/models/client.model';
@@ -40,7 +42,8 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
     MatPaginatorModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    DrawerPanelComponent
+    DrawerPanelComponent,
+    RouterModule
   ],
   templateUrl: "./dossiers.html",
   styleUrls: ["./dossiers.css"]
@@ -49,11 +52,18 @@ export class DossiersComponent implements OnInit {
   private dossierService = inject(DossierService);
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
+  readonly authService = inject(AuthService);
 
   dossiers = signal<Dossier[]>([]);
   clients = signal<Client[]>([]);
   chargeDossiers = signal<any[]>([]);
   displayedColumns: string[] = ['reference', 'client', 'chargeDossier', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
+
+  get cols(): string[] {
+    return this.authService.isAdmin()
+      ? this.displayedColumns.filter(c => c !== 'actions')
+      : this.displayedColumns;
+  }
 
   
   searchTerm = '';

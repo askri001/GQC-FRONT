@@ -16,6 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { AffaireService } from '../../core/services/affaire.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Affaire, STATUT_AFFAIRE_LABELS } from '../../core/models/affaire.model';
 import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
@@ -51,7 +52,7 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
             <mat-icon class="title-icon">gavel</mat-icon>
             <h2>Gestion des Affaires</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createAffaire()">
+          <button mat-raised-button color="primary" (click)="createAffaire()" *ngIf="!authService.isAdmin()">
             <mat-icon>add</mat-icon> Nouvelle Affaire
           </button>
         </div>
@@ -61,6 +62,15 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
             <mat-icon matPrefix>search</mat-icon>
             <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()"
               placeholder="Rechercher par N° procédure ou tribunal...">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Dossier</mat-label>
+            <mat-select [(ngModel)]="dossierFilter" (selectionChange)="loadAffaires()">
+              <mat-option [value]="0">Tous les dossiers</mat-option>
+              @for (d of dossiers(); track d.idDossier) {
+                <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+              }
+            </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Statut</mat-label>
@@ -116,12 +126,12 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAffaire(a)"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editAffaire(a)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr mat-header-row *matHeaderRowDef="cols"></tr>
+              <tr mat-row *matRowDef="let row; columns: cols;"></tr>
             </table>
             <mat-paginator [length]="filteredAffaires().length" [pageSize]="pageSize"
               [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
@@ -200,6 +210,7 @@ export class AffairesComponent implements OnInit {
   private affaireService = inject(AffaireService);
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
+  readonly authService = inject(AuthService);
 
   affaires = signal<Affaire[]>([]);
   dossiers = signal<Dossier[]>([]);
@@ -208,6 +219,7 @@ export class AffairesComponent implements OnInit {
 
   searchTerm = '';
   statutFilter = '';
+  dossierFilter = 0;
   pageSize = 10;
   currentPage = 0;
 
@@ -216,6 +228,12 @@ export class AffairesComponent implements OnInit {
   tempAffaire = signal<Partial<Affaire>>({});
 
   displayedColumns = ['numeroProcedure', 'dateDebut', 'tribunal', 'statut', 'jugement', 'dossier', 'actions'];
+
+  get cols(): string[] {
+    return this.authService.isAdmin()
+      ? this.displayedColumns.filter(c => c !== 'actions')
+      : this.displayedColumns;
+  }
 
   filteredAffaires = signal<Affaire[]>([]);
 
@@ -232,7 +250,10 @@ export class AffairesComponent implements OnInit {
 
   loadAffaires() {
     this.loading.set(true);
-    this.affaireService.getAll().subscribe({
+    const obs = this.dossierFilter
+      ? this.affaireService.getByDossierId(this.dossierFilter)
+      : this.affaireService.getAll();
+    obs.subscribe({
       next: (data) => {
         this.affaires.set(data);
         this.applyFilter();

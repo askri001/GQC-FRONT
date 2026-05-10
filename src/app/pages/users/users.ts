@@ -37,6 +37,7 @@ import { UserFormDialogComponent } from './user-form-dialog';
           <button mat-raised-button color="primary" (click)="openCreate()">
             <mat-icon>add</mat-icon> Nouvel Utilisateur
           </button>
+        </div>
 
         <div class="filters">
           <mat-form-field appearance="outline" class="search-field">
@@ -111,8 +112,6 @@ import { UserFormDialogComponent } from './user-form-dialog';
         }
       </mat-card>
     </div>
-
-    <!-- No drawer — uses MatDialog -->
   `,
   styleUrls: ['./users.css']
 })
@@ -233,7 +232,8 @@ export class UsersComponent implements OnInit {
         },
         error: (err: any) => {
           console.error(err);
-          this.showNotification('Erreur suppression', 'error');
+          const msg = err?.error?.message || 'Erreur suppression';
+          this.showNotification(msg, 'error');
         }
       });
     }

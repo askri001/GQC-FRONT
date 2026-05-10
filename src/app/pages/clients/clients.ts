@@ -15,6 +15,7 @@ import { ClientService } from '../../core/services/client.service';
 import { Client } from '../../core/models/client.model';
 import { ClientFormDialogComponent } from './client-form-dialog';
 import { ConfirmStatusDialogComponent } from './confirm-status-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-clients',
@@ -38,6 +39,7 @@ export class ClientsComponent implements OnInit {
   private clientService = inject(ClientService);
   private snackBar      = inject(MatSnackBar);
   private dialog        = inject(MatDialog);
+  readonly authService  = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   clients      = signal<Client[]>([]);

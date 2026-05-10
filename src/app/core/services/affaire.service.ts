@@ -15,6 +15,10 @@ export class AffaireService {
     return this.api.get<Affaire[]>(this.endpoint);
   }
 
+  getByDossierId(dossierId: number): Observable<Affaire[]> {
+    return this.api.get<Affaire[]>(`${this.endpoint}/dossier/${dossierId}`);
+  }
+
   getById(id: number): Observable<Affaire> {
     return this.api.get<Affaire>(`${this.endpoint}/${id}`);
   }

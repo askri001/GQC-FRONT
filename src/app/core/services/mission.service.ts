@@ -42,6 +42,10 @@ export class MissionService {
     );
   }
 
+  getByAffaireId(affaireId: number): Observable<Mission[]> {
+    return this.api.get<Mission[]>(`${this.endpoint}/affaire/${affaireId}`);
+  }
+
   
   getById(id: number): Observable<Mission | undefined> {
     return this.api.get<Mission>(`${this.endpoint}/${id}`).pipe(

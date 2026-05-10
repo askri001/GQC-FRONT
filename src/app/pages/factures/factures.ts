@@ -19,6 +19,7 @@ import {
 
 import { FactureService } from '../../core/services/facture.service';
 import { FactureFormDialogComponent } from './facture-form-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-factures',
@@ -41,6 +42,7 @@ export class FacturesComponent implements OnInit {
   private factureService = inject(FactureService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
+  readonly authService   = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   factures         = signal<Facture[]>([]);

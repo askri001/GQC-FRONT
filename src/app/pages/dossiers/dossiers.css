@@ -124,3 +124,17 @@ table {
   }
 }
 
+
+/* ── Clickable reference link ────────────────────────────── */
+.ref-link {
+  color: var(--bna-primary);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.ref-link:hover {
+  color: var(--bna-dark);
+  text-decoration: underline;
+}

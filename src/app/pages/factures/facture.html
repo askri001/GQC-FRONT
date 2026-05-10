@@ -53,7 +53,7 @@
       <div class="toolbar-spacer"></div>
 
       <!-- Nouvelle facture -->
-      <button class="btn-new" (click)="openNewFacture()">
+      <button class="btn-new" (click)="openNewFacture()" *ngIf="!authService.isAdmin()">
         <mat-icon>add</mat-icon>
         Nouvelle facture
       </button>
@@ -130,17 +130,18 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier">
+                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier" *ngIf="!authService.isAdmin()">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button
                       class="act-btn act-toggle"
                       (click)="toggleStatus(f)"
                       [class.on]="f.statut === 'VALIDEE' || f.statut === 'PAYEE'"
-                      [title]="f.statut === 'EN_ATTENTE' ? 'Valider' : 'Mettre en attente'">
+                      [title]="f.statut === 'EN_ATTENTE' ? 'Valider' : 'Mettre en attente'"
+                      *ngIf="!authService.isAdmin()">
                       <mat-icon>{{ f.statut === 'EN_ATTENTE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
                     </button>
-                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer">
+                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer" *ngIf="!authService.isAdmin()">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>

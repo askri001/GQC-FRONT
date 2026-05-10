@@ -51,7 +51,7 @@
       <div class="toolbar-spacer"></div>
 
       <!-- Nouveau client -->
-      <button class="btn-new" (click)="openCreateDialog()">
+      <button class="btn-new" (click)="openCreateDialog()" *ngIf="!authService.isAdmin()">
         <mat-icon>add</mat-icon>
         Nouveau client
       </button>
@@ -142,7 +142,7 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit"   (click)="openEditDialog(c)"  title="Modifier">
+                    <button class="act-btn act-edit" (click)="openEditDialog(c)" title="Modifier" *ngIf="!authService.isAdmin()">
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button
@@ -150,14 +150,15 @@
                       (click)="toggleStatus(c)"
                       [class.on]="c.active"
                       [disabled]="togglingId() === c.id"
-                      [title]="c.active ? 'Désactiver' : 'Activer'">
+                      [title]="c.active ? 'Désactiver' : 'Activer'"
+                      *ngIf="!authService.isAdmin()">
                       @if (togglingId() === c.id) {
                         <mat-spinner diameter="18" class="toggle-spinner"></mat-spinner>
                       } @else {
                         <mat-icon>{{ c.active ? 'toggle_on' : 'toggle_off' }}</mat-icon>
                       }
                     </button>
-                    <button class="act-btn act-delete" (click)="confirmDelete(c)"  title="Supprimer">
+                    <button class="act-btn act-delete" (click)="confirmDelete(c)" title="Supprimer" *ngIf="!authService.isAdmin()">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>

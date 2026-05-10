@@ -15,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { AudienceService } from '../../core/services/audience.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Audience } from '../../core/models/audience.model';
 import { Affaire } from '../../core/models/affaire.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
@@ -47,7 +48,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon class="title-icon">event</mat-icon>
             <h2>Gestion des Audiences</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createAudience()">
+          <button mat-raised-button color="primary" (click)="createAudience()" *ngIf="!authService.isAdmin()">
             <mat-icon>add</mat-icon> Nouvelle Audience
           </button>
         </div>
@@ -100,12 +101,12 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAudience(a)"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editAudience(a)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr mat-header-row *matHeaderRowDef="cols"></tr>
+              <tr mat-row *matRowDef="let row; columns: cols;"></tr>
             </table>
             <mat-paginator [length]="filteredAudiences().length" [pageSize]="pageSize"
               [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
@@ -180,6 +181,7 @@ export class AudiencesComponent implements OnInit {
   private audienceService = inject(AudienceService);
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
+  readonly authService = inject(AuthService);
 
   audiences = signal<Audience[]>([]);
   affaires = signal<Affaire[]>([]);
@@ -194,6 +196,12 @@ export class AudiencesComponent implements OnInit {
   tempAudience = signal<Partial<Audience>>({});
 
   displayedColumns = ['dateAudience', 'typeAudience', 'decision', 'observation', 'commentaire', 'affaire', 'actions'];
+
+  get cols(): string[] {
+    return this.authService.isAdmin()
+      ? this.displayedColumns.filter(c => c !== 'actions')
+      : this.displayedColumns;
+  }
 
   filteredAudiences = signal<Audience[]>([]);
 

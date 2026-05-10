@@ -14,8 +14,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { GarantieService } from '../../core/services/garantie.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Garantie, TYPE_GARANTIE_LABELS, STATUT_GARANTIE_LABELS, TypeGarantie, StatutGarantie } from '../../core/models/garantie.model';
 import { Risque } from '../../core/models/risque.model';
+import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 
 @Component({
@@ -45,7 +47,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon class="title-icon">verified_user</mat-icon>
             <h2>Gestion des Garanties</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createGarantie()">
+          <button mat-raised-button color="primary" (click)="createGarantie()" *ngIf="!authService.isAdmin()">
             <mat-icon>add</mat-icon> Nouvelle Garantie
           </button>
         </div>
@@ -55,6 +57,15 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon matPrefix>search</mat-icon>
             <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()"
               placeholder="Rechercher par type ou description...">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Dossier</mat-label>
+            <mat-select [(ngModel)]="dossierFilter" (selectionChange)="applyFilter()">
+              <mat-option [value]="0">Tous les dossiers</mat-option>
+              @for (d of dossiers(); track d.idDossier) {
+                <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+              }
+            </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Statut</mat-label>
@@ -100,12 +111,12 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let g">
-                  <button mat-icon-button color="primary" (click)="editGarantie(g)"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editGarantie(g)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr mat-header-row *matHeaderRowDef="cols"></tr>
+              <tr mat-row *matRowDef="let row; columns: cols;"></tr>
             </table>
             <mat-paginator [length]="filteredGaranties().length" [pageSize]="pageSize"
               [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
@@ -173,13 +184,16 @@ export class GarantiesComponent implements OnInit {
   private garantieService = inject(GarantieService);
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
+  readonly authService = inject(AuthService);
 
   garanties = signal<Garantie[]>([]);
-  risques = signal<Risque[]>([]);
+  risques   = signal<Risque[]>([]);
+  dossiers  = signal<Dossier[]>([]);
   loading = signal(false);
 
   searchTerm = '';
   statutFilter = '';
+  dossierFilter = 0;
   pageSize = 10;
   currentPage = 0;
 
@@ -188,6 +202,12 @@ export class GarantiesComponent implements OnInit {
   tempGarantie = signal<Partial<Garantie>>({});
 
   displayedColumns = ['typeGarantie', 'description', 'valeur', 'statut', 'risque', 'actions'];
+
+  get cols(): string[] {
+    return this.authService.isAdmin()
+      ? this.displayedColumns.filter(c => c !== 'actions')
+      : this.displayedColumns;
+  }
 
   filteredGaranties = signal<Garantie[]>([]);
 
@@ -199,6 +219,14 @@ export class GarantiesComponent implements OnInit {
   ngOnInit() {
     this.loadGaranties();
     this.loadRisques();
+    this.loadDossiers();
+  }
+
+  loadDossiers() {
+    this.api.get<Dossier[]>('/dossiers').subscribe({
+      next: (data) => this.dossiers.set(data ?? []),
+      error: () => this.dossiers.set([])
+    });
   }
 
   loadGaranties() {
@@ -226,6 +254,12 @@ export class GarantiesComponent implements OnInit {
 
   applyFilter() {
     let result = this.garanties();
+    if (this.dossierFilter) {
+      const risqueIds = this.risques()
+        .filter(r => r.dossierId === this.dossierFilter)
+        .map(r => r.id);
+      result = result.filter(g => risqueIds.includes(g.risqueId));
+    }
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(g =>

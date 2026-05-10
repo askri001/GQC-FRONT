@@ -36,7 +36,7 @@ export const routes: Routes = [
           import('./pages/dashboard/dashboard')
             .then(m => m.DashboardComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {
@@ -63,7 +63,7 @@ export const routes: Routes = [
           import('./pages/prestataires/prestataires')
             .then(m => m.PrestatairesComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {
@@ -72,7 +72,7 @@ export const routes: Routes = [
           import('./pages/factures/factures')
             .then(m => m.FacturesComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {
@@ -80,6 +80,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/dossiers/dossiers')
             .then(m => m.DossiersComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
+      },
+
+      {
+        path: 'dossiers/:id',
+        loadComponent: () =>
+          import('./pages/dossiers/dossier-detail/dossier-detail.component')
+            .then(m => m.DossierDetailComponent),
         canActivate: [RoleGuard],
         data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
@@ -117,7 +126,7 @@ export const routes: Routes = [
           import('./pages/clients/clients')
             .then(m => m.ClientsComponent),
         canActivate: [RoleGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] }
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
       },
 
       {

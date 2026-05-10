@@ -1,172 +1,209 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RoleService, RoleDTO, PermissionDTO } from '../../core/services/role.service';
-import { RoleFormDialogComponent } from './role-form-dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+interface PermissionRow {
+  module: string;
+  action: string;
+  charge: boolean;
+  responsable: boolean;
+  admin: boolean;
+  isHeader?: boolean;
+}
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, MatCardModule, MatTableModule, MatButtonModule,
-    MatIconModule, MatChipsModule, MatFormFieldModule, MatInputModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule
-  ],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatChipsModule, MatTooltipModule],
   template: `
     <div class="page-container">
       <mat-card class="page-card">
+
+        <!-- ── Header ─────────────────────────────────────── -->
         <div class="card-header">
           <div class="header-title">
-            <mat-icon class="title-icon">security</mat-icon>
-            <h2>Gestion des Rôles</h2>
+            <mat-icon class="title-icon">admin_panel_settings</mat-icon>
+            <div>
+              <h2>Droits d'accès</h2>
+              <p class="subtitle">Matrice des permissions par rôle</p>
+            </div>
           </div>
-          <button mat-raised-button color="primary" (click)="openCreate()">
-            <mat-icon>add</mat-icon> Nouveau Rôle
-          </button>
         </div>
 
-        @if (loading()) {
-          <div class="loading"><mat-spinner diameter="50"></mat-spinner><p>Chargement des rôles...</p></div>
-        } @else if (roles().length === 0) {
-          <div class="no-data"><mat-icon>security</mat-icon><p>Aucun rôle trouvé</p></div>
-        } @else {
-          <table mat-table [dataSource]="roles()" class="mat-elevation-z2 full-width">
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Nom du Rôle</th>
-              <td mat-cell *matCellDef="let role"><strong>{{ role.name }}</strong></td>
-            </ng-container>
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
-              <td mat-cell *matCellDef="let role">{{ role.description || '—' }}</td>
-            </ng-container>
-            <ng-container matColumnDef="permissions">
-              <th mat-header-cell *matHeaderCellDef>Permissions</th>
-              <td mat-cell *matCellDef="let role">
-                @if (role.permissionIds?.length) {
-                  @for (pid of role.permissionIds; track pid) {
-                    <mat-chip>{{ getPermissionCode(pid) }}</mat-chip>
-                  }
+        <!-- ── Role legend ────────────────────────────────── -->
+        <div class="role-legend">
+          <div class="role-badge charge">
+            <mat-icon>work</mat-icon>
+            <span>Chargé de Dossier</span>
+          </div>
+          <div class="role-badge responsable">
+            <mat-icon>supervisor_account</mat-icon>
+            <span>Responsable</span>
+          </div>
+          <div class="role-badge admin">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>Administrateur</span>
+          </div>
+        </div>
+
+        <!-- ── Matrix table ───────────────────────────────── -->
+        <div class="matrix-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th class="col-module">Module</th>
+                <th class="col-action">Action</th>
+                <th class="col-role charge-col">
+                  <mat-icon>work</mat-icon>
+                  <span>Chargé</span>
+                </th>
+                <th class="col-role responsable-col">
+                  <mat-icon>supervisor_account</mat-icon>
+                  <span>Responsable</span>
+                </th>
+                <th class="col-role admin-col">
+                  <mat-icon>manage_accounts</mat-icon>
+                  <span>Admin</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track $index) {
+                @if (row.isHeader) {
+                  <tr class="module-header-row">
+                    <td colspan="5" class="module-header-cell">
+                      <mat-icon>{{ getModuleIcon(row.module) }}</mat-icon>
+                      {{ row.module }}
+                    </td>
+                  </tr>
                 } @else {
-                  <span style="color:#999">Aucune</span>
+                  <tr class="data-row">
+                    <td class="td-module"></td>
+                    <td class="td-action">{{ row.action }}</td>
+                    <td class="td-chip">
+                      <span [class]="row.charge ? 'chip-yes' : 'chip-no'">
+                        <mat-icon>{{ row.charge ? 'check' : 'close' }}</mat-icon>
+                        {{ row.charge ? 'Autorisé' : 'Refusé' }}
+                      </span>
+                    </td>
+                    <td class="td-chip">
+                      <span [class]="row.responsable ? 'chip-yes' : 'chip-no'">
+                        <mat-icon>{{ row.responsable ? 'check' : 'close' }}</mat-icon>
+                        {{ row.responsable ? 'Autorisé' : 'Refusé' }}
+                      </span>
+                    </td>
+                    <td class="td-chip">
+                      <span [class]="row.admin ? 'chip-yes' : 'chip-no'">
+                        <mat-icon>{{ row.admin ? 'check' : 'close' }}</mat-icon>
+                        {{ row.admin ? 'Autorisé' : 'Refusé' }}
+                      </span>
+                    </td>
+                  </tr>
                 }
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let role">
-                <button mat-icon-button color="primary" (click)="openEdit(role)"><mat-icon>edit</mat-icon></button>
-                <button mat-icon-button color="warn" (click)="deleteRole(role.idRole!)"><mat-icon>delete</mat-icon></button>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              }
+            </tbody>
           </table>
-        }
+        </div>
+
+        <!-- ── Footer note ────────────────────────────────── -->
+        <div class="footer-note">
+          <mat-icon>info_outline</mat-icon>
+          Ces droits sont définis par le système et ne peuvent pas être modifiés.
+        </div>
+
       </mat-card>
     </div>
   `,
   styleUrls: ['./roles.css']
 })
-export class RolesComponent implements OnInit {
-  private roleService = inject(RoleService);
-  private snackBar    = inject(MatSnackBar);
-  private dialog      = inject(MatDialog);
+export class RolesComponent {
 
-  roles          = signal<RoleDTO[]>([]);
-  allPermissions = signal<PermissionDTO[]>([]);
-  loading        = signal(false);
+  rows: PermissionRow[] = [
+    // ── DOSSIERS ──────────────────────────────────────────
+    { module: 'Dossiers Contentieux', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Dossiers', action: 'Consulter',          charge: true,  responsable: true,  admin: true  },
+    { module: 'Dossiers', action: 'Créer / Modifier',   charge: true,  responsable: false, admin: false },
+    { module: 'Dossiers', action: 'Supprimer',          charge: false, responsable: true,  admin: false },
+    { module: 'Dossiers', action: 'Exporter PDF',       charge: true,  responsable: true,  admin: true  },
 
-  displayedColumns = ['name', 'description', 'permissions', 'actions'];
+    // ── CLIENTS ───────────────────────────────────────────
+    { module: 'Clients', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Clients', action: 'Consulter',            charge: true,  responsable: true,  admin: true  },
+    { module: 'Clients', action: 'Créer / Modifier',     charge: true,  responsable: true,  admin: false },
+    { module: 'Clients', action: 'Activer / Désactiver', charge: true,  responsable: true,  admin: false },
+    { module: 'Clients', action: 'Supprimer',            charge: false, responsable: true,  admin: false },
 
-  ngOnInit() {
-    this.loadRoles();
-    this.loadPermissions();
-  }
+    // ── AFFAIRES ──────────────────────────────────────────
+    { module: 'Affaires', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Affaires', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
+    { module: 'Affaires', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
+    { module: 'Affaires', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
 
-  loadRoles() {
-    this.loading.set(true);
-    this.roleService.getAll().subscribe({
-      next: (data) => { this.roles.set(data); this.loading.set(false); },
-      error: () => { this.loading.set(false); this.showNotification('Erreur chargement rôles', 'error'); }
-    });
-  }
+    // ── AUDIENCES ─────────────────────────────────────────
+    { module: 'Audiences', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Audiences', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
+    { module: 'Audiences', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
+    { module: 'Audiences', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
 
-  loadPermissions() {
-    this.roleService.getAllPermissions().subscribe({
-      next: (data) => this.allPermissions.set(data),
-      error: () => {}
-    });
-  }
+    // ── RISQUES ───────────────────────────────────────────
+    { module: 'Risques', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Risques', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
+    { module: 'Risques', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
+    { module: 'Risques', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
 
-  openCreate() {
-    const ref = this.dialog.open(RoleFormDialogComponent, {
-      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { isEdit: false, allPermissions: this.allPermissions() }
-    });
-    ref.afterClosed().subscribe(result => { if (result) this.saveRole(null, result); });
-  }
+    // ── GARANTIES ─────────────────────────────────────────
+    { module: 'Garanties', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Garanties', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
+    { module: 'Garanties', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
+    { module: 'Garanties', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
 
-  openEdit(role: RoleDTO) {
-    const ref = this.dialog.open(RoleFormDialogComponent, {
-      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { isEdit: true, role, allPermissions: this.allPermissions() }
-    });
-    ref.afterClosed().subscribe(result => { if (result) this.saveRole(role, result); });
-  }
+    // ── MISSIONS ──────────────────────────────────────────
+    { module: 'Missions', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Missions', action: 'Consulter',           charge: true,  responsable: true,  admin: true  },
+    { module: 'Missions', action: 'Créer / Modifier',    charge: true,  responsable: true,  admin: false },
+    { module: 'Missions', action: 'Annuler / Supprimer', charge: false, responsable: true,  admin: false },
 
-  saveRole(original: RoleDTO | null, form: any) {
-    const request = original
-      ? this.roleService.update(original.idRole!, form)
-      : this.roleService.create(form);
+    // ── FACTURES ──────────────────────────────────────────
+    { module: 'Factures', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Factures', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
+    { module: 'Factures', action: 'Créer / Modifier', charge: true,  responsable: true,  admin: false },
+    { module: 'Factures', action: 'Valider le statut',charge: true,  responsable: true,  admin: false },
+    { module: 'Factures', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
 
-    this.loading.set(true);
-    request.subscribe({
-      next: (saved) => {
-        const roleId = saved.idRole || original?.idRole!;
-        const newIds: number[] = form.permissionIds || [];
-        const oldIds: number[] = original?.permissionIds || [];
-        const toAdd    = newIds.filter(id => !oldIds.includes(id));
-        const toRemove = oldIds.filter(id => !newIds.includes(id));
-        const ops = [
-          ...toAdd.map(pid => this.roleService.assignPermission(roleId, pid)),
-          ...toRemove.map(pid => this.roleService.removePermission(roleId, pid))
-        ];
-        if (ops.length > 0) {
-          forkJoin(ops).subscribe({ error: () => this.showNotification('Erreur assignation permissions', 'error') });
-        }
-        this.loading.set(false);
-        this.loadRoles();
-        this.showNotification('Rôle sauvegardé', 'success');
-      },
-      error: () => { this.loading.set(false); this.showNotification('Erreur sauvegarde', 'error'); }
-    });
-  }
+    // ── PRESTATAIRES ──────────────────────────────────────
+    { module: 'Prestataires', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Prestataires', action: 'Consulter',            charge: true,  responsable: true,  admin: true  },
+    { module: 'Prestataires', action: 'Créer / Modifier',     charge: true,  responsable: true,  admin: false },
+    { module: 'Prestataires', action: 'Activer / Désactiver', charge: true,  responsable: true,  admin: false },
+    { module: 'Prestataires', action: 'Supprimer',            charge: true,  responsable: true,  admin: false },
 
-  deleteRole(id: number) {
-    if (!confirm('Confirmer la suppression de ce rôle ?')) return;
-    this.roleService.delete(id).subscribe({
-      next: () => { this.loadRoles(); this.showNotification('Rôle supprimé', 'success'); },
-      error: () => this.showNotification('Erreur suppression', 'error')
-    });
-  }
+    // ── TABLEAU DE BORD ───────────────────────────────────
+    { module: 'Tableau de Bord', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Tableau de Bord', action: 'Accéder aux statistiques', charge: false, responsable: true, admin: true },
 
-  getPermissionCode(permissionId: number): string {
-    const p = this.allPermissions().find(p => p.idPermission === permissionId);
-    return p ? p.code : `#${permissionId}`;
-  }
+    // ── ADMINISTRATION ────────────────────────────────────
+    { module: 'Administration', action: '', charge: false, responsable: false, admin: false, isHeader: true },
+    { module: 'Administration', action: 'Gérer les utilisateurs',   charge: false, responsable: false, admin: true },
+    { module: 'Administration', action: 'Consulter les droits',     charge: false, responsable: false, admin: true },
+  ];
 
-  showNotification(msg: string, type: 'success' | 'error' = 'success') {
-    this.snackBar.open(msg, 'Fermer', { duration: 3000, panelClass: type === 'success' ? 'success-snackbar' : 'error-snackbar' });
+  getModuleIcon(module: string): string {
+    const icons: Record<string, string> = {
+      'Dossiers Contentieux': 'folder',
+      'Clients':              'people',
+      'Affaires':             'gavel',
+      'Audiences':            'event',
+      'Risques':              'warning',
+      'Garanties':            'verified_user',
+      'Missions':             'assignment',
+      'Factures':             'receipt',
+      'Prestataires':         'business',
+      'Tableau de Bord':      'dashboard',
+      'Administration':       'manage_accounts',
+    };
+    return icons[module] ?? 'circle';
   }
 }

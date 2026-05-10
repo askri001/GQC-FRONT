@@ -67,19 +67,19 @@ export class SidebarComponent {
   collapsed = signal(false);
 
   navItems: NavItem[] = [
-    { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] },
+    { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Utilisateurs',        icon: 'people',        route: '/users',        roles: ['ROLE_ADMIN'] },
-    { label: 'Rôles & Permissions', icon: 'security',      route: '/roles',        roles: ['ROLE_ADMIN'] },
-    { label: 'Clients',             icon: 'person_add',    route: '/clients',      roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] },
+    { label: 'Droits d\'accès',      icon: 'admin_panel_settings', route: '/roles', roles: ['ROLE_ADMIN'] },
+    { label: 'Clients',             icon: 'person_add',    route: '/clients',      roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Dossiers',            icon: 'folder',        route: '/dossiers',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Risques',             icon: 'warning',       route: '/risques',      roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Garanties',           icon: 'verified_user', route: '/garanties',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Affaires',            icon: 'gavel',         route: '/affaires',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Audiences',           icon: 'event',         route: '/audiences',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Prestataires',        icon: 'business',      route: '/prestataires', roles: ['ROLE_ADMIN'] },
+    { label: 'Prestataires',        icon: 'business',      route: '/prestataires', roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Avocats',             icon: 'gavel',         route: '/avocats',      roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE'] },
     { label: 'Missions',            icon: 'assignment',    route: '/missions',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN'] }
+    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
   ];
 
   filteredNavItems(): NavItem[] {

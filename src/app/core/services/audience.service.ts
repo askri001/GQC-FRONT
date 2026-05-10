@@ -15,6 +15,10 @@ export class AudienceService {
     return this.api.get<Audience[]>(this.endpoint);
   }
 
+  getByAffaireId(affaireId: number): Observable<Audience[]> {
+    return this.api.get<Audience[]>(`${this.endpoint}/affaire/${affaireId}`);
+  }
+
   getById(id: number): Observable<Audience> {
     return this.api.get<Audience>(`${this.endpoint}/${id}`);
   }

@@ -39,6 +39,10 @@ export class RisqueService {
     );
   }
 
+  getByDossierId(dossierId: number): Observable<Risque[]> {
+    return this.api.get<Risque[]>(`${this.endpoint}/dossier/${dossierId}`);
+  }
+
   getById(id: number): Observable<Risque | undefined> {
     return this.api.get<Risque>(`${this.endpoint}/${id}`).pipe(
       catchError(error => {

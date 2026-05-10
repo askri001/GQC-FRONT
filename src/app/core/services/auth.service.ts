@@ -170,6 +170,10 @@ export class AuthService {
     return roles.some(r => this.hasRole(r));
   }
 
+  isAdmin(): boolean {
+    return this.hasRole('ROLE_ADMIN');
+  }
+
   getPrimaryRole(): string | null {
     const roles = this.getUserRoles();
     const priority = [

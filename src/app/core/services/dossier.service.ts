@@ -15,6 +15,10 @@ export class DossierService {
     return this.api.get<Dossier[]>(this.endpoint);
   }
 
+  getById(id: number): Observable<Dossier> {
+    return this.api.get<Dossier>(`${this.endpoint}/${id}`);
+  }
+
   create(dossier: Omit<Dossier, 'idDossier'>): Observable<Dossier> {
     return this.api.post<Dossier>(this.endpoint, dossier);
   }

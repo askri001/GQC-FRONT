@@ -1,0 +1,317 @@
+<div class="detail-container">
+
+  <!-- ── LOADING ─────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="state-box">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Chargement du dossier...</p>
+    </div>
+  }
+
+  @else if (dossier()) {
+
+    <!-- ── HEADER ───────────────────────────────────────────── -->
+    <div class="detail-header">
+      <button mat-icon-button (click)="goBack()" class="back-btn" matTooltip="Retour aux dossiers">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <div class="header-info">
+        <div class="header-top">
+          <div class="ref-block">
+            <mat-icon class="ref-icon">folder</mat-icon>
+            <h1 class="ref-title">{{ dossier()!.reference }}</h1>
+          </div>
+          <div class="header-badges">
+            <mat-chip [class]="getStatutClass(dossier()!.statut)">
+              {{ statutLabels[dossier()!.statut] ?? dossier()!.statut }}
+            </mat-chip>
+            <mat-chip [class]="getRisqueClass(dossier()!.niveauRisque)">
+              {{ risqueLabels[dossier()!.niveauRisque] ?? dossier()!.niveauRisque }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <div class="header-meta">
+          <span><mat-icon>person</mat-icon> {{ dossier()!.clientNom }} {{ dossier()!.clientPrenom }}</span>
+          <span><mat-icon>manage_accounts</mat-icon>
+            {{ dossier()!.chargeDossierNom ? (dossier()!.chargeDossierPrenom + ' ' + dossier()!.chargeDossierNom) : '—' }}
+          </span>
+          <span><mat-icon>calendar_today</mat-icon> {{ dossier()!.dateOuverture | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <button mat-stroked-button (click)="exportPdf()" class="pdf-btn">
+        <mat-icon>picture_as_pdf</mat-icon> Exporter PDF
+      </button>
+    </div>
+
+    <!-- ── KPI CARDS ─────────────────────────────────────────── -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-label">Montant Initial</span>
+        <span class="kpi-value">{{ formatCurrency(dossier()!.montantInitial) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Montant Récupéré</span>
+        <span class="kpi-value green">{{ formatCurrency(dossier()!.montantRecupere) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Taux de Recouvrement</span>
+        <span class="kpi-value">{{ recoveryRate() }}%</span>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="recoveryRate()"></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Affaires</span>
+        <span class="kpi-value">{{ affaires().length }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Missions</span>
+        <span class="kpi-value">{{ missions().length }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Factures</span>
+        <span class="kpi-value">{{ factures().length }}</span>
+      </div>
+    </div>
+
+    <!-- ── TABS ──────────────────────────────────────────────── -->
+    <mat-card class="tabs-card">
+      <mat-tab-group animationDuration="200ms" color="primary">
+
+        <!-- AFFAIRES -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">gavel</mat-icon>
+            Affaires <span class="tab-count">{{ affaires().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (affaires().length === 0) {
+              <div class="empty-tab"><mat-icon>gavel</mat-icon><p>Aucune affaire</p></div>
+            } @else {
+              <table mat-table [dataSource]="affaires()" class="detail-table">
+                <ng-container matColumnDef="numeroProcedure">
+                  <th mat-header-cell *matHeaderCellDef>N° Procédure</th>
+                  <td mat-cell *matCellDef="let a">{{ a.numeroProcedure }}</td>
+                </ng-container>
+                <ng-container matColumnDef="dateDebut">
+                  <th mat-header-cell *matHeaderCellDef>Date Début</th>
+                  <td mat-cell *matCellDef="let a">{{ a.dateDebut | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="tribunal">
+                  <th mat-header-cell *matHeaderCellDef>Tribunal</th>
+                  <td mat-cell *matCellDef="let a">{{ a.tribunal }}</td>
+                </ng-container>
+                <ng-container matColumnDef="statut">
+                  <th mat-header-cell *matHeaderCellDef>Statut</th>
+                  <td mat-cell *matCellDef="let a">
+                    <mat-chip class="chip-sm">{{ affaireLabels[a.statut] ?? a.statut }}</mat-chip>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="jugement">
+                  <th mat-header-cell *matHeaderCellDef>Jugement</th>
+                  <td mat-cell *matCellDef="let a">{{ a.jugement || '—' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="affaireCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: affaireCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- RISQUES -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">warning</mat-icon>
+            Risques <span class="tab-count">{{ risques().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (risques().length === 0) {
+              <div class="empty-tab"><mat-icon>warning</mat-icon><p>Aucun risque</p></div>
+            } @else {
+              <table mat-table [dataSource]="risques()" class="detail-table">
+                <ng-container matColumnDef="montantPrincipal">
+                  <th mat-header-cell *matHeaderCellDef>Principal</th>
+                  <td mat-cell *matCellDef="let r">{{ formatCurrency(r.montantPrincipal) }}</td>
+                </ng-container>
+                <ng-container matColumnDef="montantInteret">
+                  <th mat-header-cell *matHeaderCellDef>Intérêts</th>
+                  <td mat-cell *matCellDef="let r">{{ formatCurrency(r.montantInteret) }}</td>
+                </ng-container>
+                <ng-container matColumnDef="montantTotal">
+                  <th mat-header-cell *matHeaderCellDef>Total</th>
+                  <td mat-cell *matCellDef="let r"><strong>{{ formatCurrency(r.montantTotal) }}</strong></td>
+                </ng-container>
+                <ng-container matColumnDef="tauxInteret">
+                  <th mat-header-cell *matHeaderCellDef>Taux</th>
+                  <td mat-cell *matCellDef="let r">{{ r.tauxInteret }}%</td>
+                </ng-container>
+                <ng-container matColumnDef="dateEcheance">
+                  <th mat-header-cell *matHeaderCellDef>Échéance</th>
+                  <td mat-cell *matCellDef="let r">{{ r.dateEcheance | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="risqueCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: risqueCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- GARANTIES -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">verified_user</mat-icon>
+            Garanties <span class="tab-count">{{ garanties().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (garanties().length === 0) {
+              <div class="empty-tab"><mat-icon>verified_user</mat-icon><p>Aucune garantie</p></div>
+            } @else {
+              <table mat-table [dataSource]="garanties()" class="detail-table">
+                <ng-container matColumnDef="typeGarantie">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let g">{{ garantieTypeLabels[g.typeGarantie] ?? g.typeGarantie }}</td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                  <th mat-header-cell *matHeaderCellDef>Description</th>
+                  <td mat-cell *matCellDef="let g">{{ g.description }}</td>
+                </ng-container>
+                <ng-container matColumnDef="valeur">
+                  <th mat-header-cell *matHeaderCellDef>Valeur</th>
+                  <td mat-cell *matCellDef="let g">{{ formatCurrency(g.valeur) }}</td>
+                </ng-container>
+                <ng-container matColumnDef="statut">
+                  <th mat-header-cell *matHeaderCellDef>Statut</th>
+                  <td mat-cell *matCellDef="let g">
+                    <mat-chip class="chip-sm">{{ garantieStatutLabels[g.statut] ?? g.statut }}</mat-chip>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="garantieCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: garantieCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- AUDIENCES -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">event</mat-icon>
+            Audiences <span class="tab-count">{{ audiences().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (audiences().length === 0) {
+              <div class="empty-tab"><mat-icon>event</mat-icon><p>Aucune audience</p></div>
+            } @else {
+              <table mat-table [dataSource]="audiences()" class="detail-table">
+                <ng-container matColumnDef="dateAudience">
+                  <th mat-header-cell *matHeaderCellDef>Date</th>
+                  <td mat-cell *matCellDef="let a">{{ a.dateAudience | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="typeAudience">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let a">{{ a.typeAudience || '—' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="decision">
+                  <th mat-header-cell *matHeaderCellDef>Décision</th>
+                  <td mat-cell *matCellDef="let a">{{ a.decision || '—' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="observation">
+                  <th mat-header-cell *matHeaderCellDef>Observation</th>
+                  <td mat-cell *matCellDef="let a">{{ a.observation || '—' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="audienceCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: audienceCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- MISSIONS -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">assignment</mat-icon>
+            Missions <span class="tab-count">{{ missions().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (missions().length === 0) {
+              <div class="empty-tab"><mat-icon>assignment</mat-icon><p>Aucune mission</p></div>
+            } @else {
+              <table mat-table [dataSource]="missions()" class="detail-table">
+                <ng-container matColumnDef="typeMission">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let m">{{ missionTypeLabels[m.typeMission] ?? m.typeMission }}</td>
+                </ng-container>
+                <ng-container matColumnDef="dateDebut">
+                  <th mat-header-cell *matHeaderCellDef>Début</th>
+                  <td mat-cell *matCellDef="let m">{{ m.dateDebut | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="dateFin">
+                  <th mat-header-cell *matHeaderCellDef>Fin</th>
+                  <td mat-cell *matCellDef="let m">{{ m.dateFin ? (m.dateFin | date:'dd/MM/yyyy') : '—' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="statut">
+                  <th mat-header-cell *matHeaderCellDef>Statut</th>
+                  <td mat-cell *matCellDef="let m">
+                    <mat-chip class="chip-sm">{{ missionStatutLabels[m.statut] ?? m.statut }}</mat-chip>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="resultat">
+                  <th mat-header-cell *matHeaderCellDef>Résultat</th>
+                  <td mat-cell *matCellDef="let m">{{ m.resultat || '—' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="missionCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: missionCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- FACTURES -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">receipt</mat-icon>
+            Factures <span class="tab-count">{{ factures().length }}</span>
+          </ng-template>
+          <div class="tab-content">
+            @if (factures().length === 0) {
+              <div class="empty-tab"><mat-icon>receipt</mat-icon><p>Aucune facture</p></div>
+            } @else {
+              <table mat-table [dataSource]="factures()" class="detail-table">
+                <ng-container matColumnDef="numero">
+                  <th mat-header-cell *matHeaderCellDef>N° Facture</th>
+                  <td mat-cell *matCellDef="let f">{{ f.numero }}</td>
+                </ng-container>
+                <ng-container matColumnDef="dateEmission">
+                  <th mat-header-cell *matHeaderCellDef>Date</th>
+                  <td mat-cell *matCellDef="let f">{{ f.dateEmission | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="montant">
+                  <th mat-header-cell *matHeaderCellDef>Montant</th>
+                  <td mat-cell *matCellDef="let f">{{ formatCurrency(f.montant) }}</td>
+                </ng-container>
+                <ng-container matColumnDef="typeFacture">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let f">{{ factureTypeLabels[f.typeFacture] ?? f.typeFacture }}</td>
+                </ng-container>
+                <ng-container matColumnDef="statut">
+                  <th mat-header-cell *matHeaderCellDef>Statut</th>
+                  <td mat-cell *matCellDef="let f">
+                    <mat-chip class="chip-sm">{{ factureStatutLabels[f.statut] ?? f.statut }}</mat-chip>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="factureCols"></tr>
+                <tr mat-row *matRowDef="let row; columns: factureCols;"></tr>
+              </table>
+            }
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+    </mat-card>
+
+  }
+
+</div>

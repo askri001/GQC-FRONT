@@ -6,10 +6,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { DossierService } from '../../core/services/dossier.service';
 import { DashboardStats, Dossier } from '../../core/models';
+import { DOSSIER_STATUT_LABELS } from '../../core/models/dossier.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,46 +26,38 @@ import { DashboardStats, Dossier } from '../../core/models';
     MatButtonModule,
     MatTableModule,
     MatChipsModule,
+    MatProgressSpinnerModule,
     BaseChartDirective
   ],
   template: `
+    <!-- ── RESPONSABLE / ADMIN dashboard ──────────────────── -->
+    @if (!authService.hasRole('ROLE_CHARGEDOSSIER') || authService.hasRole('ROLE_RESPONSABLE') || authService.hasRole('ROLE_ADMIN')) {
     <div class="dashboard-container">
-      
+
       <div class="kpi-grid">
         <mat-card class="kpi-card">
-          <div class="kpi-icon dossiers">
-            <mat-icon>folder</mat-icon>
-          </div>
+          <div class="kpi-icon dossiers"><mat-icon>folder</mat-icon></div>
           <div class="kpi-content">
             <span class="kpi-value">{{ stats().totalDossiers }}</span>
             <span class="kpi-label">Total Dossiers</span>
           </div>
         </mat-card>
-
         <mat-card class="kpi-card">
-          <div class="kpi-icon actifs">
-            <mat-icon>play_circle</mat-icon>
-          </div>
+          <div class="kpi-icon actifs"><mat-icon>play_circle</mat-icon></div>
           <div class="kpi-content">
             <span class="kpi-value">{{ stats().dossiersActifs }}</span>
             <span class="kpi-label">Dossiers Actifs</span>
           </div>
         </mat-card>
-
         <mat-card class="kpi-card">
-          <div class="kpi-icon recovered">
-            <mat-icon>payments</mat-icon>
-          </div>
+          <div class="kpi-icon recovered"><mat-icon>payments</mat-icon></div>
           <div class="kpi-content">
             <span class="kpi-value">{{ formatCurrency(stats().montantTotalRecupere) }}</span>
             <span class="kpi-label">Montant Récupéré</span>
           </div>
         </mat-card>
-
         <mat-card class="kpi-card">
-          <div class="kpi-icon rate">
-            <mat-icon>trending_up</mat-icon>
-          </div>
+          <div class="kpi-icon rate"><mat-icon>trending_up</mat-icon></div>
           <div class="kpi-content">
             <span class="kpi-value">{{ formatPercentage(stats().tauxRecouvrement) }}%</span>
             <span class="kpi-label">Taux de Recouvrement</span>
@@ -69,36 +65,21 @@ import { DashboardStats, Dossier } from '../../core/models';
         </mat-card>
       </div>
 
-      
       <div class="charts-grid">
         <mat-card class="chart-card">
-          <mat-card-header>
-            <mat-card-title>Répartition des Dossiers</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-card-title>Répartition des Dossiers</mat-card-title></mat-card-header>
           <mat-card-content>
-            <canvas baseChart
-              [data]="doughnutChartData"
-              [type]="doughnutChartType"
-              [options]="doughnutChartOptions">
-            </canvas>
+            <canvas baseChart [data]="doughnutChartData" [type]="doughnutChartType" [options]="doughnutChartOptions"></canvas>
           </mat-card-content>
         </mat-card>
-
         <mat-card class="chart-card">
-          <mat-card-header>
-            <mat-card-title>Évolution des Recouvrements</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-card-title>Évolution des Recouvrements</mat-card-title></mat-card-header>
           <mat-card-content>
-            <canvas baseChart
-              [data]="lineChartData"
-              [type]="lineChartType"
-              [options]="lineChartOptions">
-            </canvas>
+            <canvas baseChart [data]="lineChartData" [type]="lineChartType" [options]="lineChartOptions"></canvas>
           </mat-card-content>
         </mat-card>
       </div>
 
-      
       <mat-card class="recent-card">
         <mat-card-header>
           <mat-card-title>Dossiers Récents</mat-card-title>
@@ -108,34 +89,117 @@ import { DashboardStats, Dossier } from '../../core/models';
           <table mat-table [dataSource]="recentDossiers()" class="full-width">
             <ng-container matColumnDef="reference">
               <th mat-header-cell *matHeaderCellDef>Référence</th>
-              <td mat-cell *matCellDef="let dossier">{{ dossier.reference }}</td>
+              <td mat-cell *matCellDef="let d">{{ d.reference }}</td>
             </ng-container>
-
             <ng-container matColumnDef="client">
               <th mat-header-cell *matHeaderCellDef>Client</th>
-              <td mat-cell *matCellDef="let dossier">{{ dossier.clientNom }} {{ dossier.clientPrenom }}</td>
+              <td mat-cell *matCellDef="let d">{{ d.clientNom }} {{ d.clientPrenom }}</td>
             </ng-container>
-
             <ng-container matColumnDef="montant">
               <th mat-header-cell *matHeaderCellDef>Montant</th>
-              <td mat-cell *matCellDef="let dossier">{{ formatCurrency(dossier.montantInitial) }}</td>
+              <td mat-cell *matCellDef="let d">{{ formatCurrency(d.montantInitial) }}</td>
             </ng-container>
-
             <ng-container matColumnDef="statut">
               <th mat-header-cell *matHeaderCellDef>Statut</th>
-              <td mat-cell *matCellDef="let dossier">
-                <mat-chip [class]="'statut-' + dossier.statut.toLowerCase()">
-                  {{ getStatutLabel(dossier.statut) }}
-                </mat-chip>
+              <td mat-cell *matCellDef="let d">
+                <mat-chip [class]="'statut-' + d.statut.toLowerCase()">{{ getStatutLabel(d.statut) }}</mat-chip>
               </td>
             </ng-container>
-
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
         </mat-card-content>
       </mat-card>
     </div>
+    }
+
+    <!-- ── CHARGEDOSSIER dashboard ─────────────────────────── -->
+    @if (authService.hasRole('ROLE_CHARGEDOSSIER') && !authService.hasRole('ROLE_RESPONSABLE') && !authService.hasRole('ROLE_ADMIN')) {
+    <div class="dashboard-container">
+
+      <!-- Welcome banner -->
+      <div class="welcome-banner">
+        <mat-icon>waving_hand</mat-icon>
+        <div>
+          <h2>Bonjour, {{ currentUsername() }}</h2>
+          <p>Voici un aperçu de votre activité</p>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <mat-card class="kpi-card">
+          <div class="kpi-icon dossiers"><mat-icon>folder</mat-icon></div>
+          <div class="kpi-content">
+            <span class="kpi-value">{{ myDossiers().length }}</span>
+            <span class="kpi-label">Mes Dossiers</span>
+          </div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <div class="kpi-icon actifs"><mat-icon>play_circle</mat-icon></div>
+          <div class="kpi-content">
+            <span class="kpi-value">{{ myDossiersActifs() }}</span>
+            <span class="kpi-label">En Cours</span>
+          </div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <div class="kpi-icon recovered"><mat-icon>gavel</mat-icon></div>
+          <div class="kpi-content">
+            <span class="kpi-value">{{ myAffaires().length }}</span>
+            <span class="kpi-label">Affaires</span>
+          </div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <div class="kpi-icon rate"><mat-icon>event</mat-icon></div>
+          <div class="kpi-content">
+            <span class="kpi-value">{{ myAudiences().length }}</span>
+            <span class="kpi-label">Audiences</span>
+          </div>
+        </mat-card>
+      </div>
+
+      <!-- My dossiers table -->
+      <mat-card class="recent-card">
+        <mat-card-header>
+          <mat-card-title>Mes Dossiers Assignés</mat-card-title>
+          <button mat-button color="primary" routerLink="/dossiers">Voir tout</button>
+        </mat-card-header>
+        <mat-card-content>
+          @if (loadingCharge()) {
+            <div class="loading-row"><mat-spinner diameter="32"></mat-spinner></div>
+          } @else if (myDossiers().length === 0) {
+            <div class="empty-row"><mat-icon>folder_open</mat-icon><p>Aucun dossier assigné</p></div>
+          } @else {
+            <table mat-table [dataSource]="myDossiers().slice(0, 8)" class="full-width">
+              <ng-container matColumnDef="reference">
+                <th mat-header-cell *matHeaderCellDef>Référence</th>
+                <td mat-cell *matCellDef="let d">
+                  <a class="ref-link" [routerLink]="['/dossiers', d.idDossier]">{{ d.reference }}</a>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="client">
+                <th mat-header-cell *matHeaderCellDef>Client</th>
+                <td mat-cell *matCellDef="let d">{{ d.clientNom }} {{ d.clientPrenom }}</td>
+              </ng-container>
+              <ng-container matColumnDef="montant">
+                <th mat-header-cell *matHeaderCellDef>Montant Initial</th>
+                <td mat-cell *matCellDef="let d">{{ formatCurrency(d.montantInitial) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="statut">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let d">
+                  <mat-chip [class]="'statut-' + d.statut.toLowerCase()">{{ getStatutLabel(d.statut) }}</mat-chip>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          }
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+    }
   `,
   styles: [`
     .dashboard-container {
@@ -242,24 +306,27 @@ import { DashboardStats, Dossier } from '../../core/models';
   `]
 })
 export class DashboardComponent implements OnInit {
-  private api = inject(ApiService);
+  private api           = inject(ApiService);
+  readonly authService  = inject(AuthService);
+  private dossierService = inject(DossierService);
 
+  // ── Responsable/Admin state ────────────────────────────────
   stats = signal<DashboardStats>({
-    totalDossiers: 0,
-    dossiersActifs: 0,
-    dossiersClotures: 0,
-    montantTotalRecupere: 0,
-    montantTotalImpaye: 0,
-    tauxRecouvrement: 0,
-    missionsEnCours: 0,
-    missionsTerminees: 0,
-    facturesEnAttente: 0,
-    facturesPayees: 0,
-    prestatairesActifs: 0,
-    clientsActifs: 0
+    totalDossiers: 0, dossiersActifs: 0, dossiersClotures: 0,
+    montantTotalRecupere: 0, montantTotalImpaye: 0, tauxRecouvrement: 0,
+    missionsEnCours: 0, missionsTerminees: 0, facturesEnAttente: 0,
+    facturesPayees: 0, prestatairesActifs: 0, clientsActifs: 0
   });
-
   recentDossiers = signal<Dossier[]>([]);
+
+  // ── ChargeDossier state ────────────────────────────────────
+  myDossiers    = signal<Dossier[]>([]);
+  myAffaires    = signal<any[]>([]);
+  myAudiences   = signal<any[]>([]);
+  loadingCharge = signal(false);
+  currentUsername = signal('');
+
+  myDossiersActifs = () => this.myDossiers().filter(d => d.statut === 'EN_COURS').length;
   displayedColumns = ['reference', 'client', 'montant', 'statut'];
 
   
@@ -305,7 +372,44 @@ export class DashboardComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.loadDashboardData();
+    const token = this.authService.getAccessToken();
+    if (token) {
+      try {
+        const payload: any = JSON.parse(atob(token.split('.')[1]));
+        this.currentUsername.set(payload.sub || '');
+      } catch { }
+    }
+
+    if (this.authService.hasRole('ROLE_CHARGEDOSSIER') &&
+        !this.authService.hasRole('ROLE_RESPONSABLE') &&
+        !this.authService.hasRole('ROLE_ADMIN')) {
+      this.loadChargeDossierData();
+    } else {
+      this.loadDashboardData();
+    }
+  }
+
+  loadChargeDossierData() {
+    this.loadingCharge.set(true);
+    // Load all dossiers — filter client-side by chargeDossierId matching current user
+    const userId = Number(localStorage.getItem('auth_user_id'));
+    this.dossierService.getAll().subscribe({
+      next: (data) => {
+        const mine = userId ? data.filter(d => d.chargeDossierId === userId) : data;
+        this.myDossiers.set(mine);
+        this.loadingCharge.set(false);
+      },
+      error: () => this.loadingCharge.set(false)
+    });
+    // Load affaires and audiences for context
+    this.api.get<any[]>('/affaires').subscribe({
+      next: (data) => this.myAffaires.set(data ?? []),
+      error: () => {}
+    });
+    this.api.get<any[]>('/audiences').subscribe({
+      next: (data) => this.myAudiences.set(data ?? []),
+      error: () => {}
+    });
   }
 
   loadDashboardData() {
