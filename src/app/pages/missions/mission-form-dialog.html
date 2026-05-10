@@ -54,49 +54,12 @@
       }
     </mat-form-field>
 
-    <!-- TYPE DE FACTURE — controls which linked entity is shown -->
+    <!-- DATE DE MISSION -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Type de facture</mat-label>
-      <mat-icon matPrefix>receipt_long</mat-icon>
-      <mat-select [(ngModel)]="typeFacture" (selectionChange)="onTypeFactureChange()">
-        <mat-option value="MISSION">Mission</mat-option>
-        <mat-option value="AFFAIRE">Affaire</mat-option>
-      </mat-select>
+      <mat-label>Date de mission</mat-label>
+      <mat-icon matPrefix>calendar_today</mat-icon>
+      <input matInput type="date" [(ngModel)]="form.dateMission" name="dateMission">
     </mat-form-field>
-
-    <!-- MISSION LIÉE — only when typeFacture = MISSION, TERMINEE only -->
-    @if (typeFacture === 'MISSION') {
-      <mat-form-field appearance="outline" class="bna-field">
-        <mat-label>Mission liée (TERMINÉE)</mat-label>
-        <mat-icon matPrefix>work_outline</mat-icon>
-        <mat-select [(ngModel)]="linkedMissionId">
-          <mat-option [value]="null">— Aucune —</mat-option>
-          @for (m of termineesMissions; track m.id) {
-            <mat-option [value]="m.id">{{ getMissionLabel(m) }}</mat-option>
-          }
-        </mat-select>
-        @if (termineesMissions.length === 0) {
-          <mat-hint>Aucune mission terminée disponible</mat-hint>
-        }
-      </mat-form-field>
-    }
-
-    <!-- AFFAIRE LIÉE — only when typeFacture = AFFAIRE, TERMINEE only -->
-    @if (typeFacture === 'AFFAIRE') {
-      <mat-form-field appearance="outline" class="bna-field">
-        <mat-label>Affaire liée (TERMINÉE)</mat-label>
-        <mat-icon matPrefix>gavel</mat-icon>
-        <mat-select [(ngModel)]="linkedAffaireId">
-          <mat-option [value]="null">— Aucune —</mat-option>
-          @for (a of termineesAffaires; track a.idAffaire ?? a.id) {
-            <mat-option [value]="a.idAffaire ?? a.id">{{ getAffaireLabel(a) }}</mat-option>
-          }
-        </mat-select>
-        @if (termineesAffaires.length === 0) {
-          <mat-hint>Aucune affaire terminée disponible</mat-hint>
-        }
-      </mat-form-field>
-    }
 
     <!-- COMMENTAIRE -->
     <mat-form-field appearance="outline" class="bna-field bna-field-full">

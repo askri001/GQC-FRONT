@@ -19,9 +19,9 @@
       <input matInput type="number" [(ngModel)]="form.montant">
     </mat-form-field>
 
-    <!-- TYPE -->
+    <!-- TYPE FACTURE (HONORAIRES / FRAIS / etc.) -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Type</mat-label>
+      <mat-label>Type de facture</mat-label>
       <mat-icon matPrefix>category</mat-icon>
       <mat-select [(ngModel)]="form.typeFacture">
         @for (type of types; track type) {
@@ -30,59 +30,79 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- STATUT -->
+    <!-- STATUT — locked to EN_ATTENTE on create, editable on edit -->
+    @if (isEdit) {
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>Statut</mat-label>
+        <mat-icon matPrefix>flag</mat-icon>
+        <mat-select [(ngModel)]="form.statut">
+          @for (statut of statuts; track statut) {
+            <mat-option [value]="statut">{{ statutLabels[statut] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <!-- LIEN TYPE : MISSION ou AFFAIRE -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Statut</mat-label>
-      <mat-icon matPrefix>flag</mat-icon>
-      <mat-select [(ngModel)]="form.statut">
-        @for (statut of statuts; track statut) {
-          <mat-option [value]="statut">{{ statutLabels[statut] }}</mat-option>
-        }
+      <mat-label>Lié à</mat-label>
+      <mat-icon matPrefix>link</mat-icon>
+      <mat-select [(ngModel)]="lienType" (selectionChange)="onLienTypeChange()">
+        <mat-option value="MISSION">Mission</mat-option>
+        <mat-option value="AFFAIRE">Affaire</mat-option>
       </mat-select>
     </mat-form-field>
 
-    <!-- DATE D'ÉMISSION -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Date d'émission</mat-label>
-      <mat-icon matPrefix>calendar_today</mat-icon>
-      <input matInput type="date" [(ngModel)]="form.dateEmission">
-    </mat-form-field>
+    <!-- MISSION LIÉE — only when lienType = MISSION, TERMINEE only -->
+    @if (lienType === 'MISSION') {
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>Mission (TERMINÉE)</mat-label>
+        <mat-icon matPrefix>work_outline</mat-icon>
+        <mat-select [(ngModel)]="linkedMissionId">
+          <mat-option [value]="null">— Aucune —</mat-option>
+          @for (m of termineesMissions; track m.id) {
+            <mat-option [value]="m.id">{{ getMissionLabel(m) }}</mat-option>
+          }
+        </mat-select>
+        @if (termineesMissions.length === 0) {
+          <mat-hint>Aucune mission terminée disponible</mat-hint>
+        }
+      </mat-form-field>
+    }
 
-    <!-- DATE D'ÉCHÉANCE -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Date d'échéance</mat-label>
-      <mat-icon matPrefix>event</mat-icon>
-      <input matInput type="date" [(ngModel)]="form.dateEcheance">
-    </mat-form-field>
-
-    <!-- ID MISSION -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>ID Mission (optionnel)</mat-label>
-      <mat-icon matPrefix>work_outline</mat-icon>
-      <input matInput type="number" [(ngModel)]="form.missionId">
-    </mat-form-field>
-
-    <!-- ID DOSSIER -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>ID Dossier (optionnel)</mat-label>
-      <mat-icon matPrefix>folder_open</mat-icon>
-      <input matInput type="number" [(ngModel)]="form.dossierId">
-    </mat-form-field>
+    <!-- AFFAIRE LIÉE — only when lienType = AFFAIRE, TERMINEE only -->
+    @if (lienType === 'AFFAIRE') {
+      <mat-form-field appearance="outline" class="bna-field">
+        <mat-label>Affaire (TERMINÉE)</mat-label>
+        <mat-icon matPrefix>gavel</mat-icon>
+        <mat-select [(ngModel)]="linkedAffaireId">
+          <mat-option [value]="null">— Aucune —</mat-option>
+          @for (a of termineesAffaires; track a.idAffaire ?? a.id) {
+            <mat-option [value]="a.idAffaire ?? a.id">{{ getAffaireLabel(a) }}</mat-option>
+          }
+        </mat-select>
+        @if (termineesAffaires.length === 0) {
+          <mat-hint>Aucune affaire terminée disponible</mat-hint>
+        }
+      </mat-form-field>
+    }
 
   </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close type="button">
+  <button mat-button mat-dialog-close type="button" [disabled]="isLoading">
     Annuler
   </button>
-
   <button
     mat-raised-button
     color="primary"
     type="button"
     (click)="onSubmit()"
     [disabled]="isLoading">
+    @if (isLoading) {
+      <mat-spinner diameter="18" style="display:inline-block"></mat-spinner>
+    }
     {{ data.isEdit ? 'Modifier' : 'Créer' }}
   </button>
 </mat-dialog-actions>
