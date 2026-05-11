@@ -15,12 +15,13 @@ export interface Affaire {
   audiences?: Audience[];
 }
 
-export type StatutAffaire = 'INITIEE' | 'EN_COURS' | 'JUGEMENT_RENDU' | 'TERMINEE';
+export type StatutAffaire = 'INITIEE' | 'EN_COURS' | 'JUGEMENT_RENDU' | 'EN_ATTENTE_VALIDATION' | 'TERMINEE';
 
 export const STATUT_AFFAIRE_LABELS: Record<StatutAffaire, string> = {
   'INITIEE': 'Initiée',
   'EN_COURS': 'En Cours',
   'JUGEMENT_RENDU': 'Jugement Rendu',
+  'EN_ATTENTE_VALIDATION': 'En Attente de Validation',
   'TERMINEE': 'Terminée'
 };
 

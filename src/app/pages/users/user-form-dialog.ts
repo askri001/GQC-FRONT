@@ -62,6 +62,7 @@ export interface UserFormDialogData {
             <mat-label>Mot de passe *</mat-label>
             <mat-icon matPrefix>lock</mat-icon>
             <input matInput type="password" [(ngModel)]="form.password">
+            <mat-hint>Min. 8 caractères dont 1 chiffre</mat-hint>
           </mat-form-field>
         }
 
@@ -106,8 +107,22 @@ export class UserFormDialogComponent {
       this.snackBar.open('L\'email est requis', 'OK', { duration: 3000 });
       return;
     }
-    if (!this.data.isEdit && !this.form.password?.trim()) {
-      this.snackBar.open('Le mot de passe est requis', 'OK', { duration: 3000 });
+    if (!this.data.isEdit) {
+      if (!this.form.password?.trim()) {
+        this.snackBar.open('Le mot de passe est requis', 'OK', { duration: 3000 });
+        return;
+      }
+      if (this.form.password.length < 8) {
+        this.snackBar.open('Le mot de passe doit contenir au moins 8 caractères', 'OK', { duration: 3500 });
+        return;
+      }
+      if (!/[0-9]/.test(this.form.password)) {
+        this.snackBar.open('Le mot de passe doit contenir au moins un chiffre', 'OK', { duration: 3500 });
+        return;
+      }
+    }
+    if (!this.form.roleIds || this.form.roleIds.length === 0) {
+      this.snackBar.open('Veuillez assigner au moins un rôle', 'OK', { duration: 3000 });
       return;
     }
     this.dialogRef.close(this.form);

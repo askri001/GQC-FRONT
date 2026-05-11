@@ -16,7 +16,7 @@ export interface Mission {
 }
 
 export type TypeMission = 'HUISSIER' | 'EXPERT' | 'AVOCAT';
-export type StatutMission = 'EN_ATTENTE' | 'EN_COURS' | 'TERMINEE' | 'ANNULEE';
+export type StatutMission = 'EN_ATTENTE' | 'EN_COURS' | 'EN_ATTENTE_VALIDATION' | 'TERMINEE' | 'ANNULEE';
 
 export const TYPE_MISSION_LABELS: Record<TypeMission, string> = {
   'HUISSIER': 'Huissier',
@@ -27,7 +27,7 @@ export const TYPE_MISSION_LABELS: Record<TypeMission, string> = {
 export const STATUT_MISSION_LABELS: Record<StatutMission, string> = {
   'EN_ATTENTE': 'En Attente',
   'EN_COURS': 'En Cours',
+  'EN_ATTENTE_VALIDATION': 'En Attente de Validation',
   'TERMINEE': 'Terminée',
   'ANNULEE': 'Annulée'
 };
-

@@ -124,70 +124,77 @@ export class RolesComponent {
   rows: PermissionRow[] = [
     // ── DOSSIERS ──────────────────────────────────────────
     { module: 'Dossiers Contentieux', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Dossiers', action: 'Consulter',          charge: true,  responsable: true,  admin: true  },
-    { module: 'Dossiers', action: 'Créer / Modifier',   charge: true,  responsable: false, admin: false },
-    { module: 'Dossiers', action: 'Supprimer',          charge: false, responsable: true,  admin: false },
-    { module: 'Dossiers', action: 'Exporter PDF',       charge: true,  responsable: true,  admin: true  },
+    { module: 'Dossiers', action: 'Consulter',                    charge: true,  responsable: true,  admin: true  },
+    { module: 'Dossiers', action: 'Créer / Modifier',             charge: true,  responsable: false, admin: false },
+    { module: 'Dossiers', action: 'Soumettre pour validation',    charge: true,  responsable: false, admin: false },
+    { module: 'Dossiers', action: 'Valider / Rejeter',            charge: false, responsable: true,  admin: false },
+    { module: 'Dossiers', action: 'Supprimer',                    charge: true,  responsable: false, admin: false },
+    { module: 'Dossiers', action: 'Exporter PDF',                 charge: true,  responsable: true,  admin: true  },
 
     // ── CLIENTS ───────────────────────────────────────────
     { module: 'Clients', action: '', charge: false, responsable: false, admin: false, isHeader: true },
     { module: 'Clients', action: 'Consulter',            charge: true,  responsable: true,  admin: true  },
-    { module: 'Clients', action: 'Créer / Modifier',     charge: true,  responsable: true,  admin: false },
-    { module: 'Clients', action: 'Activer / Désactiver', charge: true,  responsable: true,  admin: false },
-    { module: 'Clients', action: 'Supprimer',            charge: false, responsable: true,  admin: false },
+    { module: 'Clients', action: 'Créer / Modifier',     charge: true,  responsable: false, admin: false },
+    { module: 'Clients', action: 'Activer / Désactiver', charge: true,  responsable: false, admin: false },
+    { module: 'Clients', action: 'Supprimer',            charge: true,  responsable: false, admin: false },
 
     // ── AFFAIRES ──────────────────────────────────────────
     { module: 'Affaires', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Affaires', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
-    { module: 'Affaires', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
-    { module: 'Affaires', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
+    { module: 'Affaires', action: 'Consulter',                 charge: true,  responsable: true,  admin: true  },
+    { module: 'Affaires', action: 'Créer / Modifier',          charge: true,  responsable: false, admin: false },
+    { module: 'Affaires', action: 'Soumettre pour validation', charge: true,  responsable: false, admin: false },
+    { module: 'Affaires', action: 'Valider / Rejeter',         charge: false, responsable: true,  admin: false },
+    { module: 'Affaires', action: 'Supprimer',                 charge: true,  responsable: false, admin: false },
 
     // ── AUDIENCES ─────────────────────────────────────────
     { module: 'Audiences', action: '', charge: false, responsable: false, admin: false, isHeader: true },
     { module: 'Audiences', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
     { module: 'Audiences', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
-    { module: 'Audiences', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
+    { module: 'Audiences', action: 'Supprimer',        charge: true,  responsable: false, admin: false },
 
     // ── RISQUES ───────────────────────────────────────────
     { module: 'Risques', action: '', charge: false, responsable: false, admin: false, isHeader: true },
     { module: 'Risques', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
     { module: 'Risques', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
-    { module: 'Risques', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
+    { module: 'Risques', action: 'Supprimer',        charge: true,  responsable: false, admin: false },
 
     // ── GARANTIES ─────────────────────────────────────────
     { module: 'Garanties', action: '', charge: false, responsable: false, admin: false, isHeader: true },
     { module: 'Garanties', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
     { module: 'Garanties', action: 'Créer / Modifier', charge: true,  responsable: false, admin: false },
-    { module: 'Garanties', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
+    { module: 'Garanties', action: 'Supprimer',        charge: true,  responsable: false, admin: false },
 
     // ── MISSIONS ──────────────────────────────────────────
     { module: 'Missions', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Missions', action: 'Consulter',           charge: true,  responsable: true,  admin: true  },
-    { module: 'Missions', action: 'Créer / Modifier',    charge: true,  responsable: true,  admin: false },
-    { module: 'Missions', action: 'Annuler / Supprimer', charge: false, responsable: true,  admin: false },
+    { module: 'Missions', action: 'Consulter',                 charge: true,  responsable: true,  admin: true  },
+    { module: 'Missions', action: 'Créer / Modifier',          charge: true,  responsable: false, admin: false },
+    { module: 'Missions', action: 'Soumettre pour validation', charge: true,  responsable: false, admin: false },
+    { module: 'Missions', action: 'Valider / Rejeter',         charge: false, responsable: true,  admin: false },
+    { module: 'Missions', action: 'Annuler / Supprimer',       charge: true,  responsable: false, admin: false },
 
     // ── FACTURES ──────────────────────────────────────────
     { module: 'Factures', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Factures', action: 'Consulter',        charge: true,  responsable: true,  admin: true  },
-    { module: 'Factures', action: 'Créer / Modifier', charge: true,  responsable: true,  admin: false },
-    { module: 'Factures', action: 'Valider le statut',charge: true,  responsable: true,  admin: false },
-    { module: 'Factures', action: 'Supprimer',        charge: false, responsable: true,  admin: false },
+    { module: 'Factures', action: 'Consulter',                 charge: true,  responsable: true,  admin: true  },
+    { module: 'Factures', action: 'Créer',                     charge: true,  responsable: false, admin: false },
+    { module: 'Factures', action: 'Soumettre pour validation', charge: true,  responsable: false, admin: false },
+    { module: 'Factures', action: 'Valider / Rejeter',         charge: false, responsable: true,  admin: false },
+    { module: 'Factures', action: 'Supprimer',                 charge: true,  responsable: false, admin: false },
 
     // ── PRESTATAIRES ──────────────────────────────────────
     { module: 'Prestataires', action: '', charge: false, responsable: false, admin: false, isHeader: true },
     { module: 'Prestataires', action: 'Consulter',            charge: true,  responsable: true,  admin: true  },
-    { module: 'Prestataires', action: 'Créer / Modifier',     charge: true,  responsable: true,  admin: false },
-    { module: 'Prestataires', action: 'Activer / Désactiver', charge: true,  responsable: true,  admin: false },
-    { module: 'Prestataires', action: 'Supprimer',            charge: true,  responsable: true,  admin: false },
+    { module: 'Prestataires', action: 'Créer / Modifier',     charge: true,  responsable: false, admin: false },
+    { module: 'Prestataires', action: 'Activer / Désactiver', charge: true,  responsable: false, admin: false },
+    { module: 'Prestataires', action: 'Supprimer',            charge: true,  responsable: false, admin: false },
 
     // ── TABLEAU DE BORD ───────────────────────────────────
     { module: 'Tableau de Bord', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Tableau de Bord', action: 'Accéder aux statistiques', charge: false, responsable: true, admin: true },
+    { module: 'Tableau de Bord', action: 'Accéder / Statistiques', charge: true, responsable: true, admin: true },
 
     // ── ADMINISTRATION ────────────────────────────────────
     { module: 'Administration', action: '', charge: false, responsable: false, admin: false, isHeader: true },
-    { module: 'Administration', action: 'Gérer les utilisateurs',   charge: false, responsable: false, admin: true },
-    { module: 'Administration', action: 'Consulter les droits',     charge: false, responsable: false, admin: true },
+    { module: 'Administration', action: 'Gérer les utilisateurs', charge: false, responsable: false, admin: true },
+    { module: 'Administration', action: 'Consulter les droits',   charge: false, responsable: false, admin: true },
   ];
 
   getModuleIcon(module: string): string {

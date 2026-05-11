@@ -33,32 +33,34 @@ export class LoginComponent {
   username = '';
   password = '';
 
-  loading = signal(false);
-  errorMessage = signal('');
-  hidePassword = signal(true);
+  loading        = signal(false);
+  errorMessage   = signal('');
+  sessionMessage = signal('');
+  hidePassword   = signal(true);
 
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    // Pick up session expiry message passed via router state
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state as { sessionMessage?: string } | undefined;
+    if (state?.sessionMessage) {
+      this.sessionMessage.set(state.sessionMessage);
+    }
+  }
 
   async onLogin() {
     this.loading.set(true);
     this.errorMessage.set('');
+    this.sessionMessage.set('');
 
     try {
       await this.authService.login({
         username: this.username,
         password: this.password
       });
-
-      const role = this.authService.getPrimaryRole();
-      if (role === 'CHARGEDOSSIER' || role === 'ROLE_CHARGEDOSSIER') {
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.router.navigate(['/dashboard']);
-      }
-
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Identifiants invalides');
     } finally {

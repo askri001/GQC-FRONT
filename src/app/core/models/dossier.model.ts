@@ -3,7 +3,7 @@ export interface Dossier {
   idDossier?: number;
   reference: string;
   dateOuverture: Date;
-  statut: 'EN_COURS' | 'CLOTURE' | 'SUSPENDU' | 'TRANSFERE' | 'EN_ATTENTE' | 'OUVERT' | 'VALIDE';
+  statut: 'EN_COURS' | 'CLOTURE' | 'SUSPENDU' | 'TRANSFERE' | 'EN_ATTENTE_VALIDATION' | 'OUVERT' | 'VALIDE';
   niveauRisque: 'FAIBLE' | 'MOYEN' | 'ELEVE' | 'CRITIQUE';
   dateCloture?: Date;
   montantInitial: number;
@@ -23,7 +23,7 @@ export const DOSSIER_STATUT_LABELS = {
   CLOTURE: 'Clôturé',
   SUSPENDU: 'Suspendu',
   TRANSFERE: 'Transféré',
-  EN_ATTENTE: 'En Attente'
+  EN_ATTENTE_VALIDATION: 'En Attente de Validation'
 } as const;
 
 export const NIVEAU_RISQUE_LABELS = {

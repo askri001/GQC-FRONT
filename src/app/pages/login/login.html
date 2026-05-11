@@ -40,6 +40,13 @@
             </button>
           </mat-form-field>
 
+          @if (sessionMessage()) {
+            <div class="session-message">
+              <mat-icon>info_outline</mat-icon>
+              {{ sessionMessage() }}
+            </div>
+          }
+
           @if (errorMessage()) {
             <div class="error-message">
               {{ errorMessage() }}

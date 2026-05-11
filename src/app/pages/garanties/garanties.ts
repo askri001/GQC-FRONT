@@ -47,7 +47,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon class="title-icon">verified_user</mat-icon>
             <h2>Gestion des Garanties</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createGarantie()" *ngIf="!authService.isAdmin()">
+          <button mat-raised-button color="primary" (click)="createGarantie()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
             <mat-icon>add</mat-icon> Nouvelle Garantie
           </button>
         </div>
@@ -111,8 +111,8 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let g">
-                  <button mat-icon-button color="primary" (click)="editGarantie(g)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editGarantie(g)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="cols"></tr>

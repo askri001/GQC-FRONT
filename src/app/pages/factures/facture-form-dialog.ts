@@ -59,7 +59,7 @@ export class FactureFormDialogComponent implements OnInit {
   private affaireService = inject(AffaireService);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutFacture[] = ['EN_ATTENTE', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
+  statuts: StatutFacture[] = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
   types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
 
   statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
@@ -80,7 +80,7 @@ export class FactureFormDialogComponent implements OnInit {
     montant:     this.data.facture?.montant      ?? null as number | null,
     typeFacture: this.data.facture?.typeFacture  ?? 'HONORAIRES' as TypeFacture,
     // status: EN_ATTENTE on create, preserved on edit
-    statut:      this.data.facture?.statut       ?? 'EN_ATTENTE' as StatutFacture,
+    statut:      this.data.facture?.statut       ?? 'EN_ATTENTE_VALIDATION' as StatutFacture,
   };
 
   isLoading = false;
@@ -156,7 +156,7 @@ export class FactureFormDialogComponent implements OnInit {
       numero:      f.numero.trim(),
       montant:     Number(f.montant),
       typeFacture: f.typeFacture,
-      statut:      this.isEdit ? f.statut : 'EN_ATTENTE',
+      statut:      this.isEdit ? f.statut : 'EN_ATTENTE_VALIDATION',
       missionId:   this.lienType === 'MISSION' && this.linkedMissionId
                      ? Number(this.linkedMissionId) : undefined,
       dossierId:   this.lienType === 'AFFAIRE' && this.linkedAffaireId

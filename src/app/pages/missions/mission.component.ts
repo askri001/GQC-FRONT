@@ -61,7 +61,7 @@ export class MissionsComponent implements OnInit {
   currentPage   = signal(0);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+  statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
   types: TypeMission[]     = ['HUISSIER', 'EXPERT'];
 
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
@@ -152,10 +152,11 @@ export class MissionsComponent implements OnInit {
   // ── Status chip CSS class ──────────────────────────────────────
   getStatutClass(statut: StatutMission): string {
     const map: Record<StatutMission, string> = {
-      TERMINEE:   'chip-active',
-      EN_COURS:   'chip-en_cours',
-      EN_ATTENTE: 'chip-en_attente',
-      ANNULEE:    'chip-inactive',
+      TERMINEE:              'chip-active',
+      EN_COURS:              'chip-en_cours',
+      EN_ATTENTE:            'chip-en_attente',
+      EN_ATTENTE_VALIDATION: 'chip-validation',
+      ANNULEE:               'chip-inactive',
     };
     return map[statut] ?? '';
   }
@@ -225,11 +226,35 @@ export class MissionsComponent implements OnInit {
   annulerMission(m: Mission): void {
     if (!confirm(`Annuler la mission "${this.typeLabels[m.typeMission]}" ?`)) return;
     this.missionService.updateStatus(m.id!, 'ANNULEE').subscribe({
-      next: () => {
-        this.snackBar.open('Mission annulée', 'OK', { duration: 2500 });
-        this.loadMissions();
-      },
+      next: () => { this.snackBar.open('Mission annulée', 'OK', { duration: 2500 }); this.loadMissions(); },
       error: () => this.snackBar.open('Erreur lors de l\'annulation', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Soumettre pour validation (ChargeDossier) ──────────────────
+  soumettre(m: Mission): void {
+    if (!confirm(`Soumettre la mission pour validation ?`)) return;
+    this.missionService.updateStatus(m.id!, 'EN_ATTENTE_VALIDATION').subscribe({
+      next: () => { this.snackBar.open('Mission soumise pour validation', 'OK', { duration: 2500 }); this.loadMissions(); },
+      error: () => this.snackBar.open('Erreur lors de la soumission', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Valider (Responsable) ──────────────────────────────────────
+  valider(m: Mission): void {
+    if (!confirm(`Valider cette mission ?`)) return;
+    this.missionService.validate(m.id!).subscribe({
+      next: () => { this.snackBar.open('Mission validée', 'OK', { duration: 2500 }); this.loadMissions(); },
+      error: () => this.snackBar.open('Erreur lors de la validation', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Rejeter (Responsable) ──────────────────────────────────────
+  rejeter(m: Mission): void {
+    if (!confirm(`Rejeter cette mission ? Elle sera renvoyée en cours.`)) return;
+    this.missionService.reject(m.id!).subscribe({
+      next: () => { this.snackBar.open('Mission rejetée — renvoyée en cours', 'OK', { duration: 2500 }); this.loadMissions(); },
+      error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
     });
   }
 

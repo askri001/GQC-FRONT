@@ -120,6 +120,14 @@ export class MissionService {
     return this.update(id, { statut });
   }
 
+  validate(id: number): Observable<Mission> {
+    return this.api.put<Mission>(`${this.endpoint}/${id}/validate`, {});
+  }
+
+  reject(id: number): Observable<Mission> {
+    return this.api.put<Mission>(`${this.endpoint}/${id}/reject`, {});
+  }
+
   clearError(): void {
     this.errorSignal.set(null);
   }

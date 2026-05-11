@@ -19,6 +19,14 @@ export class DossierService {
     return this.api.get<Dossier>(`${this.endpoint}/${id}`);
   }
 
+  validate(id: number): Observable<Dossier> {
+    return this.api.put<Dossier>(`${this.endpoint}/${id}/validate`, {});
+  }
+
+  reject(id: number): Observable<Dossier> {
+    return this.api.put<Dossier>(`${this.endpoint}/${id}/reject`, {});
+  }
+
   create(dossier: Omit<Dossier, 'idDossier'>): Observable<Dossier> {
     return this.api.post<Dossier>(this.endpoint, dossier);
   }

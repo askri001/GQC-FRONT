@@ -34,4 +34,12 @@ export class AffaireService {
   delete(id: number): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
   }
+
+  validate(id: number): Observable<Affaire> {
+    return this.api.put<Affaire>(`${this.endpoint}/${id}/validate`, {});
+  }
+
+  reject(id: number): Observable<Affaire> {
+    return this.api.put<Affaire>(`${this.endpoint}/${id}/reject`, {});
+  }
 }

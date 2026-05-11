@@ -52,7 +52,7 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
             <mat-icon class="title-icon">gavel</mat-icon>
             <h2>Gestion des Affaires</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createAffaire()" *ngIf="!authService.isAdmin()">
+          <button mat-raised-button color="primary" (click)="createAffaire()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
             <mat-icon>add</mat-icon> Nouvelle Affaire
           </button>
         </div>
@@ -79,6 +79,7 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
               <mat-option value="INITIEE">Initiée</mat-option>
               <mat-option value="EN_COURS">En Cours</mat-option>
               <mat-option value="JUGEMENT_RENDU">Jugement Rendu</mat-option>
+              <mat-option value="EN_ATTENTE_VALIDATION">En Attente de Validation</mat-option>
               <mat-option value="TERMINEE">Terminée</mat-option>
             </mat-select>
           </mat-form-field>
@@ -126,8 +127,21 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAffaire(a)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editAffaire(a)"
+                    *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && a.statut !== 'EN_ATTENTE_VALIDATION'"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="accent" (click)="soumettre(a)" title="Soumettre pour validation"
+                    *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && a.statut === 'JUGEMENT_RENDU'">
+                    <mat-icon>send</mat-icon>
+                  </button>
+                  <button mat-icon-button style="color:#2e7d32" (click)="valider(a)" title="Valider"
+                    *ngIf="authService.hasRole('ROLE_RESPONSABLE') && (a.statut === 'EN_ATTENTE_VALIDATION' || a.statut === 'EN_COURS' || a.statut === 'JUGEMENT_RENDU')">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button style="color:#c62828" (click)="rejeter(a)" title="Rejeter"
+                    *ngIf="authService.hasRole('ROLE_RESPONSABLE') && (a.statut === 'EN_ATTENTE_VALIDATION' || a.statut === 'EN_COURS' || a.statut === 'JUGEMENT_RENDU')">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteAffaire(a.idAffaire!)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="cols"></tr>
@@ -350,16 +364,34 @@ export class AffairesComponent implements OnInit {
   deleteAffaire(id: number) {
     if (confirm('Confirmer la suppression de cette affaire ?')) {
       this.affaireService.delete(id).subscribe({
-        next: () => {
-          this.loadAffaires();
-          this.showNotification('Affaire supprimée', 'success');
-        },
-        error: (err) => {
-          console.error('Delete error', err);
-          this.showNotification('Erreur suppression', 'error');
-        }
+        next: () => { this.loadAffaires(); this.showNotification('Affaire supprimée', 'success'); },
+        error: (err) => { console.error('Delete error', err); this.showNotification('Erreur suppression', 'error'); }
       });
     }
+  }
+
+  soumettre(a: Affaire) {
+    if (!confirm(`Soumettre l'affaire "${a.numeroProcedure}" pour validation ?`)) return;
+    this.affaireService.update(a.idAffaire!, { ...a, statut: 'EN_ATTENTE_VALIDATION' }).subscribe({
+      next: () => { this.loadAffaires(); this.showNotification('Affaire soumise pour validation', 'success'); },
+      error: () => this.showNotification('Erreur lors de la soumission', 'error')
+    });
+  }
+
+  valider(a: Affaire) {
+    if (!confirm(`Valider l'affaire "${a.numeroProcedure}" ?`)) return;
+    this.affaireService.validate(a.idAffaire!).subscribe({
+      next: () => { this.loadAffaires(); this.showNotification('Affaire validée', 'success'); },
+      error: () => this.showNotification('Erreur lors de la validation', 'error')
+    });
+  }
+
+  rejeter(a: Affaire) {
+    if (!confirm(`Rejeter l'affaire "${a.numeroProcedure}" ?`)) return;
+    this.affaireService.reject(a.idAffaire!).subscribe({
+      next: () => { this.loadAffaires(); this.showNotification('Affaire rejetée — renvoyée en cours', 'success'); },
+      error: () => this.showNotification('Erreur lors du rejet', 'error')
+    });
   }
 
   cancelEdit() {

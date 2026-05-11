@@ -53,7 +53,7 @@
       <div class="toolbar-spacer"></div>
 
       <!-- Nouvelle facture -->
-      <button class="btn-new" (click)="openNewFacture()" *ngIf="!authService.isAdmin()">
+      <button class="btn-new" (click)="openNewFacture()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
         <mat-icon>add</mat-icon>
         Nouvelle facture
       </button>
@@ -130,18 +130,26 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier" *ngIf="!authService.isAdmin()">
+                    <!-- ChargeDossier: edit and submit -->
+                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier"
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && f.statut !== 'EN_ATTENTE_VALIDATION' && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE'">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button
-                      class="act-btn act-toggle"
-                      (click)="toggleStatus(f)"
-                      [class.on]="f.statut === 'VALIDEE' || f.statut === 'PAYEE'"
-                      [title]="f.statut === 'EN_ATTENTE' ? 'Valider' : 'Mettre en attente'"
-                      *ngIf="!authService.isAdmin()">
-                      <mat-icon>{{ f.statut === 'EN_ATTENTE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+                    <button class="act-btn" style="color:#1565c0" (click)="soumettre(f)" title="Soumettre pour validation"
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && f.statut !== 'EN_ATTENTE_VALIDATION' && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE'">
+                      <mat-icon>send</mat-icon>
                     </button>
-                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer" *ngIf="!authService.isAdmin()">
+                    <!-- Responsable: validate or reject -->
+                    <button class="act-btn" style="color:#2e7d32" (click)="valider(f)" title="Valider"
+                      *ngIf="authService.hasRole('ROLE_RESPONSABLE') && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE' && f.statut !== 'REJETEE'">
+                      <mat-icon>check_circle</mat-icon>
+                    </button>
+                    <button class="act-btn" style="color:#c62828" (click)="rejeter(f)" title="Rejeter"
+                      *ngIf="authService.hasRole('ROLE_RESPONSABLE') && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE' && f.statut !== 'REJETEE'">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer"
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>

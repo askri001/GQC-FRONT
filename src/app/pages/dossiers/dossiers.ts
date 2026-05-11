@@ -107,16 +107,8 @@ export class DossiersComponent implements OnInit {
   }
 
   loadChargeDossiers() {
-    // Load all users and filter those with CHARGEDOSSIER role
-    this.api.get<any[]>('/users').subscribe({
-      next: (data) => {
-        const chargeUsers = data.filter(u =>
-          Array.isArray(u.roles) && u.roles.some((r: string) =>
-            r === 'ROLE_CHARGEDOSSIER' || r === 'CHARGEDOSSIER'
-          )
-        );
-        this.chargeDossiers.set(chargeUsers);
-      },
+    this.api.get<any[]>('/users/chargedossiers').subscribe({
+      next: (data) => this.chargeDossiers.set(data ?? []),
       error: (err) => console.error('Error loading chargeDossiers', err)
     });
   }
@@ -212,6 +204,30 @@ export class DossiersComponent implements OnInit {
         }
       });
     }
+  }
+
+  soumettre(dossier: Dossier) {
+    if (!confirm(`Soumettre le dossier "${dossier.reference}" pour validation ?`)) return;
+    this.dossierService.update(dossier.idDossier!, { ...dossier, statut: 'EN_ATTENTE_VALIDATION' }).subscribe({
+      next: () => { this.loadDossiers(); this.showNotification('Dossier soumis pour validation', 'success'); },
+      error: () => this.showNotification('Erreur lors de la soumission', 'error')
+    });
+  }
+
+  valider(dossier: Dossier) {
+    if (!confirm(`Valider le dossier "${dossier.reference}" ?`)) return;
+    this.dossierService.validate(dossier.idDossier!).subscribe({
+      next: () => { this.loadDossiers(); this.showNotification('Dossier validé', 'success'); },
+      error: () => this.showNotification('Erreur lors de la validation', 'error')
+    });
+  }
+
+  rejeter(dossier: Dossier) {
+    if (!confirm(`Rejeter le dossier "${dossier.reference}" ? Il sera renvoyé en cours.`)) return;
+    this.dossierService.reject(dossier.idDossier!).subscribe({
+      next: () => { this.loadDossiers(); this.showNotification('Dossier rejeté — renvoyé en cours', 'success'); },
+      error: () => this.showNotification('Erreur lors du rejet', 'error')
+    });
   }
 
   cancelEdit() {

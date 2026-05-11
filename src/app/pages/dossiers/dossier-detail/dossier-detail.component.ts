@@ -180,7 +180,7 @@ export class DossierDetailComponent implements OnInit {
   getStatutClass(statut: string): string {
     const map: Record<string, string> = {
       EN_COURS: 'chip-en-cours', CLOTURE: 'chip-cloture', SUSPENDU: 'chip-suspendu',
-      TRANSFERE: 'chip-transfere', EN_ATTENTE: 'chip-en-attente', OUVERT: 'chip-ouvert', VALIDE: 'chip-valide'
+      TRANSFERE: 'chip-transfere', EN_ATTENTE_VALIDATION: 'chip-en-attente', OUVERT: 'chip-ouvert', VALIDE: 'chip-valide'
     };
     return map[statut] ?? '';
   }

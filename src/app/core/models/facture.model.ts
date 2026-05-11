@@ -13,7 +13,7 @@ export interface Facture {
 }
 
 export type StatutFacture =
-  | 'EN_ATTENTE'
+  | 'EN_ATTENTE_VALIDATION'
   | 'VALIDEE'
   | 'PAYEE'
   | 'REJETEE'
@@ -26,7 +26,7 @@ export type TypeFacture =
   | 'AUTRE';
 
 export const STATUT_FACTURE_LABELS: Record<StatutFacture, string> = {
-  EN_ATTENTE: 'En Attente',
+  EN_ATTENTE_VALIDATION: 'En Attente de Validation',
   VALIDEE: 'Validée',
   PAYEE: 'Payée',
   REJETEE: 'Rejetée',
@@ -39,5 +39,3 @@ export const TYPE_FACTURE_LABELS: Record<TypeFacture, string> = {
   EXPERTISE: 'Expertise',
   AUTRE: 'Autre'
 };
-
-

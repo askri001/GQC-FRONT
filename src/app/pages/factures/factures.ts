@@ -42,9 +42,7 @@ export class FacturesComponent implements OnInit {
   private factureService = inject(FactureService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
-  readonly authService   = inject(AuthService);
-
-  // ── State ──────────────────────────────────────────────────────
+  readonly authService   = inject(AuthService);  // ── State ──────────────────────────────────────────────────────
   factures         = signal<Facture[]>([]);
   filteredFactures = signal<Facture[]>([]);
   isLoading        = signal(false);
@@ -61,7 +59,7 @@ export class FacturesComponent implements OnInit {
   currentPage   = signal(0);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutFacture[] = ['EN_ATTENTE', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
+  statuts: StatutFacture[] = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
   types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
 
   statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
@@ -152,11 +150,11 @@ export class FacturesComponent implements OnInit {
   // ── Status chip CSS class ──────────────────────────────────────
   getStatutClass(statut: StatutFacture): string {
     const map: Record<StatutFacture, string> = {
-      VALIDEE:    'chip-validee',
-      PAYEE:      'chip-payee',
-      EN_ATTENTE: 'chip-en_attente',
-      REJETEE:    'chip-rejetee',
-      EN_RETARD:  'chip-rejetee',
+      VALIDEE:              'chip-validee',
+      PAYEE:                'chip-payee',
+      EN_ATTENTE_VALIDATION:'chip-en_attente',
+      REJETEE:              'chip-rejetee',
+      EN_RETARD:            'chip-rejetee',
     };
     return map[statut] ?? '';
   }
@@ -205,13 +203,37 @@ export class FacturesComponent implements OnInit {
 
   // ── Toggle status ──────────────────────────────────────────────
   toggleStatus(f: Facture): void {
-    const newStatus: StatutFacture = f.statut === 'EN_ATTENTE' ? 'VALIDEE' : 'EN_ATTENTE';
+    const newStatus: StatutFacture = f.statut === 'EN_ATTENTE_VALIDATION' ? 'VALIDEE' : 'EN_ATTENTE_VALIDATION';
     this.factureService.updateStatus(f.id!, newStatus).subscribe({
-      next: () => {
-        this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 });
-        this.loadFactures();
-      },
+      next: () => { this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 }); this.loadFactures(); },
       error: () => this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Soumettre pour validation (ChargeDossier) ──────────────────
+  soumettre(f: Facture): void {
+    if (!confirm(`Soumettre la facture "${f.numero}" pour validation ?`)) return;
+    this.factureService.updateStatus(f.id!, 'EN_ATTENTE_VALIDATION').subscribe({
+      next: () => { this.snackBar.open('Facture soumise pour validation', 'OK', { duration: 2500 }); this.loadFactures(); },
+      error: () => this.snackBar.open('Erreur lors de la soumission', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Valider (Responsable) ──────────────────────────────────────
+  valider(f: Facture): void {
+    if (!confirm(`Valider la facture "${f.numero}" ?`)) return;
+    this.factureService.validate(f.id!).subscribe({
+      next: () => { this.snackBar.open('Facture validée', 'OK', { duration: 2500 }); this.loadFactures(); },
+      error: () => this.snackBar.open('Erreur lors de la validation', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Rejeter (Responsable) ──────────────────────────────────────
+  rejeter(f: Facture): void {
+    if (!confirm(`Rejeter la facture "${f.numero}" ?`)) return;
+    this.factureService.reject(f.id!).subscribe({
+      next: () => { this.snackBar.open('Facture rejetée', 'OK', { duration: 2500 }); this.loadFactures(); },
+      error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
     });
   }
 

@@ -132,6 +132,19 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  logoutWithMessage(message: string): void {
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem('auth_user_id');
+
+    this.clearStorage();
+    this.currentUserSignal.set(null);
+    this.isAuthenticatedSignal.set(false);
+
+    this.router.navigate(['/login'], { state: { sessionMessage: message } });
+  }
+
   getAccessToken(): string | null {
     return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }

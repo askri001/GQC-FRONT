@@ -48,7 +48,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <mat-icon class="title-icon">event</mat-icon>
             <h2>Gestion des Audiences</h2>
           </div>
-          <button mat-raised-button color="primary" (click)="createAudience()" *ngIf="!authService.isAdmin()">
+          <button mat-raised-button color="primary" (click)="createAudience()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
             <mat-icon>add</mat-icon> Nouvelle Audience
           </button>
         </div>
@@ -101,8 +101,8 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let a">
-                  <button mat-icon-button color="primary" (click)="editAudience(a)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editAudience(a)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteAudience(a.idAudience!)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="cols"></tr>

@@ -114,6 +114,14 @@ export class FactureService {
     return this.update(id, { statut });
   }
 
+  validate(id: number): Observable<Facture> {
+    return this.api.put<Facture>(`${this.endpoint}/${id}/validate`, {});
+  }
+
+  reject(id: number): Observable<Facture> {
+    return this.api.put<Facture>(`${this.endpoint}/${id}/reject`, {});
+  }
+
   
   clearError(): void {
     this.errorSignal.set(null);

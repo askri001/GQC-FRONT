@@ -50,7 +50,7 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
             <h2>Gestion des Risques</h2>
             <p class="subtitle">{{ filteredRisques().length }} risque(s) trouvé(s)</p>
           </div>
-          <button mat-raised-button color="primary" (click)="openDrawer()" *ngIf="!authService.isAdmin()">
+          <button mat-raised-button color="primary" (click)="openDrawer()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
             <mat-icon>add</mat-icon> Nouveau Risque
           </button>
         </div>
@@ -115,8 +115,8 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let r">
-                  <button mat-icon-button color="primary" (click)="editRisque(r)" *ngIf="!authService.isAdmin()"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteRisque(r.id!)" *ngIf="!authService.isAdmin()"><mat-icon>delete</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="editRisque(r)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>edit</mat-icon></button>
+                  <button mat-icon-button color="warn" (click)="deleteRisque(r.id!)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>delete</mat-icon></button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>

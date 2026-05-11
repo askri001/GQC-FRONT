@@ -471,7 +471,11 @@ export class DashboardComponent implements OnInit {
       'EN_COURS': 'En Cours',
       'CLOTURE': 'Clôturé',
       'SUSPENDU': 'Suspendu',
-      'EN_ATTENTE': 'En Attente'
+      'EN_ATTENTE': 'En Attente',
+      'EN_ATTENTE_VALIDATION': 'En Attente de Validation',
+      'VALIDE': 'Validé',
+      'TRANSFERE': 'Transféré',
+      'OUVERT': 'Ouvert'
     };
     return labels[statut] || statut;
   }

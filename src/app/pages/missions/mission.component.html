@@ -53,7 +53,7 @@
       <div class="toolbar-spacer"></div>
 
       <!-- Nouvelle mission -->
-      <button class="btn-new" (click)="openAddDialog()" *ngIf="!authService.isAdmin()">
+      <button class="btn-new" (click)="openAddDialog()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
         <mat-icon>add</mat-icon>
         Nouvelle mission
       </button>
@@ -146,27 +146,37 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier" *ngIf="!authService.isAdmin()">
+                    <!-- ChargeDossier: edit, start, submit, cancel, delete -->
+                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier"
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && m.statut !== 'EN_ATTENTE_VALIDATION'">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    @if (m.statut === 'EN_ATTENTE' && !authService.isAdmin()) {
-                      <button
-                        class="act-btn act-toggle"
-                        (click)="toggleStatus(m)"
-                        title="Démarrer (EN_COURS)">
+                    @if (m.statut === 'EN_ATTENTE' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                      <button class="act-btn act-toggle" (click)="toggleStatus(m)" title="Démarrer">
                         <mat-icon>play_arrow</mat-icon>
                       </button>
                     }
-                    @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE' && !authService.isAdmin()) {
-                      <button
-                        class="act-btn act-delete"
-                        (click)="annulerMission(m)"
-                        title="Annuler la mission"
-                        style="color:#c62828">
+                    @if (m.statut === 'EN_COURS' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                      <button class="act-btn" style="color:#1565c0" (click)="soumettre(m)" title="Soumettre pour validation">
+                        <mat-icon>send</mat-icon>
+                      </button>
+                    }
+                    @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE' && m.statut !== 'EN_ATTENTE_VALIDATION' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                      <button class="act-btn act-delete" (click)="annulerMission(m)" title="Annuler" style="color:#c62828">
                         <mat-icon>cancel</mat-icon>
                       </button>
                     }
-                    <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer" *ngIf="!authService.isAdmin()">
+                    <!-- Responsable: validate or reject -->
+                    @if ((m.statut === 'EN_ATTENTE_VALIDATION' || m.statut === 'EN_COURS') && authService.hasRole('ROLE_RESPONSABLE')) {
+                      <button class="act-btn" style="color:#2e7d32" (click)="valider(m)" title="Valider">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button class="act-btn" style="color:#c62828" (click)="rejeter(m)" title="Rejeter">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    }
+                    <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer"
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </td>
