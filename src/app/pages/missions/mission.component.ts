@@ -62,7 +62,7 @@ export class MissionsComponent implements OnInit {
 
   // ── Lookup data ────────────────────────────────────────────────
   statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
-  types: TypeMission[]     = ['HUISSIER', 'EXPERT'];
+  types: TypeMission[]     = ['EXECUTION', 'EXPERTISE'];
 
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
   typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;

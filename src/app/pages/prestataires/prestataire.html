@@ -95,12 +95,11 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>NOM</th>
                   <th>SPÉCIALITÉ</th>
                   <th>TÉLÉPHONE</th>
                   <th>EMAIL</th>
-                  <th>TARIF (DH/J)</th>
+                  <th>TARIF (DT/J)</th>
                   <th>STATUT</th>
                   <th>ACTIONS</th>
                 </tr>
@@ -108,8 +107,6 @@
               <tbody>
                 @for (p of current.rows; track p.idPrestataire) {
                   <tr>
-
-                    <td class="td-id">{{ p.idPrestataire }}</td>
 
                     <td class="td-nom">{{ getFullName(p) }}</td>
 

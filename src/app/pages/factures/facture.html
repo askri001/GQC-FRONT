@@ -93,7 +93,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>N° FACTURE</th>
                 <th>DATE</th>
                 <th>MONTANT</th>
@@ -105,9 +104,6 @@
             <tbody>
               @for (f of pagedFactures(); track f.id) {
                 <tr>
-
-                  <!-- ID -->
-                  <td class="td-id">{{ f.id }}</td>
 
                   <!-- N° FACTURE -->
                   <td class="td-numero">{{ f.numero }}</td>

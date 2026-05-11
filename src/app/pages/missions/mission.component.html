@@ -93,7 +93,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>TYPE</th>
                 <th>DOSSIER</th>
                 <th>PRESTATAIRE</th>
@@ -107,9 +106,6 @@
             <tbody>
               @for (m of pagedMissions(); track m.id) {
                 <tr>
-
-                  <!-- ID -->
-                  <td class="td-id">{{ m.id }}</td>
 
                   <!-- TYPE -->
                   <td class="td-type">{{ typeLabels[m.typeMission] }}</td>

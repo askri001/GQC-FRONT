@@ -82,6 +82,7 @@ export class PrestataireFormDialogComponent implements OnInit {
       tarifJournalier: [p?.tarifJournalier ?? 0,  [Validators.required, Validators.min(0.01)]],
       // actif is always a real boolean — never null, never string
       actif:           [p?.actif ?? true],
+      rib:             [p?.rib ?? '', [Validators.pattern(/^(\d{20})?$/)]]
     });
   }
 
@@ -135,6 +136,7 @@ export class PrestataireFormDialogComponent implements OnInit {
       specialite:      raw.specialite,
       tarifJournalier: Number(raw.tarifJournalier),
       actif:           raw.actif === true || raw.actif === 'true',
+      rib:             raw.rib?.trim() || undefined,
     };
 
     // Debug — remove after confirming fix

@@ -15,13 +15,12 @@ export interface Mission {
   dossier?: any;
 }
 
-export type TypeMission = 'HUISSIER' | 'EXPERT' | 'AVOCAT';
+export type TypeMission = 'EXECUTION' | 'EXPERTISE';
 export type StatutMission = 'EN_ATTENTE' | 'EN_COURS' | 'EN_ATTENTE_VALIDATION' | 'TERMINEE' | 'ANNULEE';
 
 export const TYPE_MISSION_LABELS: Record<TypeMission, string> = {
-  'HUISSIER': 'Huissier',
-  'EXPERT': 'Expert',
-  'AVOCAT': 'Avocat'
+  'EXECUTION': 'Exécution',
+  'EXPERTISE': 'Expertise',
 };
 
 export const STATUT_MISSION_LABELS: Record<StatutMission, string> = {

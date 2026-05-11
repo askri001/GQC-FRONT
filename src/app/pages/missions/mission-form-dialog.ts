@@ -32,8 +32,8 @@ export interface MissionFormDialogData {
 
 // Map TypeMission → TypePrestataire for filtering (AVOCAT removed)
 const MISSION_TO_PRESTATAIRE_TYPE: Record<string, string> = {
-  HUISSIER: 'HUISSIER',
-  EXPERT:   'EXPERT',
+  EXECUTION: 'HUISSIER',
+  EXPERTISE: 'EXPERT',
 };
 
 type FactureLienType = 'MISSION' | 'AFFAIRE';
@@ -68,7 +68,7 @@ export class MissionFormDialogComponent implements OnInit {
   private affaireService    = inject(AffaireService);
 
   // ── Lookup data ────────────────────────────────────────────────
-  types: TypeMission[] = ['HUISSIER', 'EXPERT'];
+  types: TypeMission[] = ['EXECUTION', 'EXPERTISE'];
   typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
 
@@ -84,7 +84,7 @@ export class MissionFormDialogComponent implements OnInit {
 
   // ── Form model (dates removed) ─────────────────────────────────
   form = {
-    typeMission:   this.data.mission?.typeMission   ?? 'HUISSIER' as TypeMission,
+    typeMission:   this.data.mission?.typeMission   ?? 'EXECUTION' as TypeMission,
     dossierId:     this.data.mission?.dossierId     ?? null as number | null,
     prestataireId: this.data.mission?.prestataireId ?? null as number | null,
     commentaire:   this.data.mission?.commentaire   ?? '',
@@ -195,7 +195,7 @@ export class MissionFormDialogComponent implements OnInit {
   }
 
   getPrestataireLabel(p: Prestataire): string {
-    return `${p.prenom} ${p.nom} (${p.specialite ?? ''})`;
+    return `${p.prenom} ${p.nom}`;
   }
 
   // ── Submit ─────────────────────────────────────────────────────

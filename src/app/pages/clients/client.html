@@ -91,7 +91,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>NOM</th>
                 <th>TYPE</th>
                 <th>CIN / RNE</th>
@@ -104,9 +103,6 @@
             <tbody>
               @for (c of clients(); track c.id) {
                 <tr>
-
-                  <!-- ID -->
-                  <td class="td-id">{{ c.id }}</td>
 
                   <!-- NOM -->
                   <td class="td-nom">{{ c.nom }}{{ c.prenom ? ' ' + c.prenom : '' }}</td>

@@ -11,6 +11,7 @@ export interface Prestataire {
   specialite: string;
   tarifJournalier: number;
   actif: boolean;
+  rib?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
