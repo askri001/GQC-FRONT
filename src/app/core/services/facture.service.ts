@@ -118,8 +118,8 @@ export class FactureService {
     return this.api.put<Facture>(`${this.endpoint}/${id}/validate`, {});
   }
 
-  reject(id: number): Observable<Facture> {
-    return this.api.put<Facture>(`${this.endpoint}/${id}/reject`, {});
+  reject(id: number, commentaireRejet?: string): Observable<Facture> {
+    return this.api.put<Facture>(`${this.endpoint}/${id}/reject`, { commentaireRejet });
   }
 
   

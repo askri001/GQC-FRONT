@@ -10,6 +10,7 @@ export interface Facture {
   missionId?: number;
   dossierId?: number;
   mission?: any;
+  commentaireRejet?: string;
 }
 
 export type StatutFacture =

@@ -14,6 +14,7 @@ export interface Dossier {
   chargeDossierId?: number;
   chargeDossierNom?: string;
   chargeDossierPrenom?: string;
+  commentaireRejet?: string;
 }
 
 export const DOSSIER_STATUT_LABELS = {

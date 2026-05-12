@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {
   Facture,
@@ -20,6 +21,7 @@ import {
 import { FactureService } from '../../core/services/facture.service';
 import { FactureFormDialogComponent } from './facture-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 
 @Component({
   selector: 'app-factures',
@@ -33,6 +35,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   templateUrl: './facture.html',
   styleUrls: ['./facture.css'],
@@ -230,10 +233,16 @@ export class FacturesComponent implements OnInit {
 
   // ── Rejeter (Responsable) ──────────────────────────────────────
   rejeter(f: Facture): void {
-    if (!confirm(`Rejeter la facture "${f.numero}" ?`)) return;
-    this.factureService.reject(f.id!).subscribe({
-      next: () => { this.snackBar.open('Facture rejetée', 'OK', { duration: 2500 }); this.loadFactures(); },
-      error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: 'Rejeter la facture', sousTitre: `Facture : ${f.numero}` }
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null) return;
+      this.factureService.reject(f.id!, commentaire || undefined).subscribe({
+        next: () => { this.snackBar.open('Facture rejetée', 'OK', { duration: 2500 }); this.loadFactures(); },
+        error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
+      });
     });
   }
 

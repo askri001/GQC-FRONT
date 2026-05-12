@@ -39,7 +39,7 @@ export class AffaireService {
     return this.api.put<Affaire>(`${this.endpoint}/${id}/validate`, {});
   }
 
-  reject(id: number): Observable<Affaire> {
-    return this.api.put<Affaire>(`${this.endpoint}/${id}/reject`, {});
+  reject(id: number, commentaireRejet?: string): Observable<Affaire> {
+    return this.api.put<Affaire>(`${this.endpoint}/${id}/reject`, { commentaireRejet });
   }
 }

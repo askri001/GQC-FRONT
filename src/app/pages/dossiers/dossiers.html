@@ -68,7 +68,16 @@
           <ng-container matColumnDef="statut">
             <th mat-header-cell *matHeaderCellDef>Statut</th>
             <td mat-cell *matCellDef="let dossier">
-              <mat-chip [class]="getStatutClass(dossier.statut)">{{ getStatutLabel(dossier.statut) }}</mat-chip>
+              <div style="display:flex;align-items:center;gap:6px">
+                <mat-chip [class]="getStatutClass(dossier.statut)">{{ getStatutLabel(dossier.statut) }}</mat-chip>
+                @if (dossier.commentaireRejet) {
+                  <mat-icon style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help"
+                    [matTooltip]="'Rejeté : ' + dossier.commentaireRejet"
+                    matTooltipPosition="right">
+                    chat_bubble
+                  </mat-icon>
+                }
+              </div>
             </td>
           </ng-container>
 
@@ -138,85 +147,86 @@
   </mat-card>
 </div>
 
-<!-- Drawer Panel -->
 <app-drawer-panel
   [open]="editMode()"
   [title]="editId() === 0 ? 'Nouveau Dossier' : 'Modifier Dossier'"
   icon="folder"
   [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
-  [saveDisabled]="!tempDossier()?.reference || tempDossier()?.montantInitial === undefined"
+  [saveDisabled]="!tempDossier.reference || !selectedClientId"
   [saving]="loading()"
   (closed)="cancelEdit()"
   (saved)="saveDossier()">
 
-  @if (tempDossier()) {
-    <mat-form-field appearance="outline">
-      <mat-label>Client *</mat-label>
-      <mat-select [(ngModel)]="selectedClientId" [ngModelOptions]="{standalone: true}">
-        <mat-option [value]="0" disabled>Sélectionner un client</mat-option>
-        @for (client of clients(); track client.id) {
-          <mat-option [value]="client.id">{{ getClientLabel(client) }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+  <form #dossierForm="ngForm" (ngSubmit)="saveDossier()">
 
-    <mat-form-field appearance="outline">
-      <mat-label>Chargé de Dossier</mat-label>
-      <mat-select [(ngModel)]="selectedChargeDossierId" [ngModelOptions]="{standalone: true}">
-        <mat-option [value]="0">Aucun</mat-option>
-        @for (cd of chargeDossiers(); track cd.id) {
-          <mat-option [value]="cd.id">{{ cd.prenom || '' }} {{ cd.nom || '' }} ({{ cd.username }})</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Client *</mat-label>
+    <mat-select name="clientId" [(ngModel)]="selectedClientId" (ngModelChange)="selectedClientId = $event">
+      <mat-option [value]="0" disabled>Sélectionner un client</mat-option>
+      @for (client of clients(); track client.id) {
+        <mat-option [value]="client.id">{{ getClientLabel(client) }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Référence *</mat-label>
-      <input matInput [(ngModel)]="tempDossier()!.reference" placeholder="Ex: DOS-2024-001">
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Chargé de Dossier</mat-label>
+    <mat-select name="chargeDossierId" [(ngModel)]="selectedChargeDossierId" (ngModelChange)="selectedChargeDossierId = $event">
+      <mat-option [value]="0">Aucun</mat-option>
+      @for (cd of chargeDossiers(); track cd.id) {
+        <mat-option [value]="cd.id">{{ cd.prenom || '' }} {{ cd.nom || '' }} ({{ cd.username }})</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Date Ouverture</mat-label>
-      <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempDossier()!.dateOuverture">
-      <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-      <mat-datepicker #datePicker></mat-datepicker>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Référence *</mat-label>
+    <input matInput name="reference" [(ngModel)]="tempDossier.reference" placeholder="Ex: DOS-2024-001">
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Statut</mat-label>
-      <mat-select [(ngModel)]="tempDossier()!.statut">
-        <mat-option value="EN_COURS">En Cours</mat-option>
-        <mat-option value="CLOTURE">Clôturé</mat-option>
-        <mat-option value="SUSPENDU">Suspendu</mat-option>
-        <mat-option value="TRANSFERE">Transféré</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Date Ouverture</mat-label>
+    <input matInput name="dateOuverture" [matDatepicker]="datePicker" [(ngModel)]="tempDossier.dateOuverture">
+    <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+    <mat-datepicker #datePicker></mat-datepicker>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Niveau Risque</mat-label>
-      <mat-select [(ngModel)]="tempDossier()!.niveauRisque">
-        <mat-option value="FAIBLE">Faible</mat-option>
-        <mat-option value="MOYEN">Moyen</mat-option>
-        <mat-option value="ELEVE">Élevé</mat-option>
-        <mat-option value="CRITIQUE">Critique</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Statut</mat-label>
+    <mat-select name="statut" [(ngModel)]="tempDossier.statut">
+      <mat-option value="EN_COURS">En Cours</mat-option>
+      <mat-option value="CLOTURE">Clôturé</mat-option>
+      <mat-option value="SUSPENDU">Suspendu</mat-option>
+      <mat-option value="TRANSFERE">Transféré</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Montant Initial *</mat-label>
-      <input matInput type="number" [(ngModel)]="tempDossier()!.montantInitial">
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Niveau Risque</mat-label>
+    <mat-select name="niveauRisque" [(ngModel)]="tempDossier.niveauRisque">
+      <mat-option value="FAIBLE">Faible</mat-option>
+      <mat-option value="MOYEN">Moyen</mat-option>
+      <mat-option value="ELEVE">Élevé</mat-option>
+      <mat-option value="CRITIQUE">Critique</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Montant Récupéré</mat-label>
-      <input matInput type="number" [(ngModel)]="tempDossier()!.montantRecupere">
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Montant Initial *</mat-label>
+    <input matInput type="number" name="montantInitial" [(ngModel)]="tempDossier.montantInitial">
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Date Clôture</mat-label>
-      <input matInput [matDatepicker]="dateCloturePicker" [(ngModel)]="tempDossier()!.dateCloture">
-      <mat-datepicker-toggle matSuffix [for]="dateCloturePicker"></mat-datepicker-toggle>
-      <mat-datepicker #dateCloturePicker></mat-datepicker>
-    </mat-form-field>
-  }
+  <mat-form-field appearance="outline">
+    <mat-label>Montant Récupéré</mat-label>
+    <input matInput type="number" name="montantRecupere" [(ngModel)]="tempDossier.montantRecupere">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Date Clôture</mat-label>
+    <input matInput name="dateCloture" [matDatepicker]="dateCloturePicker" [(ngModel)]="tempDossier.dateCloture">
+    <mat-datepicker-toggle matSuffix [for]="dateCloturePicker"></mat-datepicker-toggle>
+    <mat-datepicker #dateCloturePicker></mat-datepicker>
+  </mat-form-field>
+  </form>
+
 </app-drawer-panel>

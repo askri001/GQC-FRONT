@@ -8,6 +8,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      console.error('[errorInterceptor] status:', error.status, 'url:', req.url, 'body:', error.error);
       let errorMessage = 'Une erreur est survenue';
 
       if (error.error instanceof ErrorEvent) {

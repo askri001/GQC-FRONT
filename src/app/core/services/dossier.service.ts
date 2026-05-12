@@ -23,8 +23,8 @@ export class DossierService {
     return this.api.put<Dossier>(`${this.endpoint}/${id}/validate`, {});
   }
 
-  reject(id: number): Observable<Dossier> {
-    return this.api.put<Dossier>(`${this.endpoint}/${id}/reject`, {});
+  reject(id: number, commentaireRejet?: string): Observable<Dossier> {
+    return this.api.put<Dossier>(`${this.endpoint}/${id}/reject`, { commentaireRejet });
   }
 
   create(dossier: Omit<Dossier, 'idDossier'>): Observable<Dossier> {

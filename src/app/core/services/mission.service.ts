@@ -124,8 +124,8 @@ export class MissionService {
     return this.api.put<Mission>(`${this.endpoint}/${id}/validate`, {});
   }
 
-  reject(id: number): Observable<Mission> {
-    return this.api.put<Mission>(`${this.endpoint}/${id}/reject`, {});
+  reject(id: number, commentaireRejet?: string): Observable<Mission> {
+    return this.api.put<Mission>(`${this.endpoint}/${id}/reject`, { commentaireRejet });
   }
 
   clearError(): void {

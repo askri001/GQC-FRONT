@@ -14,12 +14,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AffaireService } from '../../core/services/affaire.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Affaire, STATUT_AFFAIRE_LABELS } from '../../core/models/affaire.model';
 import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 
 interface PrestataireRef { id: number; nom: string; prenom: string; type: string; }
 
@@ -42,6 +45,8 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
     MatDatepickerModule,
     MatNativeDateModule,
     MatPaginatorModule,
+    MatTooltipModule,
+    MatDialogModule,
     DrawerPanelComponent
   ],
   template: `
@@ -113,7 +118,16 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
               <ng-container matColumnDef="statut">
                 <th mat-header-cell *matHeaderCellDef>Statut</th>
                 <td mat-cell *matCellDef="let a">
-                  <mat-chip [class]="'statut-' + a.statut?.toLowerCase()">{{ getStatutLabel(a.statut) }}</mat-chip>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <mat-chip [class]="'statut-' + a.statut?.toLowerCase()">{{ getStatutLabel(a.statut) }}</mat-chip>
+                    @if (a.commentaireRejet) {
+                      <mat-icon style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help"
+                        [matTooltip]="'Rejeté : ' + a.commentaireRejet"
+                        matTooltipPosition="right">
+                        chat_bubble
+                      </mat-icon>
+                    }
+                  </div>
                 </td>
               </ng-container>
               <ng-container matColumnDef="jugement">
@@ -225,6 +239,7 @@ export class AffairesComponent implements OnInit {
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
   readonly authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   affaires = signal<Affaire[]>([]);
   dossiers = signal<Dossier[]>([]);
@@ -387,10 +402,16 @@ export class AffairesComponent implements OnInit {
   }
 
   rejeter(a: Affaire) {
-    if (!confirm(`Rejeter l'affaire "${a.numeroProcedure}" ?`)) return;
-    this.affaireService.reject(a.idAffaire!).subscribe({
-      next: () => { this.loadAffaires(); this.showNotification('Affaire rejetée — renvoyée en cours', 'success'); },
-      error: () => this.showNotification('Erreur lors du rejet', 'error')
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: "Rejeter l'affaire", sousTitre: `Affaire : ${a.numeroProcedure}` }
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null) return;
+      this.affaireService.reject(a.idAffaire!, commentaire || undefined).subscribe({
+        next: () => { this.loadAffaires(); this.showNotification('Affaire rejetée — renvoyée en cours', 'success'); },
+        error: () => this.showNotification('Erreur lors du rejet', 'error')
+      });
     });
   }
 

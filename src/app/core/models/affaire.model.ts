@@ -13,6 +13,7 @@ export interface Affaire {
   createdAt?: Date;
   updatedAt?: Date;
   audiences?: Audience[];
+  commentaireRejet?: string;
 }
 
 export type StatutAffaire = 'INITIEE' | 'EN_COURS' | 'JUGEMENT_RENDU' | 'EN_ATTENTE_VALIDATION' | 'TERMINEE';

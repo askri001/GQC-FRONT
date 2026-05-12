@@ -14,10 +14,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DossierService } from '../../core/services/dossier.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterModule } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
 import { Client } from '../../core/models/client.model';
@@ -42,8 +45,10 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
     MatPaginatorModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatTooltipModule,
     DrawerPanelComponent,
-    RouterModule
+    RouterModule,
+    MatDialogModule
   ],
   templateUrl: "./dossiers.html",
   styleUrls: ["./dossiers.css"]
@@ -53,6 +58,7 @@ export class DossiersComponent implements OnInit {
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
   readonly authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   dossiers = signal<Dossier[]>([]);
   clients = signal<Client[]>([]);
@@ -77,9 +83,9 @@ export class DossiersComponent implements OnInit {
   
   editId = signal<number | null>(null);
   editMode = signal(false);
-  tempDossier = signal<Partial<Dossier> | null>(null);
-  selectedClientId = signal<number>(0);
-  selectedChargeDossierId = signal<number>(0);
+  tempDossier: Partial<Dossier> = {};
+  selectedClientId = 0;
+  selectedChargeDossierId = 0;
 
   
   get filteredDossiers() {
@@ -137,7 +143,7 @@ export class DossiersComponent implements OnInit {
 
   createDossier() {
     this.editId.set(0);
-    this.tempDossier.set({
+    this.tempDossier = {
       reference: '',
       dateOuverture: new Date(),
       statut: 'EN_COURS',
@@ -145,33 +151,40 @@ export class DossiersComponent implements OnInit {
       montantInitial: 0,
       montantRecupere: 0,
       clientId: 0
-    });
-    this.selectedClientId.set(0);
-    this.selectedChargeDossierId.set(0);
+    };
+    this.selectedClientId = 0;
+    this.selectedChargeDossierId = 0;
     this.editMode.set(true);
   }
 
   editDossier(dossier: Dossier) {
     this.editId.set(dossier.idDossier!);
-    this.tempDossier.set({ ...dossier });
-    this.selectedClientId.set(dossier.clientId);
-    this.selectedChargeDossierId.set(dossier.chargeDossierId || 0);
+    this.tempDossier = { ...dossier };
+    this.selectedClientId = dossier.clientId;
+    this.selectedChargeDossierId = dossier.chargeDossierId || 0;
     this.editMode.set(true);
   }
 
   saveDossier() {
-    const temp = this.tempDossier();
-    if (!temp) return;
+    const temp = this.tempDossier;
 
-    temp.clientId = this.selectedClientId();
-    temp.chargeDossierId = this.selectedChargeDossierId() || undefined;
+    temp.clientId = this.selectedClientId;
+    temp.chargeDossierId = this.selectedChargeDossierId || undefined;
 
-    if (!temp.reference || temp.montantInitial === undefined || temp.clientId === 0) {
-      this.showNotification('Référence, montant initial et client requis', 'error');
+    if (!temp.reference?.trim()) {
+      this.showNotification('La référence est requise', 'error');
+      return;
+    }
+    if (!temp.clientId || temp.clientId === 0) {
+      this.showNotification('Veuillez sélectionner un client', 'error');
+      return;
+    }
+    if (temp.montantInitial === undefined || temp.montantInitial === null) {
+      this.showNotification('Le montant initial est requis', 'error');
       return;
     }
 
-    const request = this.editId() === 0 
+    const request = this.editId() === 0
       ? this.dossierService.create(temp as Omit<Dossier, 'idDossier'>)
       : this.dossierService.update(this.editId()!, temp as Dossier);
 
@@ -181,12 +194,12 @@ export class DossiersComponent implements OnInit {
         this.loading.set(false);
         this.loadDossiers();
         this.cancelEdit();
-        this.showNotification('Dossier sauvegardé avec coordonnées', 'success');
+        this.showNotification('Dossier sauvegardé', 'success');
       },
       error: (err) => {
         this.loading.set(false);
         console.error('Save error', err);
-        this.showNotification('Erreur sauvegarde', 'error');
+        this.showNotification('Erreur sauvegarde: ' + err.message, 'error');
       }
     });
   }
@@ -223,19 +236,25 @@ export class DossiersComponent implements OnInit {
   }
 
   rejeter(dossier: Dossier) {
-    if (!confirm(`Rejeter le dossier "${dossier.reference}" ? Il sera renvoyé en cours.`)) return;
-    this.dossierService.reject(dossier.idDossier!).subscribe({
-      next: () => { this.loadDossiers(); this.showNotification('Dossier rejeté — renvoyé en cours', 'success'); },
-      error: () => this.showNotification('Erreur lors du rejet', 'error')
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: 'Rejeter le dossier', sousTitre: `Dossier : ${dossier.reference}` }
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null) return;
+      this.dossierService.reject(dossier.idDossier!, commentaire).subscribe({
+        next: () => { this.loadDossiers(); this.showNotification('Dossier rejeté — renvoyé en cours', 'success'); },
+        error: () => this.showNotification('Erreur lors du rejet', 'error')
+      });
     });
   }
 
   cancelEdit() {
     this.editId.set(null);
-    this.tempDossier.set(null);
+    this.tempDossier = {};
     this.editMode.set(false);
-    this.selectedClientId.set(0);
-    this.selectedChargeDossierId.set(0);
+    this.selectedClientId = 0;
+    this.selectedChargeDossierId = 0;
   }
 
   applyFilters() {

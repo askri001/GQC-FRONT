@@ -46,6 +46,17 @@
       </button>
     </div>
 
+    <!-- ── REJECTION BANNER ──────────────────────────────────── -->
+    @if (dossier()!.commentaireRejet) {
+      <div class="rejection-banner">
+        <mat-icon>cancel</mat-icon>
+        <div>
+          <strong>Dossier rejeté par le responsable</strong>
+          <p>{{ dossier()!.commentaireRejet }}</p>
+        </div>
+      </div>
+    }
+
     <!-- ── KPI CARDS ─────────────────────────────────────────── -->
     <div class="kpi-row">
       <div class="kpi-card">

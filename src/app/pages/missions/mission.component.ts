@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {
   Mission,
@@ -20,6 +21,7 @@ import {
 import { MissionService } from '../../core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 
 @Component({
   selector: 'app-missions',
@@ -33,6 +35,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   templateUrl: './mission.component.html',
   styleUrls: ['./mission.component.css'],
@@ -251,10 +254,16 @@ export class MissionsComponent implements OnInit {
 
   // ── Rejeter (Responsable) ──────────────────────────────────────
   rejeter(m: Mission): void {
-    if (!confirm(`Rejeter cette mission ? Elle sera renvoyée en cours.`)) return;
-    this.missionService.reject(m.id!).subscribe({
-      next: () => { this.snackBar.open('Mission rejetée — renvoyée en cours', 'OK', { duration: 2500 }); this.loadMissions(); },
-      error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: 'Rejeter la mission', sousTitre: `Mission : ${this.typeLabels[m.typeMission]}` }
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null) return;
+      this.missionService.reject(m.id!, commentaire || undefined).subscribe({
+        next: () => { this.snackBar.open('Mission rejetée — renvoyée en cours', 'OK', { duration: 2500 }); this.loadMissions(); },
+        error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
+      });
     });
   }
 
