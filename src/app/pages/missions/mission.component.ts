@@ -22,6 +22,9 @@ import { MissionService } from '../../core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { AffaireService } from '../../core/services/affaire.service';
+import { ApiService } from '../../core/services/api.service';
+import { Affaire } from '../../core/models/affaire.model';
 
 @Component({
   selector: 'app-missions',
@@ -45,11 +48,15 @@ export class MissionsComponent implements OnInit {
   private missionService = inject(MissionService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
+  private affaireService = inject(AffaireService);
+  private api            = inject(ApiService);
   readonly authService   = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   missions         = signal<Mission[]>([]);
   filteredMissions = signal<Mission[]>([]);
+  affaires         = signal<Affaire[]>([]);
+  prestataires     = signal<any[]>([]);
   isLoading        = signal(false);
   error            = signal<string | null>(null);
 
@@ -71,7 +78,17 @@ export class MissionsComponent implements OnInit {
   typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
 
   // ── Lifecycle ──────────────────────────────────────────────────
-  ngOnInit(): void { this.loadMissions(); }
+  ngOnInit(): void {
+    this.loadMissions();
+    this.affaireService.getAll().subscribe({
+      next: (data) => this.affaires.set(data ?? []),
+      error: () => {}
+    });
+    this.api.get<any[]>('/prestataires').subscribe({
+      next: (data) => this.prestataires.set(data ?? []),
+      error: () => {}
+    });
+  }
 
   // ── Load ───────────────────────────────────────────────────────
   loadMissions(): void {
@@ -265,6 +282,19 @@ export class MissionsComponent implements OnInit {
         error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
       });
     });
+  }
+
+  // ── Lookup helpers ─────────────────────────────────────────────
+  getAffaireRef(affaireId: number | undefined): string {
+    if (!affaireId) return '—';
+    const a = this.affaires().find(a => (a.idAffaire ?? a.id) === affaireId);
+    return a ? a.numeroProcedure : `#${affaireId}`;
+  }
+
+  getPrestataireNom(prestataireId: number | undefined): string {
+    if (!prestataireId) return '—';
+    const p = this.prestataires().find(p => (p.idPrestataire ?? p.id) === prestataireId);
+    return p ? `${p.prenom || ''} ${p.nom || ''}`.trim() : `#${prestataireId}`;
   }
 
   // ── Delete ─────────────────────────────────────────────────────

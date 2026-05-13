@@ -1,5 +1,6 @@
 export interface Risque {
   id?: number;
+  reference?: string;
   montantPrincipal: number;
   montantInteret: number;
   montantTotal: number;

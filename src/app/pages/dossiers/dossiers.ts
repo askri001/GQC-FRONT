@@ -62,7 +62,6 @@ export class DossiersComponent implements OnInit {
 
   dossiers = signal<Dossier[]>([]);
   clients = signal<Client[]>([]);
-  chargeDossiers = signal<any[]>([]);
   displayedColumns: string[] = ['reference', 'client', 'chargeDossier', 'dateOuverture', 'statut', 'niveauRisque', 'montantInitial', 'montantRecupere', 'actions'];
 
   get cols(): string[] {
@@ -74,6 +73,7 @@ export class DossiersComponent implements OnInit {
   
   searchTerm = '';
   statutFilter = '';
+  clientFilter = 0;
   pageSize = 10;
   currentPage = 0;
 
@@ -85,18 +85,20 @@ export class DossiersComponent implements OnInit {
   editMode = signal(false);
   tempDossier: Partial<Dossier> = {};
   selectedClientId = 0;
-  selectedChargeDossierId = 0;
 
   
   get filteredDossiers() {
     let result = this.dossiers();
     if (this.searchTerm) {
-      result = result.filter(d => 
+      result = result.filter(d =>
         d.reference.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
     if (this.statutFilter) {
       result = result.filter(d => d.statut === this.statutFilter);
+    }
+    if (this.clientFilter) {
+      result = result.filter(d => d.clientId === this.clientFilter);
     }
     const start = this.currentPage * this.pageSize;
     return result.slice(start, start + this.pageSize);
@@ -109,14 +111,6 @@ export class DossiersComponent implements OnInit {
   ngOnInit() {
     this.loadDossiers();
     this.loadClients();
-    this.loadChargeDossiers();
-  }
-
-  loadChargeDossiers() {
-    this.api.get<any[]>('/users/chargedossiers').subscribe({
-      next: (data) => this.chargeDossiers.set(data ?? []),
-      error: (err) => console.error('Error loading chargeDossiers', err)
-    });
   }
 
   loadClients() {
@@ -143,17 +137,16 @@ export class DossiersComponent implements OnInit {
 
   createDossier() {
     this.editId.set(0);
+    const currentUserId = Number(localStorage.getItem('auth_user_id')) || undefined;
     this.tempDossier = {
       reference: '',
       dateOuverture: new Date(),
       statut: 'EN_COURS',
       niveauRisque: 'FAIBLE',
-      montantInitial: 0,
-      montantRecupere: 0,
-      clientId: 0
+      clientId: 0,
+      chargeDossierId: currentUserId
     };
     this.selectedClientId = 0;
-    this.selectedChargeDossierId = 0;
     this.editMode.set(true);
   }
 
@@ -161,7 +154,6 @@ export class DossiersComponent implements OnInit {
     this.editId.set(dossier.idDossier!);
     this.tempDossier = { ...dossier };
     this.selectedClientId = dossier.clientId;
-    this.selectedChargeDossierId = dossier.chargeDossierId || 0;
     this.editMode.set(true);
   }
 
@@ -169,7 +161,7 @@ export class DossiersComponent implements OnInit {
     const temp = this.tempDossier;
 
     temp.clientId = this.selectedClientId;
-    temp.chargeDossierId = this.selectedChargeDossierId || undefined;
+    // chargeDossierId is preserved from tempDossier (set on create or kept from existing dossier)
 
     if (!temp.reference?.trim()) {
       this.showNotification('La référence est requise', 'error');
@@ -177,10 +169,6 @@ export class DossiersComponent implements OnInit {
     }
     if (!temp.clientId || temp.clientId === 0) {
       this.showNotification('Veuillez sélectionner un client', 'error');
-      return;
-    }
-    if (temp.montantInitial === undefined || temp.montantInitial === null) {
-      this.showNotification('Le montant initial est requis', 'error');
       return;
     }
 
@@ -254,7 +242,6 @@ export class DossiersComponent implements OnInit {
     this.tempDossier = {};
     this.editMode.set(false);
     this.selectedClientId = 0;
-    this.selectedChargeDossierId = 0;
   }
 
   applyFilters() {
@@ -302,8 +289,7 @@ export class DossiersComponent implements OnInit {
     if (!chargeId) return '—';
     const d = this.dossiers().find(d => d.chargeDossierId === chargeId);
     if (d?.chargeDossierNom) return `${d.chargeDossierPrenom || ''} ${d.chargeDossierNom}`.trim();
-    const cd = this.chargeDossiers().find(c => c.id === chargeId);
-    return cd ? `${cd.prenom || ''} ${cd.nom || ''}`.trim() || cd.username : `#${chargeId}`;
+    return `#${chargeId}`;
   }
 
   exportPdf(dossier: Dossier): void {

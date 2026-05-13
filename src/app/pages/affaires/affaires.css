@@ -1,29 +1,183 @@
-/****************************************************
- * Affaires — BNA Green Theme
- ****************************************************/
+/* ================================================================
+   AFFAIRES — matches Client/Prestataire design
+   ================================================================ */
 
 .page-container {
-  padding: 0;
+  min-height: 100vh;
+  padding: 32px 28px;
+  background: #eef4f1;
 }
 
 .page-card {
-  padding: 20px;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 20px rgba(0, 100, 70, 0.09);
+  padding: 36px 40px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* ── Header ── */
 .card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 36px;
 }
 
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-icon {
+  font-size: 28px !important;
+  height: 28px !important;
+  width: 28px !important;
+  color: #00966E !important;
+}
+
+.header-title h2,
 .card-header h2 {
   margin: 0;
-  color: var(--bna-navy);
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a2e28;
+  letter-spacing: -0.3px;
 }
 
-.full-width {
-  width: 100%;
+/* ── Filters ── */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
+.filters .search-field { flex: 1; min-width: 220px; }
+.filters .filter-field { min-width: 180px; }
+
+/* New button */
+.filters button[mat-raised-button],
+.card-header button[mat-raised-button] {
+  height: 48px !important;
+  background: #00966E !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 10px rgba(0,150,110,.28) !important;
+}
+
+.filters button[mat-raised-button]:hover,
+.card-header button[mat-raised-button]:hover {
+  background: #007A58 !important;
+}
+
+/* ── Loading / empty ── */
+.loading,
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 72px 24px;
+  border-radius: 10px;
+  text-align: center;
+  background: #f7fdfb;
+  border: 2px dashed #c8e0d8;
+  color: #2d4a42;
+}
+
+.loading p, .no-data p { margin: 0; font-size: 15px; font-weight: 600; }
+.no-data mat-icon { font-size: 52px !important; height: 52px !important; width: 52px !important; opacity: .4; color: #4DBFA3; }
+
+/* ── Table ── */
+.table-container {
+  border-radius: 10px;
+  border: 1px solid #d4e8e0;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,100,70,.06);
+}
+
+.full-width { width: 100%; }
+
+table.mat-mdc-table { background: #fff !important; font-size: 14px !important; }
+
+tr.mat-mdc-header-row { background: #00966E !important; height: auto !important; }
+
+th.mat-mdc-header-cell {
+  padding: 13px 18px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  letter-spacing: .7px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  border: none !important;
+  background: #00966E !important;
+}
+
+tr.mat-mdc-row {
+  border-bottom: 1px solid #e8f3ee !important;
+  transition: background .12s !important;
+  height: auto !important;
+}
+
+tr.mat-mdc-row:last-child { border-bottom: none !important; }
+tr.mat-mdc-row:hover { background: #f0faf6 !important; }
+
+td.mat-mdc-cell {
+  padding: 13px 18px !important;
+  color: #2d4a42 !important;
+  vertical-align: middle !important;
+  border: none !important;
+  font-size: 14px !important;
+}
+
+/* ── Status chips ── */
+mat-chip {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  height: 26px !important;
+  padding: 0 12px !important;
+  border-radius: 20px !important;
+}
+
+.statut-initiee            { background: #e3f2fd !important; color: #1565c0 !important; }
+.statut-en_cours           { background: rgba(0,150,110,.12) !important; color: #007A58 !important; }
+.statut-jugement_rendu     { background: #fff3e0 !important; color: #e65100 !important; }
+.statut-en_attente_validation { background: #f5f5f5 !important; color: #616161 !important; }
+.statut-terminee           { background: #e8f5e9 !important; color: #2e7d32 !important; }
+
+/* ── Action buttons ── */
+button[mat-icon-button] {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  transition: background .14s !important;
+}
+
+/* ── Paginator ── */
+mat-paginator {
+  background: #f7fdfb !important;
+  border-top: 1px solid #d4e8e0 !important;
+  font-size: 13px !important;
+}
+
+/* ── Snackbars ── */
+.success-snackbar { background: #00966E !important; color: #fff !important; }
+.error-snackbar   { background: #c62828 !important; color: #fff !important; }
+
+@media (max-width: 1024px) {
+  .page-container { padding: 20px 14px; }
+  .page-card { padding: 24px 18px; }
+}
+
+@media (max-width: 768px) {
+  .filters { flex-direction: column; align-items: stretch; }
+  .card-header h2 { font-size: 20px; }
+}

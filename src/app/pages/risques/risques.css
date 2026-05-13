@@ -1,40 +1,167 @@
-/****************************************************
- * Risques — BNA Green Theme
- ****************************************************/
+/* ================================================================
+   RISQUES — matches Client/Prestataire design
+   ================================================================ */
 
 .page-container {
-  padding: 0;
+  min-height: 100vh;
+  padding: 32px 28px;
+  background: #eef4f1;
 }
 
 .page-card {
-  padding: 20px;
-  border-radius: 12px;
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 20px rgba(0, 100, 70, 0.09) !important;
+  padding: 36px 40px 32px !important;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* ── Header ── */
 .card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 36px;
 }
 
 .card-header h2 {
   margin: 0;
-  color: var(--bna-navy);
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a2e28;
+  letter-spacing: -0.3px;
 }
 
-.full-width {
-  width: 100%;
+.card-header p.subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #7aada0;
 }
 
+.card-header button[mat-raised-button] {
+  height: 48px !important;
+  background: #00966E !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 10px rgba(0,150,110,.28) !important;
+}
 
+.card-header button[mat-raised-button]:hover { background: #007A58 !important; }
+
+/* ── Search section ── */
 .search-section {
   display: flex;
+  align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
-.filter-field {
-  min-width: 200px;
+.search-section .search-field { flex: 1; min-width: 220px; }
+.search-section .filter-field { min-width: 180px; }
+
+/* ── Error banner ── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff5f5;
+  border: 1px solid #ffcdd2;
+  border-left: 4px solid #c62828;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #c62828;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* ── Loading / empty ── */
+.loading-container,
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 72px 24px;
+  border-radius: 10px;
+  text-align: center;
+  background: #f7fdfb;
+  border: 2px dashed #c8e0d8;
+  color: #2d4a42;
+}
+
+.loading-container p, .loading p { margin: 0; font-size: 15px; font-weight: 600; }
+
+/* ── Table ── */
+.table-container {
+  border-radius: 10px;
+  border: 1px solid #d4e8e0;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,100,70,.06);
+}
+
+.full-width { width: 100%; }
+
+table.mat-mdc-table { background: #fff !important; font-size: 14px !important; }
+
+tr.mat-mdc-header-row { background: #00966E !important; height: auto !important; }
+
+th.mat-mdc-header-cell {
+  padding: 13px 18px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  letter-spacing: .7px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  border: none !important;
+  background: #00966E !important;
+}
+
+tr.mat-mdc-row {
+  border-bottom: 1px solid #e8f3ee !important;
+  transition: background .12s !important;
+  height: auto !important;
+}
+
+tr.mat-mdc-row:last-child { border-bottom: none !important; }
+tr.mat-mdc-row:hover { background: #f0faf6 !important; }
+
+td.mat-mdc-cell {
+  padding: 13px 18px !important;
+  color: #2d4a42 !important;
+  vertical-align: middle !important;
+  border: none !important;
+  font-size: 14px !important;
+}
+
+/* ── Footer ── */
+.table-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0 0;
+}
+
+/* ── Paginator ── */
+mat-paginator {
+  background: #f7fdfb !important;
+  border-top: 1px solid #d4e8e0 !important;
+}
+
+/* ── Snackbars ── */
+.success-snackbar { background: #00966E !important; color: #fff !important; }
+.error-snackbar   { background: #c62828 !important; color: #fff !important; }
+
+@media (max-width: 1024px) {
+  .page-container { padding: 20px 14px; }
+  .page-card { padding: 24px 18px !important; }
+}
+
+@media (max-width: 768px) {
+  .search-section { flex-direction: column; align-items: stretch; }
+  .card-header { flex-direction: column; align-items: flex-start; gap: 12px; }
 }

@@ -1,7 +1,6 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,6 +16,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { UserService } from '../../core/services/user.service';
 import { RoleService, RoleDTO } from '../../core/services/role.service';
 import { UserFormDialogComponent } from './user-form-dialog';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-users',
@@ -89,12 +89,23 @@ import { UserFormDialogComponent } from './user-form-dialog';
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let u">
-                <button mat-icon-button color="primary" (click)="openEdit(u)" title="Modifier"><mat-icon>edit</mat-icon></button>
-                <button mat-icon-button [color]="u.enabled !== false ? 'warn' : 'primary'"
-                  (click)="toggleStatus(u)" [title]="u.enabled !== false ? 'Désactiver' : 'Activer'">
-                  <mat-icon>{{ u.enabled !== false ? 'person_off' : 'person' }}</mat-icon>
+                <button mat-icon-button color="primary" (click)="openEdit(u)" title="Modifier">
+                  <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteUser(u)" title="Supprimer"><mat-icon>delete</mat-icon></button>
+                @if (!isSelf(u)) {
+                  <button mat-icon-button [color]="u.enabled !== false ? 'warn' : 'primary'"
+                    (click)="toggleStatus(u)" [title]="u.enabled !== false ? 'Désactiver' : 'Activer'">
+                    <mat-icon>{{ u.enabled !== false ? 'person_off' : 'person' }}</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteUser(u)" title="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                } @else {
+                  <mat-icon style="font-size:16px;color:#7aada0;vertical-align:middle;margin:0 4px"
+                    title="Votre propre compte — désactivation et suppression non autorisées">
+                    lock
+                  </mat-icon>
+                }
               </td>
             </ng-container>
 
@@ -120,6 +131,7 @@ export class UsersComponent implements OnInit {
   private roleService = inject(RoleService);
   private snackBar    = inject(MatSnackBar);
   private dialog      = inject(MatDialog);
+  readonly authService = inject(AuthService);
 
   users               = signal<any[]>([]);
   filteredUsersSignal = signal<any[]>([]);
@@ -187,10 +199,14 @@ export class UsersComponent implements OnInit {
     this.currentPage = event.pageIndex;
   }
 
+  isSelf(user: any): boolean {
+    return user.username === this.authService.currentUser()?.username;
+  }
+
   openCreate() {
     const ref = this.dialog.open(UserFormDialogComponent, {
       width: '560px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { isEdit: false, availableRoles: this.availableRoles(), currentRoleIds: [] }
+      data: { isEdit: false, availableRoles: this.availableRoles(), currentRoleIds: [], isSelf: false }
     });
     ref.afterClosed().subscribe(form => { if (form) this.doCreate(form); });
   }
@@ -198,16 +214,30 @@ export class UsersComponent implements OnInit {
   openEdit(user: any) {
     const ref = this.dialog.open(UserFormDialogComponent, {
       width: '560px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { isEdit: true, user, availableRoles: this.availableRoles(), currentRoleIds: this.extractRoleIds(user) }
+      data: {
+        isEdit: true,
+        user,
+        availableRoles: this.availableRoles(),
+        currentRoleIds: this.extractRoleIds(user),
+        isSelf: this.isSelf(user)
+      }
     });
     ref.afterClosed().subscribe(form => { if (form) this.doUpdate(user.id, form); });
   }
 
   doCreate(f: any) {
     this.loading.set(true);
-    this.userService.createUser({ username: f.username, email: f.email, prenom: f.prenom, nom: f.nom, password: f.password, roleIds: f.roleIds || [] }).subscribe({
+    this.userService.createUser({
+      username: f.username, email: f.email, prenom: f.prenom,
+      nom: f.nom, password: f.password,
+      roleIds: f.roleId ? [f.roleId] : []
+    }).subscribe({
       next: () => { this.loading.set(false); this.loadUsers(); this.showNotification('Utilisateur créé', 'success'); },
-      error: () => { this.loading.set(false); this.showNotification('Erreur création', 'error'); }
+      error: (err: any) => {
+        this.loading.set(false);
+        const msg = err?.error?.message || 'Erreur création';
+        this.showNotification(msg, 'error');
+      }
     });
   }
 
@@ -215,9 +245,15 @@ export class UsersComponent implements OnInit {
     this.loading.set(true);
     this.userService.updateUser(id, { prenom: f.prenom, nom: f.nom, email: f.email }).subscribe({
       next: () => {
-        const ops = (f.roleIds || []).map((rid: number) => this.userService.assignRole(id, rid));
-        if (ops.length > 0) forkJoin(ops).subscribe({ error: () => this.showNotification('Erreur assignation rôles', 'error') });
-        this.loading.set(false); this.loadUsers(); this.showNotification('Utilisateur mis à jour', 'success');
+        // Only update role if not editing self and a role was selected
+        if (f.roleId && !f.isSelf) {
+          this.userService.assignRole(id, f.roleId).subscribe({
+            error: () => this.showNotification('Erreur assignation rôle', 'error')
+          });
+        }
+        this.loading.set(false);
+        this.loadUsers();
+        this.showNotification('Utilisateur mis à jour', 'success');
       },
       error: () => { this.loading.set(false); this.showNotification('Erreur mise à jour', 'error'); }
     });

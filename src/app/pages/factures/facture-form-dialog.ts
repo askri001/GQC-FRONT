@@ -20,16 +20,15 @@ import {
 
 import { MissionService } from '../../core/services/mission.service';
 import { AffaireService } from '../../core/services/affaire.service';
-import { Mission } from '../../core/models/mission.model';
+import { ApiService } from '../../core/services/api.service';
+import { Mission, TYPE_MISSION_LABELS } from '../../core/models/mission.model';
 import { Affaire } from '../../core/models/affaire.model';
+import { Dossier } from '../../core/models/dossier.model';
 
 export interface FactureFormDialogData {
   isEdit: boolean;
   facture?: Facture;
 }
-
-// UI-only concept: controls which linked-entity dropdown is shown
-type LienType = 'MISSION' | 'AFFAIRE';
 
 @Component({
   selector: 'app-facture-form-dialog',
@@ -57,76 +56,92 @@ export class FactureFormDialogComponent implements OnInit {
   snackBar  = inject(MatSnackBar);
   private missionService = inject(MissionService);
   private affaireService = inject(AffaireService);
+  private api            = inject(ApiService);
 
   // ── Lookup data ────────────────────────────────────────────────
   statuts: StatutFacture[] = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
   types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
+  missionTypeLabels        = TYPE_MISSION_LABELS;
 
   statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
   typeLabels   = TYPE_FACTURE_LABELS   as Record<TypeFacture, string>;
 
-  // ── Filtered lists (TERMINEE only) ────────────────────────────
-  termineesMissions: Mission[] = [];
-  termineesAffaires: Affaire[] = [];
+  // ── Guided selection state ─────────────────────────────────────
+  dossiers:  Dossier[]  = [];
+  allAffaires: Affaire[] = [];
+  allMissions: Mission[] = [];
 
-  // ── lienType: UI-only selector (MISSION / AFFAIRE) ────────────
-  lienType: LienType = this.data.facture?.missionId ? 'MISSION' : 'MISSION';
-  linkedMissionId: number | null = this.data.facture?.missionId ?? null;
-  linkedAffaireId: number | null = null;
+  selectedDossierId:  number | null = null;
+  selectedAffaireId:  number | null = null;
 
-  // ── Form model (dates removed) ─────────────────────────────────
+  // ── Form model ─────────────────────────────────────────────────
   form = {
-    numero:      this.data.facture?.numero      ?? '',
-    montant:     this.data.facture?.montant      ?? null as number | null,
-    typeFacture: this.data.facture?.typeFacture  ?? 'HONORAIRES' as TypeFacture,
-    // status: EN_ATTENTE on create, preserved on edit
-    statut:      this.data.facture?.statut       ?? 'EN_ATTENTE_VALIDATION' as StatutFacture,
+    numero:      this.data.facture?.numero     ?? '',
+    montant:     this.data.facture?.montant    ?? null as number | null,
+    typeFacture: this.data.facture?.typeFacture ?? 'HONORAIRES' as TypeFacture,
+    statut:      this.data.facture?.statut     ?? 'EN_ATTENTE_VALIDATION' as StatutFacture,
+    missionId:   this.data.facture?.missionId  ?? null as number | null,
   };
 
   isLoading = false;
-
   get isEdit(): boolean { return !!this.data.facture; }
+
+  // ── Filtered lists ─────────────────────────────────────────────
+  get filteredAffaires(): Affaire[] {
+    if (!this.selectedDossierId) return [];
+    return this.allAffaires.filter(a => a.dossierId === this.selectedDossierId);
+  }
+
+  get filteredMissions(): Mission[] {
+    if (!this.selectedAffaireId) return [];
+    return this.allMissions.filter(m => m.affaireId === this.selectedAffaireId);
+  }
 
   // ── Init ───────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.loadTermineesMissions();
-    this.loadTermineesAffaires();
-  }
-
-  // ── Load TERMINEE missions ─────────────────────────────────────
-  loadTermineesMissions(): void {
+    this.api.get<Dossier[]>('/dossiers').subscribe({
+      next: (data) => this.dossiers = data ?? [],
+      error: () => {}
+    });
+    this.affaireService.getAll().subscribe({
+      next: (data) => {
+        this.allAffaires = data ?? [];
+        // Pre-fill when editing
+        if (this.form.missionId) this.prefillFromMission();
+      },
+      error: () => {}
+    });
     this.missionService.getAll().subscribe({
       next: (data) => {
-        this.termineesMissions = (data ?? []).filter(m => m.statut === 'TERMINEE');
+        this.allMissions = data ?? [];
+        if (this.form.missionId) this.prefillFromMission();
       },
-      error: () => this.termineesMissions = [],
+      error: () => {}
     });
+  }
+
+  /** When editing, pre-fill dossier and affaire selects from the existing missionId */
+  private prefillFromMission(): void {
+    if (!this.form.missionId || !this.allMissions.length || !this.allAffaires.length) return;
+    const mission = this.allMissions.find(m => m.id === this.form.missionId);
+    if (!mission?.affaireId) return;
+    const affaire = this.allAffaires.find(a => (a.idAffaire ?? a.id) === mission.affaireId);
+    if (!affaire) return;
+    this.selectedAffaireId = mission.affaireId;
+    this.selectedDossierId = affaire.dossierId;
+  }
+
+  onDossierChange(): void {
+    this.selectedAffaireId = null;
+    this.form.missionId    = null;
+  }
+
+  onAffaireChange(): void {
+    this.form.missionId = null;
   }
 
   getMissionLabel(m: Mission): string {
-    return `Mission #${m.id} — ${m.typeMission}${m.dossierId ? ' (Dossier ' + m.dossierId + ')' : ''}`;
-  }
-
-  // ── Load TERMINEE affaires ─────────────────────────────────────
-  loadTermineesAffaires(): void {
-    this.affaireService.getAll().subscribe({
-      next: (data) => {
-        this.termineesAffaires = (data ?? []).filter(a => a.statut === 'TERMINEE');
-      },
-      error: () => this.termineesAffaires = [],
-    });
-  }
-
-  getAffaireLabel(a: Affaire): string {
-    return a.numeroProcedure
-      ? `${a.numeroProcedure} — ${a.tribunal ?? ''}`
-      : `Affaire #${a.idAffaire ?? a.id}`;
-  }
-
-  // ── On lienType change → reset linked selection ────────────────
-  onLienTypeChange(): void {
-    this.linkedMissionId = null;
-    this.linkedAffaireId = null;
+    return `${this.missionTypeLabels[m.typeMission] ?? m.typeMission}`;
   }
 
   // ── Submit ─────────────────────────────────────────────────────
@@ -143,24 +158,23 @@ export class FactureFormDialogComponent implements OnInit {
       this.snackBar.open('Le montant est requis.', 'OK', { duration: 3000 });
       return;
     }
-    if (Number(f.montant) < 0) {
-      this.snackBar.open('Le montant ne peut pas être négatif.', 'OK', { duration: 3000 });
+    if (Number(f.montant) <= 0) {
+      this.snackBar.open('Le montant doit être supérieur à 0.', 'OK', { duration: 3000 });
+      return;
+    }
+    if (!f.missionId) {
+      this.snackBar.open('Veuillez sélectionner une mission.', 'OK', { duration: 3000 });
       return;
     }
 
     this.isLoading = true;
 
-    // Backend FactureDTO only has missionId — affaireId has no backend field
-    // When lienType = AFFAIRE, dossierId is used as the closest available field
     const result: Partial<Facture> = {
       numero:      f.numero.trim(),
       montant:     Number(f.montant),
       typeFacture: f.typeFacture,
       statut:      this.isEdit ? f.statut : 'EN_ATTENTE_VALIDATION',
-      missionId:   this.lienType === 'MISSION' && this.linkedMissionId
-                     ? Number(this.linkedMissionId) : undefined,
-      dossierId:   this.lienType === 'AFFAIRE' && this.linkedAffaireId
-                     ? Number(this.linkedAffaireId) : undefined,
+      missionId:   Number(f.missionId),
     };
 
     this.dialogRef.close(result);

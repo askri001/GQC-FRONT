@@ -22,6 +22,9 @@ import { FactureService } from '../../core/services/facture.service';
 import { FactureFormDialogComponent } from './facture-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { ApiService } from '../../core/services/api.service';
+import { Mission, TYPE_MISSION_LABELS } from '../../core/models/mission.model';
+import { Affaire } from '../../core/models/affaire.model';
 
 @Component({
   selector: 'app-factures',
@@ -45,9 +48,14 @@ export class FacturesComponent implements OnInit {
   private factureService = inject(FactureService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
-  readonly authService   = inject(AuthService);  // ── State ──────────────────────────────────────────────────────
+  private api            = inject(ApiService);
+  readonly authService   = inject(AuthService);
+
+  // ── State ──────────────────────────────────────────────────────
   factures         = signal<Facture[]>([]);
   filteredFactures = signal<Facture[]>([]);
+  missions         = signal<Mission[]>([]);
+  affaires         = signal<Affaire[]>([]);
   isLoading        = signal(false);
   error            = signal<string | null>(null);
 
@@ -69,7 +77,17 @@ export class FacturesComponent implements OnInit {
   typeLabels   = TYPE_FACTURE_LABELS   as Record<TypeFacture, string>;
 
   // ── Lifecycle ──────────────────────────────────────────────────
-  ngOnInit(): void { this.loadFactures(); }
+  ngOnInit(): void {
+    this.loadFactures();
+    this.api.get<Mission[]>('/missions').subscribe({
+      next: (data) => this.missions.set(data ?? []),
+      error: () => {}
+    });
+    this.api.get<Affaire[]>('/affaires').subscribe({
+      next: (data) => this.affaires.set(data ?? []),
+      error: () => {}
+    });
+  }
 
   // ── Load ───────────────────────────────────────────────────────
   loadFactures(): void {
@@ -244,6 +262,16 @@ export class FacturesComponent implements OnInit {
         error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
       });
     });
+  }
+
+  // ── Mission label ──────────────────────────────────────────────
+  getMissionLabel(missionId: number | undefined): string {
+    if (!missionId) return '—';
+    const m = this.missions().find(m => m.id === missionId);
+    if (!m) return `#${missionId}`;
+    const typeLabel = TYPE_MISSION_LABELS[m.typeMission] ?? m.typeMission;
+    const affaire = this.affaires().find(a => (a.idAffaire ?? a.id) === m.affaireId);
+    return affaire ? `${typeLabel} — ${affaire.numeroProcedure}` : typeLabel;
   }
 
   // ── Delete ─────────────────────────────────────────────────────

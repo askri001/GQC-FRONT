@@ -68,6 +68,15 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Risque</mat-label>
+            <mat-select [(ngModel)]="risqueFilter" (selectionChange)="applyFilter()">
+              <mat-option [value]="0">Tous les risques</mat-option>
+              @for (r of risques(); track r.id) {
+                <mat-option [value]="r.id">{{ r.reference || ('RSQ-#' + r.id) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Statut</mat-label>
             <mat-select [(ngModel)]="statutFilter" (selectionChange)="applyFilter()">
               <mat-option value="">Tous</mat-option>
@@ -105,8 +114,8 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
                 </td>
               </ng-container>
               <ng-container matColumnDef="risque">
-                <th mat-header-cell *matHeaderCellDef>Risque ID</th>
-                <td mat-cell *matCellDef="let g">{{ g.risqueId }}</td>
+                <th mat-header-cell *matHeaderCellDef>Risque</th>
+                <td mat-cell *matCellDef="let g">{{ getRisqueRef(g.risqueId) }}</td>
               </ng-container>
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
@@ -137,13 +146,28 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
       (saved)="saveGarantie()">
 
       <mat-form-field appearance="outline">
-        <mat-label>Risque *</mat-label>
-        <mat-select [(ngModel)]="tempGarantie().risqueId">
-          <mat-option [value]="0" disabled>Sélectionner un risque</mat-option>
-          @for (r of risques(); track r.id) {
-            <mat-option [value]="r.id">Risque #{{ r.id }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
+        <mat-label>Dossier *</mat-label>
+        <mat-select [(ngModel)]="drawerDossierId" (ngModelChange)="onDrawerDossierChange()">
+          <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
+          @for (d of dossiers(); track d.idDossier) {
+            <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
           }
         </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Risque *</mat-label>
+        <mat-select [(ngModel)]="tempGarantie().risqueId" [disabled]="!drawerDossierId">
+          <mat-option [value]="0" disabled>
+            {{ drawerDossierId ? 'Sélectionner un risque' : 'Sélectionnez d\'abord un dossier' }}
+          </mat-option>
+          @for (r of drawerRisques(); track r.id) {
+            <mat-option [value]="r.id">{{ r.reference || ('RSQ-#' + r.id) }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
+          }
+        </mat-select>
+        @if (drawerDossierId && drawerRisques().length === 0) {
+          <mat-hint style="color:#e65100">Aucun risque pour ce dossier</mat-hint>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -194,6 +218,8 @@ export class GarantiesComponent implements OnInit {
   searchTerm = '';
   statutFilter = '';
   dossierFilter = 0;
+  risqueFilter = 0;
+  drawerDossierId = 0;  // dossier selected inside the drawer form
   pageSize = 10;
   currentPage = 0;
 
@@ -260,6 +286,9 @@ export class GarantiesComponent implements OnInit {
         .map(r => r.id);
       result = result.filter(g => risqueIds.includes(g.risqueId));
     }
+    if (this.risqueFilter) {
+      result = result.filter(g => g.risqueId === this.risqueFilter);
+    }
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(g =>
@@ -279,8 +308,20 @@ export class GarantiesComponent implements OnInit {
     this.currentPage = event.pageIndex;
   }
 
+  /** Risques filtered by the dossier selected in the drawer */
+  drawerRisques(): Risque[] {
+    if (!this.drawerDossierId) return this.risques();
+    return this.risques().filter(r => r.dossierId === this.drawerDossierId);
+  }
+
+  /** When dossier changes in drawer, reset the risque selection */
+  onDrawerDossierChange(): void {
+    this.tempGarantie.set({ ...this.tempGarantie(), risqueId: 0 });
+  }
+
   createGarantie() {
     this.editId.set(0);
+    this.drawerDossierId = 0;
     this.tempGarantie.set({
       typeGarantie: undefined,
       description: '',
@@ -294,6 +335,9 @@ export class GarantiesComponent implements OnInit {
   editGarantie(garantie: Garantie) {
     this.editId.set(garantie.idGarantie!);
     this.tempGarantie.set({ ...garantie });
+    // Pre-fill dossier from the linked risque
+    const r = this.risques().find(r => r.id === garantie.risqueId);
+    this.drawerDossierId = r?.dossierId ?? 0;
     this.editMode.set(true);
   }
 
@@ -342,6 +386,7 @@ export class GarantiesComponent implements OnInit {
   cancelEdit() {
     this.editId.set(null);
     this.tempGarantie.set({});
+    this.drawerDossierId = 0;
     this.editMode.set(false);
   }
 
@@ -351,6 +396,11 @@ export class GarantiesComponent implements OnInit {
 
   getStatutLabel(statut: string): string {
     return STATUT_GARANTIE_LABELS[statut as StatutGarantie] || statut;
+  }
+
+  getRisqueRef(risqueId: number): string {
+    const r = this.risques().find(r => r.id === risqueId);
+    return r ? (r.reference || `RSQ-#${risqueId}`) : `#${risqueId}`;
   }
 
   showNotification(msg: string, type: 'success' | 'error' = 'success') {

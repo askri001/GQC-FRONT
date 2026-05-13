@@ -94,7 +94,7 @@
             <thead>
               <tr>
                 <th>TYPE</th>
-                <th>DOSSIER</th>
+                <th>AFFAIRE</th>
                 <th>PRESTATAIRE</th>
                 <th>DATE DÉBUT</th>
                 <th>DATE FIN</th>
@@ -110,11 +110,11 @@
                   <!-- TYPE -->
                   <td class="td-type">{{ typeLabels[m.typeMission] }}</td>
 
-                  <!-- DOSSIER -->
-                  <td class="td-dossier">{{ m.dossierId ? m.dossierId : '—' }}</td>
+                  <!-- AFFAIRE -->
+                  <td class="td-dossier">{{ getAffaireRef(m.affaireId) }}</td>
 
                   <!-- PRESTATAIRE -->
-                  <td class="td-prestataire">{{ m.prestataireId ? 'P-' + m.prestataireId : '—' }}</td>
+                  <td class="td-prestataire">{{ getPrestataireNom(m.prestataireId) }}</td>
 
                   <!-- DATE DÉBUT -->
                   <td class="td-date">{{ m.dateDebut | date:'dd/MM/yyyy' }}</td>

@@ -24,6 +24,15 @@
           <mat-option value="TRANSFERE">Transféré</mat-option>
         </mat-select>
       </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Client</mat-label>
+        <mat-select [(ngModel)]="clientFilter" (selectionChange)="applyFilters()">
+          <mat-option [value]="0">Tous les clients</mat-option>
+          @for (c of clients(); track c.id) {
+            <mat-option [value]="c.id">{{ getClientLabel(c) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
       <button mat-raised-button color="primary" (click)="createDossier()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
         <mat-icon>add</mat-icon> Nouveau Dossier
       </button>
@@ -170,16 +179,6 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Chargé de Dossier</mat-label>
-    <mat-select name="chargeDossierId" [(ngModel)]="selectedChargeDossierId" (ngModelChange)="selectedChargeDossierId = $event">
-      <mat-option [value]="0">Aucun</mat-option>
-      @for (cd of chargeDossiers(); track cd.id) {
-        <mat-option [value]="cd.id">{{ cd.prenom || '' }} {{ cd.nom || '' }} ({{ cd.username }})</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
     <mat-label>Référence *</mat-label>
     <input matInput name="reference" [(ngModel)]="tempDossier.reference" placeholder="Ex: DOS-2024-001">
   </mat-form-field>
@@ -212,20 +211,8 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Montant Initial *</mat-label>
-    <input matInput type="number" name="montantInitial" [(ngModel)]="tempDossier.montantInitial">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
     <mat-label>Montant Récupéré</mat-label>
     <input matInput type="number" name="montantRecupere" [(ngModel)]="tempDossier.montantRecupere">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Date Clôture</mat-label>
-    <input matInput name="dateCloture" [matDatepicker]="dateCloturePicker" [(ngModel)]="tempDossier.dateCloture">
-    <mat-datepicker-toggle matSuffix [for]="dateCloturePicker"></mat-datepicker-toggle>
-    <mat-datepicker #dateCloturePicker></mat-datepicker>
   </mat-form-field>
   </form>
 

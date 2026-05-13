@@ -1,5 +1,5 @@
 /* ================================================================
-   USERS — matches Client/Prestataire design
+   AUDIENCES — matches Client/Prestataire design
    ================================================================ */
 
 .page-container {
@@ -89,16 +89,17 @@
 .no-data mat-icon { font-size: 52px !important; height: 52px !important; width: 52px !important; opacity: .4; color: #4DBFA3; }
 
 /* ── Table ── */
-.full-width { width: 100%; }
-
-table.mat-mdc-table {
-  background: #fff !important;
-  font-size: 14px !important;
+.table-container {
   border-radius: 10px;
   border: 1px solid #d4e8e0;
   overflow: hidden;
   box-shadow: 0 1px 8px rgba(0,100,70,.06);
+  overflow-x: auto;
 }
+
+.full-width { width: 100%; }
+
+table.mat-mdc-table { background: #fff !important; font-size: 14px !important; }
 
 tr.mat-mdc-header-row { background: #00966E !important; height: auto !important; }
 
@@ -129,27 +130,6 @@ td.mat-mdc-cell {
   vertical-align: middle !important;
   border: none !important;
   font-size: 14px !important;
-}
-
-/* ── Role chips ── */
-mat-chip {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  height: 26px !important;
-  padding: 0 12px !important;
-  border-radius: 20px !important;
-  margin: 2px !important;
-}
-
-/* ── Status chips ── */
-.active-chip {
-  background: rgba(0,150,110,.12) !important;
-  color: #007A58 !important;
-}
-
-.inactive-chip {
-  background: rgba(198,40,40,.09) !important;
-  color: #c62828 !important;
 }
 
 /* ── Paginator ── */

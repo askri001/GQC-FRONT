@@ -60,7 +60,7 @@ export interface RoleFormDialogData {
 
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.name?.trim()">
+      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.name.trim()">
         {{ data.isEdit ? 'Modifier' : 'Créer' }}
       </button>
     </mat-dialog-actions>
@@ -78,7 +78,7 @@ export class RoleFormDialogComponent {
   };
 
   onSubmit(): void {
-    if (!this.form.name?.trim()) {
+    if (!this.form.name.trim()) {
       this.snackBar.open('Le nom du rôle est requis', 'OK', { duration: 3000 });
       return;
     }

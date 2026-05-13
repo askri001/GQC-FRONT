@@ -59,6 +59,15 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
             <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()"
               placeholder="Rechercher par type ou décision...">
           </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Affaire</mat-label>
+            <mat-select [(ngModel)]="affaireFilter" (selectionChange)="applyFilter()">
+              <mat-option [value]="0">Toutes les affaires</mat-option>
+              @for (af of affaires(); track af.idAffaire) {
+                <mat-option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
 
         @if (loading()) {
@@ -164,18 +173,7 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
       </mat-form-field>
     </app-drawer-panel>
   `,
-  styles: [`
-    .page-container { padding: 24px; }
-    .page-card { padding: 24px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .header-title { display: flex; align-items: center; gap: 8px; }
-    .header-title h2 { margin: 0; }
-    .filters { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-    .search-field { flex: 1; min-width: 200px; }
-    .loading, .no-data { display: flex; flex-direction: column; align-items: center; padding: 40px; color: #666; }
-    .table-container { overflow-x: auto; }
-    .full-width { width: 100%; }
-  `]
+  styleUrls: ['./audiences.css']
 })
 export class AudiencesComponent implements OnInit {
   private audienceService = inject(AudienceService);
@@ -188,6 +186,7 @@ export class AudiencesComponent implements OnInit {
   loading = signal(false);
 
   searchTerm = '';
+  affaireFilter = 0;
   pageSize = 10;
   currentPage = 0;
 
@@ -240,6 +239,9 @@ export class AudiencesComponent implements OnInit {
 
   applyFilter() {
     let result = this.audiences();
+    if (this.affaireFilter) {
+      result = result.filter(a => a.affaireId === this.affaireFilter);
+    }
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(a =>

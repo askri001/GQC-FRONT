@@ -94,6 +94,7 @@
             <thead>
               <tr>
                 <th>N° FACTURE</th>
+                <th>MISSION</th>
                 <th>DATE</th>
                 <th>MONTANT</th>
                 <th>TYPE</th>
@@ -107,6 +108,9 @@
 
                   <!-- N° FACTURE -->
                   <td class="td-numero">{{ f.numero }}</td>
+
+                  <!-- MISSION -->
+                  <td class="td-mission">{{ getMissionLabel(f.missionId) }}</td>
 
                   <!-- DATE -->
                   <td class="td-date">{{ f.dateEmission | date:'dd/MM/yyyy' }}</td>

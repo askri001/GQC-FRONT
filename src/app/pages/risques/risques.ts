@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -36,6 +37,7 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
@@ -112,6 +114,10 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
                 <th mat-header-cell *matHeaderCellDef>Dossier</th>
                 <td mat-cell *matCellDef="let r">{{ getDossierRef(r.dossierId) }}</td>
               </ng-container>
+              <ng-container matColumnDef="reference">
+                <th mat-header-cell *matHeaderCellDef>Référence</th>
+                <td mat-cell *matCellDef="let r"><strong>{{ r.reference || '—' }}</strong></td>
+              </ng-container>
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let r">
@@ -146,27 +152,38 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
 
       <mat-form-field appearance="outline">
         <mat-label>Dossier *</mat-label>
-        <mat-select [(ngModel)]="tempRisque().dossierId">
-          <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
-          @for (d of dossiers(); track d.idDossier) {
-            <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+        <mat-icon matPrefix>folder</mat-icon>
+        <input matInput
+          [matAutocomplete]="dossierAuto"
+          [(ngModel)]="dossierSearchText"
+          (ngModelChange)="onDossierSearch($event)"
+          placeholder="Tapez la référence du dossier...">
+        <mat-autocomplete #dossierAuto="matAutocomplete"
+          [displayWith]="displayDossier.bind(this)"
+          (optionSelected)="onDossierSelected($event)">
+          @for (d of filteredDossierOptions(); track d.idDossier) {
+            <mat-option [value]="d">{{ d.reference }}</mat-option>
           }
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Montant Principal *</mat-label>
-        <input matInput type="number" [(ngModel)]="tempRisque().montantPrincipal">
+        <input matInput type="number" [(ngModel)]="tempRisque().montantPrincipal"
+          (ngModelChange)="updateTotal()">
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Intérêts</mat-label>
-        <input matInput type="number" [(ngModel)]="tempRisque().montantInteret">
+        <input matInput type="number" [(ngModel)]="tempRisque().montantInteret"
+          (ngModelChange)="updateTotal()">
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Montant Total</mat-label>
-        <input matInput type="number" [(ngModel)]="tempRisque().montantTotal">
+        <mat-label>Montant Total (calculé automatiquement)</mat-label>
+        <input matInput type="number" [value]="calculatedTotal()" readonly
+          style="color:#00966E;font-weight:600;cursor:default">
+        <mat-icon matSuffix style="color:#00966E">calculate</mat-icon>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -196,7 +213,7 @@ export class RisquesComponent implements OnInit {
   dossierFilter = 0;
 
   displayedColumns: string[] = [
-    'montantPrincipal', 'montantInteret', 'montantTotal',
+    'reference', 'montantPrincipal', 'montantInteret', 'montantTotal',
     'dateContrat', 'dateEcheance', 'tauxInteret', 'dossierId', 'actions'
   ];
 
@@ -213,6 +230,10 @@ export class RisquesComponent implements OnInit {
   tempRisque = signal<RisqueDraft>({} as RisqueDraft);
   dossiers = signal<Dossier[]>([]);
 
+  // ── Autocomplete state for dossier picker ──────────────────────
+  dossierSearchText = '';
+  filteredDossierOptions = signal<Dossier[]>([]);
+
   constructor(public risqueService: RisqueService, private snackBar: MatSnackBar, private api: ApiService, public authService: AuthService) {
     effect(() => {
       if (!this.risqueService.loading() && this.risqueService.risques().length === 0) {
@@ -227,7 +248,10 @@ export class RisquesComponent implements OnInit {
 
   loadDossiers() {
     this.api.get<Dossier[]>('/dossiers').subscribe({
-      next: (data) => this.dossiers.set(data ?? []),
+      next: (data) => {
+        this.dossiers.set(data ?? []);
+        this.filteredDossierOptions.set(data ?? []);
+      },
       error: () => this.dossiers.set([])
     });
   }
@@ -265,8 +289,16 @@ export class RisquesComponent implements OnInit {
     this.tempRisque.set(
       risque
         ? ({ ...risque, dossierId: risque.dossierId ?? 0 } as RisqueDraft)
-        : { montantPrincipal: 0, montantInteret: 0, montantTotal: 0, tauxInteret: 0, dossierId: 0 }
+        : { montantPrincipal: 0, montantInteret: 0, tauxInteret: 0, dossierId: 0 }
     );
+    // Pre-fill autocomplete text if editing
+    if (risque?.dossierId) {
+      const d = this.dossiers().find(d => d.idDossier === risque.dossierId);
+      this.dossierSearchText = d ? d.reference : '';
+    } else {
+      this.dossierSearchText = '';
+    }
+    this.filteredDossierOptions.set(this.dossiers());
     this.drawerOpen.set(true);
   }
 
@@ -274,6 +306,41 @@ export class RisquesComponent implements OnInit {
     this.drawerOpen.set(false);
     this.editingRisque.set(null);
     this.tempRisque.set({} as RisqueDraft);
+    this.dossierSearchText = '';
+    this.filteredDossierOptions.set([]);
+  }
+
+  onDossierSearch(text: string): void {
+    const term = (text || '').toLowerCase();
+    this.filteredDossierOptions.set(
+      this.dossiers().filter(d => d.reference.toLowerCase().includes(term))
+    );
+    // If text was cleared, reset dossierId
+    if (!text) {
+      this.tempRisque.set({ ...this.tempRisque(), dossierId: 0 });
+    }
+  }
+
+  onDossierSelected(event: any): void {
+    const dossier: Dossier = event.option.value;
+    this.tempRisque.set({ ...this.tempRisque(), dossierId: dossier.idDossier! });
+    this.dossierSearchText = dossier.reference;
+  }
+
+  displayDossier(dossier: Dossier | string): string {
+    if (!dossier) return '';
+    if (typeof dossier === 'string') return dossier;
+    return dossier.reference || '';
+  }
+
+  calculatedTotal(): number {
+    const p = this.tempRisque().montantPrincipal ?? 0;
+    const i = this.tempRisque().montantInteret   ?? 0;
+    return p + i;
+  }
+
+  updateTotal(): void {
+    // Triggers re-evaluation of calculatedTotal — no state needed, computed from tempRisque
   }
 
   editRisque(risque: Risque) {

@@ -24,10 +24,10 @@
           </div>
           <div class="header-badges">
             <mat-chip [class]="getStatutClass(dossier()!.statut)">
-              {{ statutLabels[dossier()!.statut] ?? dossier()!.statut }}
+              {{ statutLabels[dossier()!.statut] || dossier()!.statut }}
             </mat-chip>
             <mat-chip [class]="getRisqueClass(dossier()!.niveauRisque)">
-              {{ risqueLabels[dossier()!.niveauRisque] ?? dossier()!.niveauRisque }}
+              {{ risqueLabels[dossier()!.niveauRisque] || dossier()!.niveauRisque }}
             </mat-chip>
           </div>
         </div>
@@ -118,7 +118,7 @@
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let a">
-                    <mat-chip class="chip-sm">{{ affaireLabels[a.statut] ?? a.statut }}</mat-chip>
+                    <mat-chip class="chip-sm">{{ affaireLabels[a.statut] || a.statut }}</mat-chip>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="jugement">
@@ -183,7 +183,7 @@
               <table mat-table [dataSource]="garanties()" class="detail-table">
                 <ng-container matColumnDef="typeGarantie">
                   <th mat-header-cell *matHeaderCellDef>Type</th>
-                  <td mat-cell *matCellDef="let g">{{ garantieTypeLabels[g.typeGarantie] ?? g.typeGarantie }}</td>
+                  <td mat-cell *matCellDef="let g">{{ garantieTypeLabels[g.typeGarantie] || g.typeGarantie }}</td>
                 </ng-container>
                 <ng-container matColumnDef="description">
                   <th mat-header-cell *matHeaderCellDef>Description</th>
@@ -196,7 +196,7 @@
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let g">
-                    <mat-chip class="chip-sm">{{ garantieStatutLabels[g.statut] ?? g.statut }}</mat-chip>
+                    <mat-chip class="chip-sm">{{ garantieStatutLabels[g.statut] || g.statut }}</mat-chip>
                   </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="garantieCols"></tr>
@@ -253,7 +253,7 @@
               <table mat-table [dataSource]="missions()" class="detail-table">
                 <ng-container matColumnDef="typeMission">
                   <th mat-header-cell *matHeaderCellDef>Type</th>
-                  <td mat-cell *matCellDef="let m">{{ missionTypeLabels[m.typeMission] ?? m.typeMission }}</td>
+                  <td mat-cell *matCellDef="let m">{{ missionTypeLabels[m.typeMission] || m.typeMission }}</td>
                 </ng-container>
                 <ng-container matColumnDef="dateDebut">
                   <th mat-header-cell *matHeaderCellDef>Début</th>
@@ -266,7 +266,7 @@
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let m">
-                    <mat-chip class="chip-sm">{{ missionStatutLabels[m.statut] ?? m.statut }}</mat-chip>
+                    <mat-chip class="chip-sm">{{ missionStatutLabels[m.statut] || m.statut }}</mat-chip>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="resultat">
@@ -305,12 +305,12 @@
                 </ng-container>
                 <ng-container matColumnDef="typeFacture">
                   <th mat-header-cell *matHeaderCellDef>Type</th>
-                  <td mat-cell *matCellDef="let f">{{ factureTypeLabels[f.typeFacture] ?? f.typeFacture }}</td>
+                  <td mat-cell *matCellDef="let f">{{ factureTypeLabels[f.typeFacture] || f.typeFacture }}</td>
                 </ng-container>
                 <ng-container matColumnDef="statut">
                   <th mat-header-cell *matHeaderCellDef>Statut</th>
                   <td mat-cell *matCellDef="let f">
-                    <mat-chip class="chip-sm">{{ factureStatutLabels[f.statut] ?? f.statut }}</mat-chip>
+                    <mat-chip class="chip-sm">{{ factureStatutLabels[f.statut] || f.statut }}</mat-chip>
                   </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="factureCols"></tr>

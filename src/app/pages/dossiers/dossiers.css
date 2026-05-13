@@ -1,140 +1,248 @@
-/****************************************************
- * Dossiers — BNA Green Theme
- ****************************************************/
+/* ================================================================
+   DOSSIERS — matches Client/Prestataire design exactly
+   ================================================================ */
 
-.dossiers-container {
-  padding: 24px;
+.page-container {
+  min-height: 100vh;
+  padding: 32px 28px;
+  background: #eef4f1;
+}
+
+.dossiers-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 20px rgba(0, 100, 70, 0.09);
+  padding: 36px 40px 32px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.dossiers-card {
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 150, 110, 0.1);
-}
-
-.header {
+/* ── Header ── */
+.card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--bna-lighter);
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--bna-navy);
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.search-field {
-  width: 300px;
-}
-
-.add-button {
-  width: 56px;
-  height: 56px;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px;
+  margin-bottom: 36px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-icon {
+  font-size: 28px !important;
+  height: 28px !important;
+  width: 28px !important;
+  color: #00966E !important;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a2e28;
+  letter-spacing: -0.3px;
+}
+
+/* ── Filters toolbar ── */
+.filters {
+  display: flex;
+  align-items: center;
   gap: 16px;
-  color: var(--bna-text-muted);
+  flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
-.table-container {
-  position: relative;
+/* Override mat-form-field to look like native inputs */
+.filters mat-form-field {
+  height: 48px;
 }
 
+.filters .search-field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filters .filter-field {
+  min-width: 200px;
+}
+
+/* New dossier button */
+.filters button[mat-raised-button] {
+  height: 48px !important;
+  background: #00966E !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 10px rgba(0,150,110,.28) !important;
+  white-space: nowrap;
+}
+
+.filters button[mat-raised-button]:hover {
+  background: #007A58 !important;
+}
+
+/* ── Loading / empty ── */
+.loading,
 .no-data {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px;
-  color: var(--bna-text-muted);
+  gap: 14px;
+  padding: 72px 24px;
+  border-radius: 10px;
   text-align: center;
+  background: #f7fdfb;
+  border: 2px dashed #c8e0d8;
+  color: #2d4a42;
+}
+
+.loading p,
+.no-data p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .no-data mat-icon {
-  font-size: 64px;
-  width: 64px;
-  height: 64px;
-  opacity: 0.5;
-  margin-bottom: 16px;
+  font-size: 52px !important;
+  height: 52px !important;
+  width: 52px !important;
+  opacity: .4;
+  color: #4DBFA3;
 }
 
+/* ── Table container ── */
+.table-container {
+  border-radius: 10px;
+  border: 1px solid #d4e8e0;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,100,70,.06);
+}
 
-table {
+/* Angular Material table overrides */
+table.mat-mdc-table,
+table[mat-table] {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse !important;
+  font-size: 14px !important;
+  background: #fff !important;
 }
 
-.mat-mdc-row, .mat-mdc-header-row {
-  height: 56px;
+/* Header row */
+tr.mat-mdc-header-row,
+tr[mat-header-row] {
+  background: #00966E !important;
+  height: auto !important;
 }
 
-.mat-chip-set {
-  margin: 0;
+th.mat-mdc-header-cell,
+th[mat-header-cell] {
+  padding: 13px 18px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  letter-spacing: .7px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  border: none !important;
+  background: #00966E !important;
 }
 
-.status-chip, .risk-chip {
-  height: 32px;
-  font-size: 12px;
-  font-weight: 500;
+/* Data rows */
+tr.mat-mdc-row,
+tr[mat-row] {
+  border-bottom: 1px solid #e8f3ee !important;
+  transition: background .12s !important;
+  height: auto !important;
 }
 
-.status-en_cours { background-color: var(--bna-bg); color: var(--bna-primary); }
-.status-cloture { background-color: var(--bna-success-bg); color: var(--bna-success); }
-.status-suspendu { background-color: var(--bna-warning-bg); color: var(--bna-warning); }
-.status-transfere { background-color: #f3e5f5; color: #7b1fa2; }
-.status-en_attente { background-color: #f5f5f5; color: #616161; }
-
-.risk-faible { background-color: var(--bna-success-bg); color: var(--bna-success); }
-.risk-moyen { background-color: var(--bna-warning-bg); color: var(--bna-warning); }
-.risk-eleve { background-color: var(--bna-error-bg); color: var(--bna-error); }
-.risk-critique { background-color: var(--bna-error-bg); color: var(--bna-error); font-weight: 600; }
-
-.mat-mdc-icon-button {
-  margin: 0 4px;
+tr.mat-mdc-row:last-child,
+tr[mat-row]:last-child {
+  border-bottom: none !important;
 }
 
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .search-field {
-    width: 100%;
-  }
+tr.mat-mdc-row:hover,
+tr[mat-row]:hover {
+  background: #f0faf6 !important;
 }
 
+td.mat-mdc-cell,
+td[mat-cell] {
+  padding: 13px 18px !important;
+  color: #2d4a42 !important;
+  vertical-align: middle !important;
+  border: none !important;
+  font-size: 14px !important;
+}
 
-/* ── Clickable reference link ────────────────────────────── */
+/* ── Reference link ── */
 .ref-link {
-  color: var(--bna-primary);
+  color: #00966E;
   font-weight: 600;
   text-decoration: none;
-  cursor: pointer;
-  transition: color 0.15s;
+  transition: color .15s;
 }
 
 .ref-link:hover {
-  color: var(--bna-dark);
+  color: #007A58;
   text-decoration: underline;
+}
+
+/* ── Status / risk chips ── */
+mat-chip.status-chip,
+mat-chip[class*="status-"],
+mat-chip[class*="risk-"] {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  height: 26px !important;
+  padding: 0 12px !important;
+  border-radius: 20px !important;
+}
+
+.status-chip.status-en_cours,   mat-chip.status-en_cours   { background: rgba(0,150,110,.12) !important; color: #007A58 !important; }
+.status-chip.status-cloture,    mat-chip.status-cloture    { background: #e8f5e9 !important; color: #2e7d32 !important; }
+.status-chip.status-suspendu,   mat-chip.status-suspendu   { background: #fff3e0 !important; color: #e65100 !important; }
+.status-chip.status-transfere,  mat-chip.status-transfere  { background: #f3e5f5 !important; color: #7b1fa2 !important; }
+.status-chip.status-en-attente, mat-chip.status-en-attente { background: #f5f5f5 !important; color: #616161 !important; }
+.status-chip.status-valide,     mat-chip.status-valide     { background: #e0f2f1 !important; color: #00695c !important; }
+
+.risk-chip.risk-faible,   mat-chip.risk-faible   { background: #e8f5e9 !important; color: #2e7d32 !important; }
+.risk-chip.risk-moyen,    mat-chip.risk-moyen    { background: #fff3e0 !important; color: #e65100 !important; }
+.risk-chip.risk-eleve,    mat-chip.risk-eleve    { background: #fce4ec !important; color: #c62828 !important; }
+.risk-chip.risk-critique, mat-chip.risk-critique { background: #ffebee !important; color: #b71c1c !important; font-weight: 700 !important; }
+
+/* ── Action buttons ── */
+button[mat-icon-button] {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  transition: background .14s !important;
+}
+
+/* ── Paginator ── */
+mat-paginator {
+  background: #f7fdfb !important;
+  border-top: 1px solid #d4e8e0 !important;
+  font-size: 13px !important;
+  color: #7aada0 !important;
+}
+
+/* ── Snackbars ── */
+.success-snackbar { background: #00966E !important; color: #fff !important; }
+.error-snackbar   { background: #c62828 !important; color: #fff !important; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .page-container { padding: 20px 14px; }
+  .dossiers-card  { padding: 24px 18px; }
+}
+
+@media (max-width: 768px) {
+  .filters { flex-direction: column; align-items: stretch; }
+  .header-title h2 { font-size: 20px; }
 }
