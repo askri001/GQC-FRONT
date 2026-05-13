@@ -5,32 +5,33 @@
 <mat-dialog-content>
   <div class="form-grid">
 
-    <!-- NUMÉRO -->
+    <!-- ── NUMÉRO ──────────────────────────────────────────────── -->
     <mat-form-field appearance="outline" class="bna-field">
       <mat-label>Numéro *</mat-label>
       <mat-icon matPrefix>confirmation_number</mat-icon>
       <input matInput [(ngModel)]="form.numero">
     </mat-form-field>
 
-    <!-- MONTANT -->
+    <!-- ── MONTANT ─────────────────────────────────────────────── -->
     <mat-form-field appearance="outline" class="bna-field">
       <mat-label>Montant (DT) *</mat-label>
       <mat-icon matPrefix>attach_money</mat-icon>
       <input matInput type="number" [(ngModel)]="form.montant">
     </mat-form-field>
 
-    <!-- TYPE FACTURE -->
+    <!-- ── MODE DE PAIEMENT ────────────────────────────────────── -->
     <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Type de facture</mat-label>
-      <mat-icon matPrefix>category</mat-icon>
-      <mat-select [(ngModel)]="form.typeFacture">
-        @for (type of types; track type) {
-          <mat-option [value]="type">{{ typeLabels[type] }}</mat-option>
+      <mat-label>Mode de paiement</mat-label>
+      <mat-icon matPrefix>payment</mat-icon>
+      <mat-select [(ngModel)]="form.typePaiement">
+        <mat-option [value]="null">— Non spécifié —</mat-option>
+        @for (tp of typesPaiement; track tp) {
+          <mat-option [value]="tp">{{ typePaiementLabels[tp] }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
 
-    <!-- STATUT — only on edit -->
+    <!-- ── STATUT (edit only) ──────────────────────────────────── -->
     @if (isEdit) {
       <mat-form-field appearance="outline" class="bna-field">
         <mat-label>Statut</mat-label>
@@ -43,58 +44,124 @@
       </mat-form-field>
     }
 
-    <!-- STEP 1 — DOSSIER -->
+    <!-- ── TYPE DE LIEN : DOSSIER ou AFFAIRE ──────────────────── -->
     <mat-form-field appearance="outline" class="bna-field bna-field-full">
-      <mat-label>Étape 1 — Dossier *</mat-label>
-      <mat-icon matPrefix>folder_open</mat-icon>
-      <mat-select [(ngModel)]="selectedDossierId" (ngModelChange)="onDossierChange()">
-        <mat-option [value]="null" disabled>Sélectionner un dossier</mat-option>
-        @for (d of dossiers; track d.idDossier) {
-          <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
-        }
+      <mat-label>Lier à *</mat-label>
+      <mat-icon matPrefix>link</mat-icon>
+      <mat-select [(ngModel)]="lienType" (ngModelChange)="onLienTypeChange()">
+        <mat-option value="DOSSIER">
+          <mat-icon style="vertical-align:middle;margin-right:6px;font-size:18px">folder_open</mat-icon>
+          Dossier
+        </mat-option>
+        <mat-option value="AFFAIRE">
+          <mat-icon style="vertical-align:middle;margin-right:6px;font-size:18px">gavel</mat-icon>
+          Affaire
+        </mat-option>
       </mat-select>
     </mat-form-field>
 
-    <!-- STEP 2 — AFFAIRE (filtered by dossier) -->
-    <mat-form-field appearance="outline" class="bna-field bna-field-full">
-      <mat-label>Étape 2 — Affaire *</mat-label>
-      <mat-icon matPrefix>gavel</mat-icon>
-      <mat-select [(ngModel)]="selectedAffaireId"
-        (ngModelChange)="onAffaireChange()"
-        [disabled]="!selectedDossierId">
-        <mat-option [value]="null" disabled>
-          {{ selectedDossierId ? 'Sélectionner une affaire' : 'Sélectionnez d\'abord un dossier' }}
-        </mat-option>
-        @for (a of filteredAffaires; track a.idAffaire ?? a.id) {
-          <mat-option [value]="a.idAffaire ?? a.id">
-            {{ a.numeroProcedure }} — {{ a.tribunal }}
-          </mat-option>
-        }
-      </mat-select>
-      @if (selectedDossierId && filteredAffaires.length === 0) {
-        <mat-hint style="color:#e65100">Aucune affaire pour ce dossier</mat-hint>
-      }
-    </mat-form-field>
+    <!-- ══════════════════════════════════════════════════════════
+         BRANCHE DOSSIER
+         ══════════════════════════════════════════════════════════ -->
+    @if (lienType === 'DOSSIER') {
 
-    <!-- STEP 3 — MISSION (filtered by affaire) -->
-    <mat-form-field appearance="outline" class="bna-field bna-field-full">
-      <mat-label>Étape 3 — Mission *</mat-label>
-      <mat-icon matPrefix>assignment</mat-icon>
-      <mat-select [(ngModel)]="form.missionId"
-        [disabled]="!selectedAffaireId">
-        <mat-option [value]="null" disabled>
-          {{ selectedAffaireId ? 'Sélectionner une mission' : 'Sélectionnez d\'abord une affaire' }}
-        </mat-option>
-        @for (m of filteredMissions; track m.id) {
-          <mat-option [value]="m.id">
-            {{ getMissionLabel(m) }} — {{ m.statut }}
-          </mat-option>
+      <mat-form-field appearance="outline" class="bna-field bna-field-full">
+        <mat-label>Dossier *</mat-label>
+        <mat-icon matPrefix>folder_open</mat-icon>
+        <mat-select [(ngModel)]="form.dossierId"
+                    (ngModelChange)="onDossierChange($event)">
+          <mat-option [value]="null" disabled>Sélectionner un dossier</mat-option>
+          @for (d of dossiers; track d.idDossier ?? d.id) {
+            <mat-option [value]="d.idDossier ?? d.id">{{ getDossierLabel(d) }}</mat-option>
+          }
+        </mat-select>
+        @if (dossiers.length === 0) {
+          <mat-hint>Aucun dossier disponible</mat-hint>
         }
-      </mat-select>
-      @if (selectedAffaireId && filteredMissions.length === 0) {
-        <mat-hint style="color:#e65100">Aucune mission pour cette affaire</mat-hint>
+      </mat-form-field>
+
+    }
+
+    <!-- ══════════════════════════════════════════════════════════
+         BRANCHE AFFAIRE
+         ══════════════════════════════════════════════════════════ -->
+    @if (lienType === 'AFFAIRE') {
+
+      <mat-form-field appearance="outline" class="bna-field bna-field-full">
+        <mat-label>Affaire *</mat-label>
+        <mat-icon matPrefix>gavel</mat-icon>
+        <mat-select [(ngModel)]="form.affaireId"
+                    (ngModelChange)="onAffaireChange($event)">
+          <mat-option [value]="null" disabled>Sélectionner une affaire</mat-option>
+          @for (a of affaires; track a.idAffaire ?? a.id) {
+            <mat-option [value]="a.idAffaire ?? a.id">{{ getAffaireLabel(a) }}</mat-option>
+          }
+        </mat-select>
+        @if (affaires.length === 0) {
+          <mat-hint>Aucune affaire disponible</mat-hint>
+        }
+      </mat-form-field>
+
+    }
+
+    <!-- ── CHARGEMENT ─────────────────────────────────────────── -->
+    @if (loadingLienData) {
+      <div class="auto-fill-loading bna-field-full">
+        <mat-spinner diameter="18"></mat-spinner>
+        <span>Chargement des données...</span>
+      </div>
+    }
+
+    <!-- ── ERREUR ─────────────────────────────────────────────── -->
+    @if (lienError && !loadingLienData) {
+      <div class="auto-fill-error bna-field-full">
+        <mat-icon>warning</mat-icon>
+        <span>{{ lienError }}</span>
+      </div>
+    }
+
+    <!-- ── AUTO-FILL : PRESTATAIRE + RIB ─────────────────────── -->
+    @if (selectedPrestataire && !loadingLienData) {
+
+      <div class="auto-fill-card bna-field-full">
+        <div class="auto-fill-title">
+          <mat-icon>auto_awesome</mat-icon>
+          Prestataire lié
+        </div>
+        <div class="auto-fill-grid">
+
+          <div class="auto-fill-item">
+            <span class="auto-fill-label"><mat-icon>person</mat-icon> Nom</span>
+            <span class="auto-fill-value">{{ prestataireNom }}</span>
+          </div>
+
+          <div class="auto-fill-item">
+            <span class="auto-fill-label"><mat-icon>badge</mat-icon> Type</span>
+            <span class="auto-fill-value">{{ prestataireType }}</span>
+          </div>
+
+          <div class="auto-fill-item auto-fill-item-full">
+            <span class="auto-fill-label"><mat-icon>account_balance</mat-icon> RIB</span>
+            <span class="auto-fill-value rib-value">{{ prestataireRib }}</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mission liée — uniquement pour DOSSIER -->
+      @if (lienType === 'DOSSIER' && missionsForDossier.length > 0) {
+        <mat-form-field appearance="outline" class="bna-field bna-field-full">
+          <mat-label>Mission liée *</mat-label>
+          <mat-icon matPrefix>assignment</mat-icon>
+          <mat-select [(ngModel)]="form.missionId">
+            @for (m of missionsForDossier; track m.id) {
+              <mat-option [value]="m.id">{{ getMissionLabel(m) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
       }
-    </mat-form-field>
+
+    }
 
   </div>
 </mat-dialog-content>
@@ -104,7 +171,7 @@
     Annuler
   </button>
   <button mat-raised-button color="primary" type="button"
-    (click)="onSubmit()" [disabled]="isLoading">
+    (click)="onSubmit()" [disabled]="!canSubmit">
     @if (isLoading) {
       <mat-spinner diameter="18" style="display:inline-block"></mat-spinner>
     }

@@ -12,6 +12,7 @@ import { PrestataireService } from '../../core/services/prestataire.service';
 import { Prestataire, TypePrestataire } from '../../core/models/prestataire.model';
 import { PrestataireFormDialogComponent } from './prestataire-form-dialog';
 import { ConfirmPrestataireStatusDialogComponent } from './confirm-status-dialog';
+import { PrestataireDetailDialogComponent } from './prestataire-detail-dialog';
 import { AuthService } from '../../core/services/auth.service';
 
 // ── Tab definition ─────────────────────────────────────────────
@@ -283,5 +284,15 @@ export class PrestatairesComponent implements OnInit {
 
   activeTabLabel(): string {
     return this.tabs.find(t => t.type === this.activeTab())?.label.replace(/s$/, '') ?? 'Prestataire';
+  }
+
+  // ── Dialog: Détail / RIB ───────────────────────────────────────
+  openDetailDialog(p: Prestataire): void {
+    this.dialog.open(PrestataireDetailDialogComponent, {
+      width: '480px',
+      maxWidth: '95vw',
+      panelClass: 'prestataire-detail-dialog',
+      data: p,
+    });
   }
 }

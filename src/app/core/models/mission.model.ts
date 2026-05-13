@@ -1,5 +1,6 @@
 export interface Mission {
   id?: number;
+  idMission?: number;  // backend field name
   typeMission: TypeMission;
   dateDebut: Date;
   dateFin?: Date;
@@ -8,6 +9,7 @@ export interface Mission {
   commentaire?: string;
   commentaireRejet?: string;
   dossierId?: number;
+  idDossier?: string;
   affaireId?: number;
   prestataireId?: number;
   createdAt?: Date;

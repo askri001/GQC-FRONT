@@ -13,22 +13,27 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   Facture,
   StatutFacture,
-  TypeFacture,
+  TypePaiement,
   STATUT_FACTURE_LABELS,
-  TYPE_FACTURE_LABELS
+  TYPE_PAIEMENT_LABELS,
 } from '../../core/models';
 
-import { MissionService } from '../../core/services/mission.service';
-import { AffaireService } from '../../core/services/affaire.service';
-import { ApiService } from '../../core/services/api.service';
+import { MissionService }     from '../../core/services/mission.service';
+import { DossierService }     from '../../core/services/dossier.service';
+import { AffaireService }     from '../../core/services/affaire.service';
+import { PrestataireService } from '../../core/services/prestataire.service';
 import { Mission, TYPE_MISSION_LABELS } from '../../core/models/mission.model';
-import { Affaire } from '../../core/models/affaire.model';
-import { Dossier } from '../../core/models/dossier.model';
+import { Dossier }     from '../../core/models/dossier.model';
+import { Affaire }     from '../../core/models/affaire.model';
+import { Prestataire } from '../../core/models/prestataire.model';
 
 export interface FactureFormDialogData {
   isEdit: boolean;
   facture?: Facture;
 }
+
+// Lien type: via Dossier (→ mission) ou via Affaire directement
+type LienType = 'DOSSIER' | 'AFFAIRE';
 
 @Component({
   selector: 'app-facture-form-dialog',
@@ -51,97 +56,189 @@ export interface FactureFormDialogData {
 })
 export class FactureFormDialogComponent implements OnInit {
 
-  data      = inject<FactureFormDialogData>(MAT_DIALOG_DATA);
-  dialogRef = inject(MatDialogRef<FactureFormDialogComponent>);
-  snackBar  = inject(MatSnackBar);
-  private missionService = inject(MissionService);
-  private affaireService = inject(AffaireService);
-  private api            = inject(ApiService);
+  data       = inject<FactureFormDialogData>(MAT_DIALOG_DATA);
+  dialogRef  = inject(MatDialogRef<FactureFormDialogComponent>);
+  snackBar   = inject(MatSnackBar);
 
-  // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutFacture[] = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
-  types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
-  missionTypeLabels        = TYPE_MISSION_LABELS;
+  private missionService     = inject(MissionService);
+  private dossierService     = inject(DossierService);
+  private affaireService     = inject(AffaireService);
+  private prestataireService = inject(PrestataireService);
 
-  statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
-  typeLabels   = TYPE_FACTURE_LABELS   as Record<TypeFacture, string>;
+  // ── Lookup lists ───────────────────────────────────────────────
+  statuts: StatutFacture[]      = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'REJETEE', 'PAYEE'];
+  typesPaiement: TypePaiement[] = ['CHEQUE_BCT', 'VIREMENT'];
 
-  // ── Guided selection state ─────────────────────────────────────
-  dossiers:  Dossier[]  = [];
-  allAffaires: Affaire[] = [];
-  allMissions: Mission[] = [];
+  statutLabels       = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
+  typePaiementLabels = TYPE_PAIEMENT_LABELS  as Record<TypePaiement, string>;
+  missionTypeLabels  = TYPE_MISSION_LABELS;
 
-  selectedDossierId:  number | null = null;
-  selectedAffaireId:  number | null = null;
+  dossiers: Dossier[] = [];
+  affaires: Affaire[] = [];
+
+  // ── Lien type selector ─────────────────────────────────────────
+  lienType: LienType = 'DOSSIER';
+
+  // ── Auto-filled state ──────────────────────────────────────────
+  missionsForDossier: Mission[]           = [];
+  selectedPrestataire: Prestataire | null = null;
+  lienError: string | null                = null;
+  loadingLienData                         = false;
 
   // ── Form model ─────────────────────────────────────────────────
   form = {
-    numero:      this.data.facture?.numero     ?? '',
-    montant:     this.data.facture?.montant    ?? null as number | null,
-    typeFacture: this.data.facture?.typeFacture ?? 'HONORAIRES' as TypeFacture,
-    statut:      this.data.facture?.statut     ?? 'EN_ATTENTE_VALIDATION' as StatutFacture,
-    missionId:   this.data.facture?.missionId  ?? null as number | null,
+    numero:       this.data.facture?.numero       ?? '',
+    montant:      this.data.facture?.montant      ?? null as number | null,
+    statut:       this.data.facture?.statut       ?? ('EN_ATTENTE_VALIDATION' as StatutFacture),
+    typePaiement: this.data.facture?.typePaiement ?? null as TypePaiement | null,
+    dossierId:    this.data.facture?.dossierId    ?? null as number | null,
+    missionId:    this.data.facture?.missionId    ?? null as number | null,
+    affaireId:    null as number | null,
   };
 
   isLoading = false;
   get isEdit(): boolean { return !!this.data.facture; }
 
-  // ── Filtered lists ─────────────────────────────────────────────
-  get filteredAffaires(): Affaire[] {
-    if (!this.selectedDossierId) return [];
-    return this.allAffaires.filter(a => a.dossierId === this.selectedDossierId);
+  // ── Computed getters ───────────────────────────────────────────
+  get prestataireNom(): string {
+    if (!this.selectedPrestataire) return '';
+    return `${this.selectedPrestataire.prenom} ${this.selectedPrestataire.nom}`;
   }
 
-  get filteredMissions(): Mission[] {
-    if (!this.selectedAffaireId) return [];
-    return this.allMissions.filter(m => m.affaireId === this.selectedAffaireId);
+  get prestataireRib(): string {
+    return this.selectedPrestataire?.rib || '—';
+  }
+
+  get prestataireType(): string {
+    const p = this.selectedPrestataire;
+    if (!p) return '';
+    return (p.typePrestataire ?? (p as any).type ?? '') as string;
+  }
+
+  get canSubmit(): boolean {
+    if (this.isLoading || this.loadingLienData || !!this.lienError) return false;
+    if (this.lienType === 'DOSSIER') return !!this.form.dossierId && !!this.form.missionId && !!this.selectedPrestataire;
+    if (this.lienType === 'AFFAIRE') return !!this.form.affaireId && !!this.selectedPrestataire;
+    return false;
   }
 
   // ── Init ───────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.api.get<Dossier[]>('/dossiers').subscribe({
-      next: (data) => this.dossiers = data ?? [],
-      error: () => {}
+    this.dossierService.getAll().subscribe({
+      next: (data) => {
+        this.dossiers = data ?? [];
+        if (this.isEdit && this.form.dossierId) {
+          this.onDossierChange(this.form.dossierId);
+        }
+      },
+      error: () => { this.dossiers = []; },
     });
+
     this.affaireService.getAll().subscribe({
-      next: (data) => {
-        this.allAffaires = data ?? [];
-        // Pre-fill when editing
-        if (this.form.missionId) this.prefillFromMission();
-      },
-      error: () => {}
-    });
-    this.missionService.getAll().subscribe({
-      next: (data) => {
-        this.allMissions = data ?? [];
-        if (this.form.missionId) this.prefillFromMission();
-      },
-      error: () => {}
+      next: (data) => { this.affaires = data ?? []; },
+      error: () => { this.affaires = []; },
     });
   }
 
-  /** When editing, pre-fill dossier and affaire selects from the existing missionId */
-  private prefillFromMission(): void {
-    if (!this.form.missionId || !this.allMissions.length || !this.allAffaires.length) return;
-    const mission = this.allMissions.find(m => m.id === this.form.missionId);
-    if (!mission?.affaireId) return;
-    const affaire = this.allAffaires.find(a => (a.idAffaire ?? a.id) === mission.affaireId);
-    if (!affaire) return;
-    this.selectedAffaireId = mission.affaireId;
-    this.selectedDossierId = affaire.dossierId;
-  }
-
-  onDossierChange(): void {
-    this.selectedAffaireId = null;
+  // ── Lien type changed → reset everything ──────────────────────
+  onLienTypeChange(): void {
+    this.form.dossierId    = null;
     this.form.missionId    = null;
+    this.form.affaireId    = null;
+    this.missionsForDossier  = [];
+    this.selectedPrestataire = null;
+    this.lienError           = null;
   }
 
-  onAffaireChange(): void {
-    this.form.missionId = null;
+  // ── DOSSIER selected → auto-fill missions + prestataire ───────
+  onDossierChange(dossierId: number | null): void {
+    this.missionsForDossier  = [];
+    this.selectedPrestataire = null;
+    this.lienError           = null;
+    this.form.missionId      = null;
+
+    if (!dossierId) return;
+
+    this.loadingLienData = true;
+
+    this.missionService.getAll().subscribe({
+      next: (missions) => {
+        this.missionsForDossier = (missions ?? []).filter(
+          m => Number(m.dossierId ?? (m as any).idDossier) === Number(dossierId)
+        );
+
+        if (this.missionsForDossier.length === 0) {
+          this.lienError       = 'Aucune mission trouvée pour ce dossier.';
+          this.loadingLienData = false;
+          return;
+        }
+
+        const mission = this.missionsForDossier[0];
+        this.form.missionId = mission.id ?? null;
+
+        const prestataireId = mission.prestataireId;
+        if (!prestataireId) {
+          this.lienError       = 'La mission de ce dossier n\'a pas de prestataire assigné.';
+          this.loadingLienData = false;
+          return;
+        }
+
+        this.loadPrestataire(prestataireId);
+      },
+      error: () => {
+        this.lienError       = 'Erreur lors du chargement des missions.';
+        this.loadingLienData = false;
+      },
+    });
+  }
+
+  // ── AFFAIRE selected → auto-fill prestataire ──────────────────
+  onAffaireChange(affaireId: number | null): void {
+    this.selectedPrestataire = null;
+    this.lienError           = null;
+
+    if (!affaireId) return;
+
+    const affaire = this.affaires.find(a => (a.idAffaire ?? a.id) === Number(affaireId));
+    if (!affaire) return;
+
+    const prestataireId = affaire.prestataireId;
+    if (!prestataireId) {
+      this.lienError = 'Cette affaire n\'a pas de prestataire assigné.';
+      return;
+    }
+
+    this.loadingLienData = true;
+    this.loadPrestataire(prestataireId);
+  }
+
+  // ── Shared: load prestataire by id ────────────────────────────
+  private loadPrestataire(prestataireId: number): void {
+    this.prestataireService.getById(prestataireId).subscribe({
+      next: (p: any) => {
+        this.selectedPrestataire = { ...p, idPrestataire: p.idPrestataire ?? p.id };
+        this.loadingLienData = false;
+      },
+      error: () => {
+        this.lienError       = 'Impossible de charger le prestataire.';
+        this.loadingLienData = false;
+      },
+    });
+  }
+
+  // ── Labels ─────────────────────────────────────────────────────
+  getDossierLabel(d: Dossier): string {
+    return d.reference ?? `Dossier #${d.idDossier ?? d.id}`;
+  }
+
+  getAffaireLabel(a: Affaire): string {
+    return a.numeroProcedure
+      ? `${a.numeroProcedure} — ${a.tribunal ?? ''}`
+      : `Affaire #${a.idAffaire ?? a.id}`;
   }
 
   getMissionLabel(m: Mission): string {
-    return `${this.missionTypeLabels[m.typeMission] ?? m.typeMission}`;
+    return `${this.missionTypeLabels[m.typeMission] ?? m.typeMission} — ${m.statut}`;
   }
 
   // ── Submit ─────────────────────────────────────────────────────
@@ -162,19 +259,25 @@ export class FactureFormDialogComponent implements OnInit {
       this.snackBar.open('Le montant doit être supérieur à 0.', 'OK', { duration: 3000 });
       return;
     }
-    if (!f.missionId) {
-      this.snackBar.open('Veuillez sélectionner une mission.', 'OK', { duration: 3000 });
+    if (!this.selectedPrestataire) {
+      this.snackBar.open('Aucun prestataire lié.', 'OK', { duration: 3000 });
       return;
     }
 
     this.isLoading = true;
 
     const result: Partial<Facture> = {
-      numero:      f.numero.trim(),
-      montant:     Number(f.montant),
-      typeFacture: f.typeFacture,
-      statut:      this.isEdit ? f.statut : 'EN_ATTENTE_VALIDATION',
-      missionId:   Number(f.missionId),
+      numero:       f.numero.trim(),
+      montant:      Number(f.montant),
+      statut:       this.isEdit ? f.statut : 'EN_ATTENTE_VALIDATION',
+      typePaiement: f.typePaiement ?? undefined,
+      // Send the relevant link depending on lienType
+      dossierId:    this.lienType === 'DOSSIER' && f.dossierId  ? Number(f.dossierId)  : undefined,
+      missionId:    this.lienType === 'DOSSIER' && f.missionId  ? Number(f.missionId)  : undefined,
+      // For AFFAIRE type, store affaireId as dossierId (backend field) or missionId per your API
+      ...(this.lienType === 'AFFAIRE' && f.affaireId
+        ? { dossierId: Number(f.affaireId) }
+        : {}),
     };
 
     this.dialogRef.close(result);

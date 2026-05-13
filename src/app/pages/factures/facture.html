@@ -36,14 +36,14 @@
         </div>
       </div>
 
-      <!-- Type dropdown -->
+      <!-- Mode de paiement dropdown -->
       <div class="select-wrap">
-        <label class="select-label">Type</label>
+        <label class="select-label">Paiement</label>
         <div class="select-box">
-          <select class="native-select" [(ngModel)]="typeFilter" (ngModelChange)="applyFilter()">
-            <option value="">Tous les types</option>
-            @for (type of types; track type) {
-              <option [value]="type">{{ typeLabels[type] }}</option>
+          <select class="native-select" [(ngModel)]="paiementFilter" (ngModelChange)="applyFilter()">
+            <option value="">Tous</option>
+            @for (tp of typesPaiement; track tp) {
+              <option [value]="tp">{{ typePaiementLabels[tp] }}</option>
             }
           </select>
           <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
@@ -52,7 +52,7 @@
 
       <div class="toolbar-spacer"></div>
 
-      <!-- Nouvelle facture -->
+      <!-- Nouvelle facture — ChargeDossier only -->
       <button class="btn-new" (click)="openNewFacture()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
         <mat-icon>add</mat-icon>
         Nouvelle facture
@@ -95,10 +95,11 @@
               <tr>
                 <th>N° FACTURE</th>
                 <th>MISSION</th>
-                <th>DATE</th>
+                <th>AFFAIRE</th>
                 <th>MONTANT</th>
-                <th>TYPE</th>
+                <th>MODE PAIEMENT</th>
                 <th>STATUT</th>
+                <th>DATE PAIEMENT</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -112,22 +113,27 @@
                   <!-- MISSION -->
                   <td class="td-mission">{{ getMissionLabel(f.missionId) }}</td>
 
-                  <!-- DATE -->
-                  <td class="td-date">{{ f.dateEmission | date:'dd/MM/yyyy' }}</td>
+                  <!-- AFFAIRE -->
+                  <td class="td-mission">{{ getAffaireLabel(f.dossierId) }}</td>
 
                   <!-- MONTANT -->
                   <td class="td-montant">{{ f.montant | number:'1.2-2' }} DT</td>
 
-                  <!-- TYPE -->
-                  <td class="td-type">{{ typeLabels[f.typeFacture] }}</td>
+                  <!-- MODE PAIEMENT -->
+                  <td class="td-type">
+                    @if (f.typePaiement === 'CHEQUE_BCT') { Chèque BCT }
+                    @else if (f.typePaiement === 'VIREMENT') { Virement }
+                    @else { <span style="color:#ccc">—</span> }
+                  </td>
 
-                  <!-- STATUT -->
+                  <!-- STATUT — badge couleur par statut -->
                   <td class="td-statut">
                     <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
                       {{ statutLabels[f.statut] }}
                     </span>
                     @if (f.commentaireRejet) {
-                      <mat-icon style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help;vertical-align:middle;margin-left:4px"
+                      <mat-icon
+                        style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help;vertical-align:middle;margin-left:4px"
                         [matTooltip]="'Rejeté : ' + f.commentaireRejet"
                         matTooltipPosition="right">
                         chat_bubble
@@ -135,30 +141,55 @@
                     }
                   </td>
 
-                  <!-- ACTIONS -->
+                  <!-- DATE PAIEMENT — uniquement si PAYEE -->
+                  <td class="td-date">
+                    @if (f.statut === 'PAYEE' && f.datePaiement) {
+                      <span class="date-paiement">
+                        <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle;color:#1565c0;margin-right:3px">payments</mat-icon>
+                        {{ f.datePaiement | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    } @else {
+                      <span style="color:#ccc">—</span>
+                    }
+                  </td>
+
+                  <!-- ACTIONS — ChargeDossier uniquement, Valider/Rejeter → page Validation -->
                   <td class="td-actions">
-                    <!-- ChargeDossier: edit and submit -->
-                    <button class="act-btn act-edit" (click)="openEditFacture(f)" title="Modifier"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && f.statut !== 'EN_ATTENTE_VALIDATION' && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE'">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button class="act-btn" style="color:#1565c0" (click)="soumettre(f)" title="Soumettre pour validation"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && f.statut !== 'EN_ATTENTE_VALIDATION' && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE'">
-                      <mat-icon>send</mat-icon>
-                    </button>
-                    <!-- Responsable: validate or reject -->
-                    <button class="act-btn" style="color:#2e7d32" (click)="valider(f)" title="Valider"
-                      *ngIf="authService.hasRole('ROLE_RESPONSABLE') && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE' && f.statut !== 'REJETEE'">
-                      <mat-icon>check_circle</mat-icon>
-                    </button>
-                    <button class="act-btn" style="color:#c62828" (click)="rejeter(f)" title="Rejeter"
-                      *ngIf="authService.hasRole('ROLE_RESPONSABLE') && f.statut !== 'VALIDEE' && f.statut !== 'PAYEE' && f.statut !== 'REJETEE'">
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                    <button class="act-btn act-delete" (click)="confirmDelete(f)" title="Supprimer"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                      <mat-icon>delete_outline</mat-icon>
-                    </button>
+
+                    <!-- EN_ATTENTE_VALIDATION : Modifier + Supprimer (ChargeDossier) -->
+                    @if (f.statut === 'EN_ATTENTE_VALIDATION') {
+                      <button class="act-btn act-edit"
+                        (click)="openEditFacture(f)" title="Modifier"
+                        *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button class="act-btn act-delete"
+                        (click)="confirmDelete(f)" title="Supprimer"
+                        *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    }
+
+                    <!-- VALIDEE : Payer (Responsable) → reste ici car c'est post-validation -->
+                    @if (f.statut === 'VALIDEE') {
+                      <button class="act-btn" style="color:#1565c0"
+                        (click)="payer(f)" title="Marquer comme payée"
+                        *ngIf="authService.hasRole('ROLE_RESPONSABLE')">
+                        <mat-icon>payments</mat-icon>
+                      </button>
+                    }
+
+                    <!-- REJETEE : Supprimer (ChargeDossier) -->
+                    @if (f.statut === 'REJETEE') {
+                      <button class="act-btn act-delete"
+                        (click)="confirmDelete(f)" title="Supprimer"
+                        *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    }
+
+                    <!-- PAYEE : lecture seule, aucun bouton -->
+
                   </td>
 
                 </tr>

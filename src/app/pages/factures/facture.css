@@ -284,8 +284,14 @@
   color: #b36200;
 }
 
-.chip-rejetee,
-.chip-en_retard {
+/* EN_ATTENTE_VALIDATION — orange */
+.chip-validation {
+  background: rgba(230,130,0,.12);
+  color: #b36200;
+}
+
+/* REJETEE — rouge */
+.chip-rejetee {
   background: rgba(198,40,40,.09);
   color: #c62828;
 }
@@ -438,4 +444,13 @@
   .toolbar-spacer { display: none; }
   .pager { flex-direction: column; align-items: flex-start; }
   .page-title h2 { font-size: 20px; }
+}
+
+.date-paiement {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1565c0;
+  white-space: nowrap;
 }

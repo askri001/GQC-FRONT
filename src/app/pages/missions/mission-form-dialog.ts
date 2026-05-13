@@ -18,11 +18,10 @@ import {
   TYPE_MISSION_LABELS,
 } from '../../core/models';
 
-import { ApiService } from '../../core/services/api.service';
 import { PrestataireService } from '../../core/services/prestataire.service';
-import { AffaireService } from '../../core/services/affaire.service';
+import { DossierService } from '../../core/services/dossier.service';
 import { Prestataire } from '../../core/models/prestataire.model';
-import { Affaire } from '../../core/models/affaire.model';
+import { Dossier } from '../../core/models/dossier.model';
 
 export interface MissionFormDialogData {
   isEdit: boolean;
@@ -59,22 +58,21 @@ export class MissionFormDialogComponent implements OnInit {
   data      = inject<MissionFormDialogData>(MAT_DIALOG_DATA);
   dialogRef = inject(MatDialogRef<MissionFormDialogComponent>);
   snackBar  = inject(MatSnackBar);
-  private api               = inject(ApiService);
   private prestataireService = inject(PrestataireService);
-  private affaireService    = inject(AffaireService);
+  private dossierService     = inject(DossierService);
 
   // ── Lookup data ────────────────────────────────────────────────
   types: TypeMission[] = ['EXECUTION', 'EXPERTISE'];
   typeLabels   = TYPE_MISSION_LABELS   as Record<TypeMission, string>;
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
 
-  affaires:     Affaire[]     = [];
+  dossiers:     Dossier[]     = [];
   prestataires: Prestataire[] = [];
 
   // ── Form model ─────────────────────────────────────────────────
   form = {
     typeMission:   this.data.mission?.typeMission   ?? 'EXECUTION' as TypeMission,
-    affaireId:     this.data.mission?.affaireId     ?? null as number | null,
+    dossierId:     this.data.mission?.dossierId     ?? null as number | null,
     prestataireId: this.data.mission?.prestataireId ?? null as number | null,
     commentaire:   this.data.mission?.commentaire   ?? '',
     resultat:      this.data.mission?.resultat      ?? '',
@@ -105,11 +103,20 @@ export class MissionFormDialogComponent implements OnInit {
 
   // ── Init ───────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.affaireService.getAll().subscribe({
-      next: (data) => this.affaires = data ?? [],
-      error: () => this.affaires = [],
-    });
+    this.loadDossiers();
     this.loadPrestatairesForType(this.form.typeMission);
+  }
+
+  // ── Load dossiers ──────────────────────────────────────────────
+  loadDossiers(): void {
+    this.dossierService.getAll().subscribe({
+      next: (data) => this.dossiers = data ?? [],
+      error: () => this.dossiers = [],
+    });
+  }
+
+  getDossierLabel(d: Dossier): string {
+    return d.reference ?? `Dossier #${d.idDossier ?? d.id}`;
   }
 
   // ── Load prestataires filtered by type ────────────────────────
@@ -149,8 +156,8 @@ export class MissionFormDialogComponent implements OnInit {
       this.snackBar.open('Le type de mission est requis.', 'OK', { duration: 3000 });
       return;
     }
-    if (!f.affaireId) {
-      this.snackBar.open('Veuillez sélectionner une affaire.', 'OK', { duration: 3000 });
+    if (!f.dossierId) {
+      this.snackBar.open('Le dossier est requis.', 'OK', { duration: 3000 });
       return;
     }
     if (this.resultatRequired && !f.resultat?.trim()) {
@@ -163,7 +170,7 @@ export class MissionFormDialogComponent implements OnInit {
     const result: Partial<Mission> = {
       typeMission:   f.typeMission,
       statut:        f.statut,
-      affaireId:     Number(f.affaireId),
+      dossierId:     Number(f.dossierId),
       prestataireId: f.prestataireId ? Number(f.prestataireId) : undefined,
       commentaire:   f.commentaire?.trim() || undefined,
       resultat:      f.resultat?.trim() || undefined,

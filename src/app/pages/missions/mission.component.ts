@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -21,10 +21,7 @@ import {
 import { MissionService } from '../../core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
-import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
-import { AffaireService } from '../../core/services/affaire.service';
 import { ApiService } from '../../core/services/api.service';
-import { Affaire } from '../../core/models/affaire.model';
 
 @Component({
   selector: 'app-missions',
@@ -32,7 +29,6 @@ import { Affaire } from '../../core/models/affaire.model';
   imports: [
     CommonModule,
     FormsModule,
-    DatePipe,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -48,14 +44,12 @@ export class MissionsComponent implements OnInit {
   private missionService = inject(MissionService);
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
-  private affaireService = inject(AffaireService);
   private api            = inject(ApiService);
   readonly authService   = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   missions         = signal<Mission[]>([]);
   filteredMissions = signal<Mission[]>([]);
-  affaires         = signal<Affaire[]>([]);
   prestataires     = signal<any[]>([]);
   isLoading        = signal(false);
   error            = signal<string | null>(null);
@@ -71,7 +65,7 @@ export class MissionsComponent implements OnInit {
   currentPage   = signal(0);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutMission[] = ['EN_ATTENTE', 'EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
+  statuts: StatutMission[] = ['EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
   types: TypeMission[]     = ['EXECUTION', 'EXPERTISE'];
 
   statutLabels = STATUT_MISSION_LABELS as Record<StatutMission, string>;
@@ -80,10 +74,6 @@ export class MissionsComponent implements OnInit {
   // ── Lifecycle ──────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadMissions();
-    this.affaireService.getAll().subscribe({
-      next: (data) => this.affaires.set(data ?? []),
-      error: () => {}
-    });
     this.api.get<any[]>('/prestataires').subscribe({
       next: (data) => this.prestataires.set(data ?? []),
       error: () => {}
@@ -260,37 +250,7 @@ export class MissionsComponent implements OnInit {
     });
   }
 
-  // ── Valider (Responsable) ──────────────────────────────────────
-  valider(m: Mission): void {
-    if (!confirm(`Valider cette mission ?`)) return;
-    this.missionService.validate(m.id!).subscribe({
-      next: () => { this.snackBar.open('Mission validée', 'OK', { duration: 2500 }); this.loadMissions(); },
-      error: () => this.snackBar.open('Erreur lors de la validation', 'OK', { duration: 3000 }),
-    });
-  }
-
-  // ── Rejeter (Responsable) ──────────────────────────────────────
-  rejeter(m: Mission): void {
-    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
-      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { titre: 'Rejeter la mission', sousTitre: `Mission : ${this.typeLabels[m.typeMission]}` }
-    });
-    ref.afterClosed().subscribe(commentaire => {
-      if (commentaire === null) return;
-      this.missionService.reject(m.id!, commentaire || undefined).subscribe({
-        next: () => { this.snackBar.open('Mission rejetée — renvoyée en cours', 'OK', { duration: 2500 }); this.loadMissions(); },
-        error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
-      });
-    });
-  }
-
   // ── Lookup helpers ─────────────────────────────────────────────
-  getAffaireRef(affaireId: number | undefined): string {
-    if (!affaireId) return '—';
-    const a = this.affaires().find(a => (a.idAffaire ?? a.id) === affaireId);
-    return a ? a.numeroProcedure : `#${affaireId}`;
-  }
-
   getPrestataireNom(prestataireId: number | undefined): string {
     if (!prestataireId) return '—';
     const p = this.prestataires().find(p => (p.idPrestataire ?? p.id) === prestataireId);

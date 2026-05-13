@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -13,15 +13,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   Facture,
   StatutFacture,
-  TypeFacture,
+  TypePaiement,
   STATUT_FACTURE_LABELS,
-  TYPE_FACTURE_LABELS
+  TYPE_PAIEMENT_LABELS,
 } from '../../core/models';
 
 import { FactureService } from '../../core/services/facture.service';
 import { FactureFormDialogComponent } from './facture-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
-import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 import { ApiService } from '../../core/services/api.service';
 import { Mission, TYPE_MISSION_LABELS } from '../../core/models/mission.model';
 import { Affaire } from '../../core/models/affaire.model';
@@ -32,7 +31,6 @@ import { Affaire } from '../../core/models/affaire.model';
   imports: [
     CommonModule,
     FormsModule,
-    DatePipe,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -60,9 +58,9 @@ export class FacturesComponent implements OnInit {
   error            = signal<string | null>(null);
 
   // ── Filters ────────────────────────────────────────────────────
-  searchQuery  = '';
-  statusFilter = '';
-  typeFilter   = '';
+  searchQuery    = '';
+  statusFilter   = '';
+  paiementFilter = '';
 
   // ── Pagination ─────────────────────────────────────────────────
   pageSizeValue = 10;
@@ -70,22 +68,22 @@ export class FacturesComponent implements OnInit {
   currentPage   = signal(0);
 
   // ── Lookup data ────────────────────────────────────────────────
-  statuts: StatutFacture[] = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'PAYEE', 'REJETEE', 'EN_RETARD'];
-  types: TypeFacture[]     = ['HONORAIRES', 'FRAIS', 'EXPERTISE', 'AUTRE'];
+  statuts:       StatutFacture[]  = ['EN_ATTENTE_VALIDATION', 'VALIDEE', 'REJETEE', 'PAYEE'];
+  typesPaiement: TypePaiement[]   = ['VIREMENT', 'CHEQUE_BCT'];
 
-  statutLabels = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
-  typeLabels   = TYPE_FACTURE_LABELS   as Record<TypeFacture, string>;
+  statutLabels       = STATUT_FACTURE_LABELS as Record<StatutFacture, string>;
+  typePaiementLabels = TYPE_PAIEMENT_LABELS  as Record<TypePaiement, string>;
 
   // ── Lifecycle ──────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadFactures();
     this.api.get<Mission[]>('/missions').subscribe({
       next: (data) => this.missions.set(data ?? []),
-      error: () => {}
+      error: () => {},
     });
     this.api.get<Affaire[]>('/affaires').subscribe({
       next: (data) => this.affaires.set(data ?? []),
-      error: () => {}
+      error: () => {},
     });
   }
 
@@ -121,7 +119,7 @@ export class FacturesComponent implements OnInit {
       const q = this.searchQuery.toLowerCase();
       result = result.filter(f =>
         f.numero?.toLowerCase().includes(q) ||
-        f.montant?.toString().includes(q)
+        f.montant?.toString().includes(q),
       );
     }
 
@@ -129,8 +127,8 @@ export class FacturesComponent implements OnInit {
       result = result.filter(f => f.statut === this.statusFilter);
     }
 
-    if (this.typeFilter) {
-      result = result.filter(f => f.typeFacture === this.typeFilter);
+    if (this.paiementFilter) {
+      result = result.filter(f => f.typePaiement === this.paiementFilter);
     }
 
     this.filteredFactures.set(result);
@@ -171,11 +169,10 @@ export class FacturesComponent implements OnInit {
   // ── Status chip CSS class ──────────────────────────────────────
   getStatutClass(statut: StatutFacture): string {
     const map: Record<StatutFacture, string> = {
-      VALIDEE:              'chip-validee',
-      PAYEE:                'chip-payee',
-      EN_ATTENTE_VALIDATION:'chip-en_attente',
-      REJETEE:              'chip-rejetee',
-      EN_RETARD:            'chip-rejetee',
+      EN_ATTENTE_VALIDATION: 'chip-validation',
+      VALIDEE:               'chip-validee',
+      REJETEE:               'chip-rejetee',
+      PAYEE:                 'chip-payee',
     };
     return map[statut] ?? '';
   }
@@ -222,45 +219,12 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ── Toggle status ──────────────────────────────────────────────
-  toggleStatus(f: Facture): void {
-    const newStatus: StatutFacture = f.statut === 'EN_ATTENTE_VALIDATION' ? 'VALIDEE' : 'EN_ATTENTE_VALIDATION';
-    this.factureService.updateStatus(f.id!, newStatus).subscribe({
-      next: () => { this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 }); this.loadFactures(); },
-      error: () => this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 }),
-    });
-  }
-
-  // ── Soumettre pour validation (ChargeDossier) ──────────────────
-  soumettre(f: Facture): void {
-    if (!confirm(`Soumettre la facture "${f.numero}" pour validation ?`)) return;
-    this.factureService.updateStatus(f.id!, 'EN_ATTENTE_VALIDATION').subscribe({
-      next: () => { this.snackBar.open('Facture soumise pour validation', 'OK', { duration: 2500 }); this.loadFactures(); },
-      error: () => this.snackBar.open('Erreur lors de la soumission', 'OK', { duration: 3000 }),
-    });
-  }
-
-  // ── Valider (Responsable) ──────────────────────────────────────
-  valider(f: Facture): void {
-    if (!confirm(`Valider la facture "${f.numero}" ?`)) return;
-    this.factureService.validate(f.id!).subscribe({
-      next: () => { this.snackBar.open('Facture validée', 'OK', { duration: 2500 }); this.loadFactures(); },
-      error: () => this.snackBar.open('Erreur lors de la validation', 'OK', { duration: 3000 }),
-    });
-  }
-
-  // ── Rejeter (Responsable) ──────────────────────────────────────
-  rejeter(f: Facture): void {
-    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
-      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { titre: 'Rejeter la facture', sousTitre: `Facture : ${f.numero}` }
-    });
-    ref.afterClosed().subscribe(commentaire => {
-      if (commentaire === null) return;
-      this.factureService.reject(f.id!, commentaire || undefined).subscribe({
-        next: () => { this.snackBar.open('Facture rejetée', 'OK', { duration: 2500 }); this.loadFactures(); },
-        error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
-      });
+  // ── Payer (Responsable) — VALIDEE → PAYEE ─────────────────────
+  payer(f: Facture): void {
+    if (!confirm(`Marquer la facture "${f.numero}" comme payée ?`)) return;
+    this.factureService.payer(f.id!).subscribe({
+      next: () => { this.snackBar.open('Facture marquée comme payée', 'OK', { duration: 2500 }); this.loadFactures(); },
+      error: () => this.snackBar.open('Erreur lors du paiement', 'OK', { duration: 3000 }),
     });
   }
 
@@ -269,9 +233,18 @@ export class FacturesComponent implements OnInit {
     if (!missionId) return '—';
     const m = this.missions().find(m => m.id === missionId);
     if (!m) return `#${missionId}`;
-    const typeLabel = TYPE_MISSION_LABELS[m.typeMission] ?? m.typeMission;
-    const affaire = this.affaires().find(a => (a.idAffaire ?? a.id) === m.affaireId);
-    return affaire ? `${typeLabel} — ${affaire.numeroProcedure}` : typeLabel;
+    return TYPE_MISSION_LABELS[m.typeMission] ?? m.typeMission;
+  }
+
+  // ── Affaire label ──────────────────────────────────────────────
+  getAffaireLabel(dossierId: number | undefined): string {
+    if (!dossierId) return '—';
+    // dossierId on facture may link to an affaire's dossierId
+    const a = this.affaires().find(a => (a.idAffaire ?? a.id) === dossierId || a.dossierId === dossierId);
+    if (!a) return '—';
+    return a.numeroProcedure
+      ? `${a.numeroProcedure}${a.tribunal ? ' — ' + a.tribunal : ''}`
+      : `Affaire #${a.idAffaire ?? a.id}`;
   }
 
   // ── Delete ─────────────────────────────────────────────────────

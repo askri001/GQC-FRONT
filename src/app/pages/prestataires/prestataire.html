@@ -101,6 +101,7 @@
                   <th>EMAIL</th>
                   <th>TARIF (DT/J)</th>
                   <th>STATUT</th>
+                  <th>RIB</th>
                   <th>ACTIONS</th>
                 </tr>
               </thead>
@@ -126,6 +127,13 @@
                             [class.chip-inactive]="!p.actif">
                         {{ p.actif ? 'Actif' : 'Inactif' }}
                       </span>
+                    </td>
+
+                    <!-- RIB — eye icon opens detail dialog -->
+                    <td class="td-rib">
+                      <button class="act-btn" (click)="openDetailDialog(p)" title="Voir les coordonnées et RIB">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
                     </td>
 
                     <td class="td-actions">

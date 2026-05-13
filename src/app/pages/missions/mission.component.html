@@ -94,10 +94,7 @@
             <thead>
               <tr>
                 <th>TYPE</th>
-                <th>AFFAIRE</th>
                 <th>PRESTATAIRE</th>
-                <th>DATE DÉBUT</th>
-                <th>DATE FIN</th>
                 <th>STATUT</th>
                 <th>RÉSULTAT / COMMENTAIRE</th>
                 <th>ACTIONS</th>
@@ -110,17 +107,8 @@
                   <!-- TYPE -->
                   <td class="td-type">{{ typeLabels[m.typeMission] }}</td>
 
-                  <!-- AFFAIRE -->
-                  <td class="td-dossier">{{ getAffaireRef(m.affaireId) }}</td>
-
                   <!-- PRESTATAIRE -->
                   <td class="td-prestataire">{{ getPrestataireNom(m.prestataireId) }}</td>
-
-                  <!-- DATE DÉBUT -->
-                  <td class="td-date">{{ m.dateDebut | date:'dd/MM/yyyy' }}</td>
-
-                  <!-- DATE FIN -->
-                  <td class="td-date">{{ m.dateFin ? (m.dateFin | date:'dd/MM/yyyy') : '—' }}</td>
 
                   <!-- STATUT -->
                   <td class="td-statut">
@@ -149,9 +137,10 @@
 
                   <!-- ACTIONS -->
                   <td class="td-actions">
-                    <!-- ChargeDossier: edit, start, submit, cancel, delete -->
+
+                    <!-- ChargeDossier : Modifier, Démarrer, Soumettre, Annuler, Supprimer -->
                     <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && m.statut !== 'EN_ATTENTE_VALIDATION'">
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && m.statut !== 'EN_ATTENTE_VALIDATION' && m.statut !== 'TERMINEE' && m.statut !== 'ANNULEE'">
                       <mat-icon>edit</mat-icon>
                     </button>
                     @if (m.statut === 'EN_ATTENTE' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
@@ -165,23 +154,15 @@
                       </button>
                     }
                     @if (m.statut !== 'ANNULEE' && m.statut !== 'TERMINEE' && m.statut !== 'EN_ATTENTE_VALIDATION' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
-                      <button class="act-btn act-delete" (click)="annulerMission(m)" title="Annuler" style="color:#c62828">
-                        <mat-icon>cancel</mat-icon>
-                      </button>
-                    }
-                    <!-- Responsable: validate or reject -->
-                    @if ((m.statut === 'EN_ATTENTE_VALIDATION' || m.statut === 'EN_COURS') && authService.hasRole('ROLE_RESPONSABLE')) {
-                      <button class="act-btn" style="color:#2e7d32" (click)="valider(m)" title="Valider">
-                        <mat-icon>check_circle</mat-icon>
-                      </button>
-                      <button class="act-btn" style="color:#c62828" (click)="rejeter(m)" title="Rejeter">
+                      <button class="act-btn" style="color:#c62828" (click)="annulerMission(m)" title="Annuler">
                         <mat-icon>cancel</mat-icon>
                       </button>
                     }
                     <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') || authService.hasRole('ROLE_ADMIN')">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
+
                   </td>
 
                 </tr>

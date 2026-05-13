@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import { ApiService } from './api.service';
 import type { Mission, StatutMission } from '../models';
 
@@ -29,6 +29,11 @@ export class MissionService {
     this.errorSignal.set(null);
 
     return this.api.get<Mission[]>(this.endpoint).pipe(
+      map(data => (data ?? []).map(m => ({
+        ...m,
+        // normalise: backend returns idMission, frontend uses id
+        id: m.id ?? (m as any).idMission,
+      }))),
       tap(data => {
         this.missionsSignal.set(data || []);
         this.loadingSignal.set(false);

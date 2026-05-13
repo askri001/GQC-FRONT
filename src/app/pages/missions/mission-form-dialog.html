@@ -5,18 +5,19 @@
 <mat-dialog-content>
   <div class="form-grid">
 
-    <!-- AFFAIRE (required) — first field, full width -->
+    <!-- DOSSIER (required) — first field, full width -->
     <mat-form-field appearance="outline" class="bna-field bna-field-full">
-      <mat-label>Affaire *</mat-label>
-      <mat-icon matPrefix>gavel</mat-icon>
-      <mat-select [(ngModel)]="form.affaireId">
-        <mat-option [value]="null" disabled>Sélectionner une affaire</mat-option>
-        @for (a of affaires; track a.idAffaire ?? a.id) {
-          <mat-option [value]="a.idAffaire ?? a.id">
-            {{ a.numeroProcedure }} — {{ a.tribunal }}
-          </mat-option>
+      <mat-label>Dossier *</mat-label>
+      <mat-icon matPrefix>folder_open</mat-icon>
+      <mat-select [(ngModel)]="form.dossierId">
+        <mat-option [value]="null" disabled>Sélectionner un dossier</mat-option>
+        @for (d of dossiers; track $index) {
+          <mat-option [value]="d.idDossier ?? d.id">{{ getDossierLabel(d) }}</mat-option>
         }
       </mat-select>
+      @if (dossiers.length === 0) {
+        <mat-hint>Aucun dossier disponible</mat-hint>
+      }
     </mat-form-field>
 
     <!-- TYPE DE MISSION -->

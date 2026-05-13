@@ -184,3 +184,122 @@
     width: 100%;
   }
 }
+
+/* ============================================
+   FULL-WIDTH FIELD
+   ============================================ */
+.bna-field-full {
+  grid-column: 1 / -1;
+}
+
+/* ============================================
+   AUTO-FILL CARD — prestataire + RIB
+   ============================================ */
+.auto-fill-card {
+  background: linear-gradient(135deg, #f0faf6 0%, #e6f5f0 100%);
+  border: 1px solid #b2dfd1;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.auto-fill-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #007A58;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.auto-fill-title mat-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+.auto-fill-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.auto-fill-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.auto-fill-item-full {
+  grid-column: 1 / -1;
+}
+
+.auto-fill-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #7aada0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.auto-fill-label mat-icon {
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.auto-fill-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2e28;
+  padding: 5px 10px;
+  background: rgba(255,255,255,.8);
+  border-radius: 6px;
+  border: 1px solid #d0ede5;
+}
+
+.rib-value {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #007A58;
+}
+
+/* ============================================
+   LOADING / ERROR INLINE
+   ============================================ */
+.auto-fill-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f0faf6;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #7aada0;
+}
+
+.auto-fill-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(198,40,40,.06);
+  border: 1px solid rgba(198,40,40,.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #c62828;
+  font-weight: 500;
+}
+
+.auto-fill-error mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+}

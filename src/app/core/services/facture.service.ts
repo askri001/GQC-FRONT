@@ -122,6 +122,10 @@ export class FactureService {
     return this.api.put<Facture>(`${this.endpoint}/${id}/reject`, { commentaireRejet });
   }
 
+  payer(id: number): Observable<Facture> {
+    return this.api.put<Facture>(`${this.endpoint}/${id}/pay`, {});
+  }
+
   
   clearError(): void {
     this.errorSignal.set(null);

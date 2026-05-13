@@ -1,0 +1,235 @@
+/* ================================================================
+   VALIDATION PAGE
+   ================================================================ */
+
+.page-container {
+  padding: 24px;
+  min-height: 100%;
+  background: #f4faf7;
+}
+
+.page-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,150,110,.08);
+  overflow: hidden;
+}
+
+/* ── Title ─────────────────────────────────────────────────────── */
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid #e0f5ee;
+}
+
+.page-title h2 {
+  margin: 0 0 2px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a2e28;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #7aada0;
+}
+
+.title-icon {
+  color: #00966E;
+  font-size: 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex-shrink: 0;
+}
+
+.btn-refresh {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #e0f5ee;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #00966E;
+  transition: background .15s;
+}
+.btn-refresh:hover { background: #f0faf6; }
+
+/* ── Tabs ──────────────────────────────────────────────────────── */
+.validation-tabs {
+  padding: 0 20px 28px;
+}
+
+.tab-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #e53935;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.tab-content {
+  padding-top: 16px;
+}
+
+/* ── State boxes ───────────────────────────────────────────────── */
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  gap: 14px;
+  color: #7aada0;
+}
+
+.state-box mat-icon {
+  font-size: 52px !important;
+  width: 52px !important;
+  height: 52px !important;
+}
+
+.state-box p { margin: 0; font-size: 15px; }
+
+.error-box { color: #c62828; }
+.empty-box mat-icon { color: #00966E; }
+
+.retry-btn {
+  padding: 6px 18px;
+  border: 1px solid #c62828;
+  border-radius: 8px;
+  background: transparent;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ── Table ─────────────────────────────────────────────────────── */
+.table-scroll { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead tr { background: #f0faf6; }
+
+.data-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7aada0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #e0f5ee;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #f0faf6;
+  color: #1a2e28;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover { background: #f8fffe; }
+
+.td-numero  { font-weight: 600; color: #00966E; }
+.td-montant { font-weight: 600; }
+.td-comment { color: #7aada0; font-style: italic; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Type badge ────────────────────────────────────────────────── */
+.type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0,150,110,.10);
+  color: #00966E;
+}
+
+/* ── Status badges ─────────────────────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Missions */
+.badge-encours     { background: rgba(21,101,192,.10); color: #1565c0; }
+.badge-attente     { background: rgba(230,130,0,.12);  color: #b36200; }
+.badge-validation  { background: rgba(230,130,0,.12);  color: #b36200; }
+.badge-termine     { background: rgba(0,150,110,.12);  color: #007A58; }
+.badge-annule      { background: rgba(100,100,100,.10);color: #616161; }
+
+/* Factures */
+.badge-valide      { background: rgba(0,150,110,.12);  color: #007A58; }
+.badge-rejete      { background: rgba(198,40,40,.09);  color: #c62828; }
+.badge-paye        { background: rgba(21,101,192,.10); color: #1565c0; }
+
+/* ── Action buttons ────────────────────────────────────────────── */
+.td-actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+}
+
+.act-btn:hover  { opacity: .85; }
+.act-btn:active { transform: scale(.97); }
+
+.act-btn mat-icon {
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.act-validate {
+  background: rgba(0,150,110,.12);
+  color: #007A58;
+}
+
+.act-reject {
+  background: rgba(198,40,40,.09);
+  color: #c62828;
+}
