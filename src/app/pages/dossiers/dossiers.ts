@@ -223,6 +223,22 @@ export class DossiersComponent implements OnInit {
     });
   }
 
+  demanderCloture(dossier: Dossier) {
+    if (!confirm(`Demander la clôture du dossier "${dossier.reference}" ? Cette action soumettra le dossier pour clôture définitive.`)) return;
+    this.dossierService.requestClosure(dossier.idDossier!).subscribe({
+      next: () => { this.loadDossiers(); this.showNotification('Demande de clôture envoyée au responsable', 'success'); },
+      error: () => this.showNotification('Erreur lors de la demande de clôture', 'error')
+    });
+  }
+
+  cloturerDossier(dossier: Dossier) {
+    if (!confirm(`Clôturer définitivement le dossier "${dossier.reference}" ? Cette action est irréversible.`)) return;
+    this.dossierService.close(dossier.idDossier!).subscribe({
+      next: () => { this.loadDossiers(); this.showNotification('Dossier clôturé', 'success'); },
+      error: () => this.showNotification('Erreur lors de la clôture', 'error')
+    });
+  }
+
   rejeter(dossier: Dossier) {
     const ref = this.dialog.open(RejetCommentaireDialogComponent, {
       width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
