@@ -79,7 +79,8 @@ export class SidebarComponent {
     { label: 'Audiences',           icon: 'event',         route: '/audiences',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Prestataires',        icon: 'business',      route: '/prestataires', roles: ['ROLE_ADMIN', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Missions',            icon: 'assignment',    route: '/missions',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
+    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
+    { label: 'Messagerie',          icon: 'mail',          route: '/messages',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
   ];
 
   filteredNavItems(): NavItem[] {

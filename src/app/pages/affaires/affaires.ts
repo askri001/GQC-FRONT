@@ -23,6 +23,7 @@ import { Affaire, STATUT_AFFAIRE_LABELS } from '../../core/models/affaire.model'
 import { Dossier } from '../../core/models/dossier.model';
 import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { MessageService } from '../../core/services/message.service';
 
 interface PrestataireRef { id: number; nom: string; prenom: string; type: string; }
 
@@ -240,6 +241,7 @@ export class AffairesComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   readonly authService = inject(AuthService);
   private dialog = inject(MatDialog);
+  private messageService = inject(MessageService);
 
   affaires = signal<Affaire[]>([]);
   dossiers = signal<Dossier[]>([]);
@@ -409,7 +411,21 @@ export class AffairesComponent implements OnInit {
     ref.afterClosed().subscribe(commentaire => {
       if (commentaire === null) return;
       this.affaireService.reject(a.idAffaire!, commentaire || undefined).subscribe({
-        next: () => { this.loadAffaires(); this.showNotification('Affaire rejetée — renvoyée en cours', 'success'); },
+        next: () => {
+          this.loadAffaires();
+          this.showNotification('Affaire rejetée — message envoyé', 'success');
+          // Auto-send message — find ChargeDossier from dossier
+          const dossier = this.dossiers().find(d => d.idDossier === a.dossierId);
+          if (dossier?.chargeDossierId) {
+            this.messageService.send({
+              toUserId:   dossier.chargeDossierId,
+              subject:    `Affaire rejetée : ${a.numeroProcedure}`,
+              body:       commentaire || 'Votre affaire a été rejetée. Veuillez la corriger.',
+              entityType: 'AFFAIRE',
+              entityId:   a.idAffaire,
+            }).subscribe();
+          }
+        },
         error: () => this.showNotification('Erreur lors du rejet', 'error')
       });
     });

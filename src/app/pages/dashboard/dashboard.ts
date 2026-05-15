@@ -391,12 +391,12 @@ export class DashboardComponent implements OnInit {
 
   loadChargeDossierData() {
     this.loadingCharge.set(true);
-    // Load all dossiers — filter client-side by chargeDossierId matching current user
     const userId = Number(localStorage.getItem('auth_user_id'));
     this.dossierService.getAll().subscribe({
       next: (data) => {
+        // Filter by chargeUserId — fall back to all if none assigned yet
         const mine = userId ? data.filter(d => d.chargeDossierId === userId) : data;
-        this.myDossiers.set(mine);
+        this.myDossiers.set(mine.length > 0 ? mine : data);
         this.loadingCharge.set(false);
       },
       error: () => this.loadingCharge.set(false)
@@ -473,6 +473,7 @@ export class DashboardComponent implements OnInit {
       'SUSPENDU': 'Suspendu',
       'EN_ATTENTE': 'En Attente',
       'EN_ATTENTE_VALIDATION': 'En Attente de Validation',
+      'EN_ATTENTE_CLOTURE': 'En Attente de Clôture',
       'VALIDE': 'Validé',
       'TRANSFERE': 'Transféré',
       'OUVERT': 'Ouvert'

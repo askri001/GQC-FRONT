@@ -31,6 +31,15 @@ export const routes: Routes = [
     children: [
 
       {
+        path: 'messages',
+        loadComponent: () =>
+          import('./pages/messages/messages.component')
+            .then(m => m.MessagesComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
+      },
+
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./pages/dashboard/dashboard')

@@ -1,53 +1,44 @@
-
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 @import './app/shared/bna-dialog.css';
 
-
+/* ================================================================
+   BNA CSS VARIABLES — single source of truth
+   ================================================================ */
 :root {
-  --bna-primary:      #00966E;
-  --bna-primary-dark: #007A58;
+  --bna-primary:        #00966E;
+  --bna-primary-dark:   #007A58;
   --bna-primary-bright: #00C48C;
-  --bna-primary-light: #E0F5EE;
+  --bna-primary-light:  #E0F5EE;
 
-  --bna-navy:         #0F2044;
-  --bna-navy-mid:     #1A3A6B;
-  --bna-navy-light:   #2A5298;
+  --bna-navy:           #0F2044;
+  --bna-navy-mid:       #1A3A6B;
+  --bna-navy-light:     #2A5298;
 
-  --bna-dark:         #0F2044;
-  --bna-darker:       #091529;
-  --bna-light:        #00C48C;
-  --bna-lighter:      #E0F5EE;
-  --bna-bg:           #F0FAF6;
-  --bna-bg-page:      #F4F6F9;
+  --bna-dark:           #007A58;
+  --bna-darker:         #005C43;
+  --bna-light:          #4DBFA3;
+  --bna-lighter:        #B2DFD1;
+  --bna-bg:             #E6F5F0;
+  --bna-bg-page:        #F0FAF6;
 
-  --bna-white:        #FFFFFF;
-  --bna-text:         #1A1F2E;
-  --bna-text-muted:   #6B7280;
-  --bna-border:       #E5E7EB;
+  --bna-white:          #FFFFFF;
+  --bna-text:           #1A2E28;
+  --bna-text-muted:     #6B8C82;
+  --bna-border:         #E5E7EB;
 
-  --bna-success:      #059669;
-  --bna-success-bg:   #D1FAE5;
-  --bna-warning:      #D97706;
-  --bna-warning-bg:   #FEF3C7;
-  --bna-error:        #DC2626;
-  --bna-error-bg:     #FEE2E2;
-  --bna-info:         #2563EB;
-  --bna-info-bg:      #DBEAFE;
+  --bna-success:        #059669;
+  --bna-success-bg:     #D1FAE5;
+  --bna-warning:        #D97706;
+  --bna-warning-bg:     #FEF3C7;
+  --bna-error:          #DC2626;
+  --bna-error-bg:       #FEE2E2;
+  --bna-info:           #2563EB;
+  --bna-info-bg:        #DBEAFE;
 }
 
-:root {
-  --bna-primary:      #00966E;
-  --bna-dark:         #007A58;
-  --bna-darker:       #005C43;
-  --bna-light:        #4DBFA3;
-  --bna-lighter:      #B2DFD1;
-  --bna-bg:           #E6F5F0;
-  --bna-bg-page:      #F0FAF6;
-  --bna-white:        #FFFFFF;
-  --bna-text:         #1A2E28;
-  --bna-text-muted:   #6B8C82;
-}
-
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
 * {
   margin: 0;
   padding: 0;
@@ -57,17 +48,23 @@
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f7fa;
+  background-color: var(--bna-bg-page);
   color: #333;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--bna-navy);
+  font-weight: 600;
+}
 
+/* ================================================================
+   ANGULAR MATERIAL OVERRIDES
+   ================================================================ */
 .mat-mdc-card {
   border-radius: 12px !important;
   box-shadow: 0 4px 16px rgba(15, 32, 68, 0.08) !important;
 }
 
-/* Profile dialog rounded corners */
 .profile-dialog-container .mat-mdc-dialog-container {
   border-radius: 16px !important;
   overflow: hidden !important;
@@ -75,245 +72,60 @@ html, body {
 }
 
 .mat-mdc-raised-button.mat-primary {
-  background: linear-gradient(135deg, var(--bna-dark) 0%, var(--bna-primary) 100%) !important;
+  background: linear-gradient(135deg, var(--bna-navy) 0%, var(--bna-primary) 100%) !important;
   border-radius: 8px !important;
 }
 
-.mat-mdc-form-field {
-  width: 100%;
-}
+/* ================================================================
+   SCROLLBAR
+   ================================================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
+/* ================================================================
+   STATUS & RISK CHIPS
+   ================================================================ */
+.active-chip   { background: #e8f5e9 !important; color: #2e7d32 !important; }
+.inactive-chip { background: #ffebee !important; color: #c62828 !important; }
 
-h1, h2, h3, h4, h5, h6 {
-  color: var(--bna-navy);
-  font-weight: 600;
-}
-
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
-}
-
-
-.page-container {
-  padding: 0;
-}
-
-.page-card {
-  padding: 20px;
-  border-radius: 12px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.card-header h2 {
-  margin: 0;
-  color: var(--bna-navy);
-}
-
-.full-width {
-  width: 100%;
-}
-
-.filters {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.filters mat-form-field {
-  min-width: 200px;
-}
-
-
-.active-chip {
-  background: #e8f5e9 !important;
-  color: #2e7d32 !important;  
-}
-
-.inactive-chip {
-  background: #ffebee !important;
-  color: #c62828 !important;
-}
-
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-.loading-shade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  transition: all 0.3s ease;
-}
-
-.glass-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
-}
-
-.glass-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 16px 24px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  justify-content: center;
-  margin-bottom: 32px;
-}
-
-.glass-title-icon {
-  font-size: 36px;
-  color: #1e88e5;
-  filter: drop-shadow(0 2px 4px rgba(30, 136, 229, 0.3));
-}
-
-.glass-table {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.glass-field {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-}
-
-.glass-field:hover {
-  background: rgba(255, 255, 255, 0.9) !important;
-  transform: translateY(-1px);
-}
-
-.glass-paginator {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  margin-top: 24px;
-  backdrop-filter: blur(10px);
-}
-
-.glass-row:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
-  transform: scale(1.01);
-}
-
-
-.chip-status-en_cours { background: #e3f2fd; color: #1976d2; }
-.chip-status-cloture { background: #e8f5e8; color: #388e3c; }
-.chip-status-suspendu { background: #fff3e0; color: #f57c00; }
-.chip-status-transfere { background: #f3e5f5; color: #7b1fa2; }
+.chip-status-en_cours   { background: #e3f2fd; color: #1976d2; }
+.chip-status-cloture    { background: #e8f5e8; color: #388e3c; }
+.chip-status-suspendu   { background: #fff3e0; color: #f57c00; }
+.chip-status-transfere  { background: #f3e5f5; color: #7b1fa2; }
 .chip-status-en_attente { background: #f5f5f5; color: #616161; }
-.chip-status-payee { background: #c8e6c9; color: #1b5e20; }
-.chip-status-validee { background: #b3e5fc; color: #0277bd; }
-.chip-status-rejetee { background: #ffcdd2; color: #c62828; }
+.chip-status-payee      { background: #c8e6c9; color: #1b5e20; }
+.chip-status-validee    { background: #b3e5fc; color: #0277bd; }
+.chip-status-rejetee    { background: #ffcdd2; color: #c62828; }
 
-.chip-risk-faible { background: #e8f5e8; color: #2e7d32; }
-.chip-risk-moyen { background: #fff3e0; color: #f57c00; }
-.chip-risk-eleve { background: #ffebee; color: #d32f2f; }
+.chip-risk-faible   { background: #e8f5e8; color: #2e7d32; }
+.chip-risk-moyen    { background: #fff3e0; color: #f57c00; }
+.chip-risk-eleve    { background: #ffebee; color: #d32f2f; }
 .chip-risk-critique { background: #ffebee; color: #c62828; font-weight: 600; }
 
-.status-chip, .risk-chip, .specialite-chip {
-  height: 32px;
-  font-size: 12px;
-  font-weight: 500;
-}
+/* ================================================================
+   SNACKBARS
+   ================================================================ */
+.success-snackbar { background: #00966E !important; color: #fff !important; }
+.error-snackbar   { background: #c62828 !important; color: #fff !important; }
 
+/* ================================================================
+   ANIMATIONS
+   ================================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(25, 118, 210, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0); }
-}
-
-
-.table-hover { transition: all 0.2s ease; border-radius: 12px; margin: 4px 0; }
-.no-data-container, .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64px;
-  color: #666;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  text-align: center;
-}
-
-.no-data-container mat-icon {
-  font-size: 64px;
-  height: 64px;
-  width: 64px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.inline-edit-row {
-  background: rgba(0, 150, 110, 0.05);
-  border: 2px dashed rgba(0, 150, 110, 0.25);
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 20px;
-  animation: slideIn 0.3s ease;
-}
-
-
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
 @media (max-width: 768px) {
   .filters { flex-direction: column; }
-  .search-field { min-width: 100%; }
-  .glass-card { padding: 20px; margin: 10px; }
 }
-

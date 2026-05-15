@@ -21,6 +21,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { RouterModule } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { MessageService } from '../../core/services/message.service';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
 import { Client } from '../../core/models/client.model';
@@ -59,6 +60,7 @@ export class DossiersComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   readonly authService = inject(AuthService);
   private dialog = inject(MatDialog);
+  private messageService = inject(MessageService);
 
   dossiers = signal<Dossier[]>([]);
   clients = signal<Client[]>([]);
@@ -247,7 +249,20 @@ export class DossiersComponent implements OnInit {
     ref.afterClosed().subscribe(commentaire => {
       if (commentaire === null) return;
       this.dossierService.reject(dossier.idDossier!, commentaire).subscribe({
-        next: () => { this.loadDossiers(); this.showNotification('Dossier rejeté — renvoyé en cours', 'success'); },
+        next: (updated) => {
+          this.loadDossiers();
+          this.showNotification('Dossier rejeté — message envoyé au chargé de dossier', 'success');
+          // Auto-send message to ChargeDossier
+          if (updated.chargeDossierId) {
+            this.messageService.send({
+              toUserId:   updated.chargeDossierId,
+              subject:    `Dossier rejeté : ${dossier.reference}`,
+              body:       commentaire || 'Votre dossier a été rejeté. Veuillez le corriger et le soumettre à nouveau.',
+              entityType: 'DOSSIER',
+              entityId:   dossier.idDossier,
+            }).subscribe();
+          }
+        },
         error: () => this.showNotification('Erreur lors du rejet', 'error')
       });
     });

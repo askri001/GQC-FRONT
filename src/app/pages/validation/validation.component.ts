@@ -29,6 +29,7 @@ import { MissionService } from '../../core/services/mission.service';
 import { FactureService } from '../../core/services/facture.service';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
 import { ApiService } from '../../core/services/api.service';
+import { MessageService } from '../../core/services/message.service';
 
 @Component({
   selector: 'app-validation',
@@ -53,6 +54,7 @@ export class ValidationComponent implements OnInit {
   private snackBar       = inject(MatSnackBar);
   private dialog         = inject(MatDialog);
   private api            = inject(ApiService);
+  private messageService = inject(MessageService);
 
   // ── Missions EN_COURS ─────────────────────────────────────────
   missions        = signal<Mission[]>([]);
@@ -124,17 +126,37 @@ export class ValidationComponent implements OnInit {
   rejeterMission(m: Mission): void {
     const ref = this.dialog.open(RejetCommentaireDialogComponent, {
       width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: {
-        titre: 'Rejeter la mission',
-        sousTitre: `Mission : ${this.typeMissionLabels[m.typeMission]}`,
-      },
+      data: { titre: 'Rejeter la mission', sousTitre: `Mission : ${this.typeMissionLabels[m.typeMission]}` },
     });
     ref.afterClosed().subscribe(commentaire => {
       if (commentaire === null || commentaire === undefined) return;
       this.missionService.reject(m.id!, commentaire || undefined).subscribe({
         next: () => {
-          this.snackBar.open('✖ Mission rejetée — renvoyée en attente', 'OK', { duration: 3000 });
+          this.snackBar.open('Mission rejetée — message envoyé', 'OK', { duration: 3000 });
           this.loadMissions();
+          // Auto-send message to ChargeDossier via affaire → dossier chain
+          // We send to the mission's affaire owner — use affaireId if available
+          if (m.affaireId) {
+            this.api.get<any>(`/affaires/${m.affaireId}`).subscribe({
+              next: (affaire) => {
+                if (affaire?.dossierId) {
+                  this.api.get<any>(`/dossiers/${affaire.dossierId}`).subscribe({
+                    next: (dossier) => {
+                      if (dossier?.chargeDossierId) {
+                        this.messageService.send({
+                          toUserId:   dossier.chargeDossierId,
+                          subject:    `Mission rejetée : ${this.typeMissionLabels[m.typeMission]}`,
+                          body:       commentaire || 'Votre mission a été rejetée. Veuillez la corriger.',
+                          entityType: 'MISSION',
+                          entityId:   m.id,
+                        }).subscribe();
+                      }
+                    }
+                  });
+                }
+              }
+            });
+          }
         },
         error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
       });
@@ -157,17 +179,42 @@ export class ValidationComponent implements OnInit {
   rejeterFacture(f: Facture): void {
     const ref = this.dialog.open(RejetCommentaireDialogComponent, {
       width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: {
-        titre: 'Rejeter la facture',
-        sousTitre: `Facture N° ${f.numero} — ${f.montant} DT`,
-      },
+      data: { titre: 'Rejeter la facture', sousTitre: `Facture N° ${f.numero} — ${f.montant} DT` },
     });
     ref.afterClosed().subscribe(commentaire => {
       if (commentaire === null || commentaire === undefined) return;
       this.factureService.reject(f.id!, commentaire || undefined).subscribe({
         next: () => {
-          this.snackBar.open('✖ Facture rejetée', 'OK', { duration: 3000 });
+          this.snackBar.open('Facture rejetée — message envoyé', 'OK', { duration: 3000 });
           this.loadFactures();
+          // Auto-send message via mission → affaire → dossier chain
+          if (f.missionId) {
+            this.api.get<any>(`/missions/${f.missionId}`).subscribe({
+              next: (mission) => {
+                if (mission?.affaireId) {
+                  this.api.get<any>(`/affaires/${mission.affaireId}`).subscribe({
+                    next: (affaire) => {
+                      if (affaire?.dossierId) {
+                        this.api.get<any>(`/dossiers/${affaire.dossierId}`).subscribe({
+                          next: (dossier) => {
+                            if (dossier?.chargeDossierId) {
+                              this.messageService.send({
+                                toUserId:   dossier.chargeDossierId,
+                                subject:    `Facture rejetée : ${f.numero}`,
+                                body:       commentaire || 'Votre facture a été rejetée. Veuillez la corriger.',
+                                entityType: 'FACTURE',
+                                entityId:   f.id,
+                              }).subscribe();
+                            }
+                          }
+                        });
+                      }
+                    }
+                  });
+                }
+              }
+            });
+          }
         },
         error: () => this.snackBar.open('Erreur lors du rejet', 'OK', { duration: 3000 }),
       });

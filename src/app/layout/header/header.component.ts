@@ -1,4 +1,4 @@
-import { Component, input, inject } from '@angular/core';
+import { Component, input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,8 +7,16 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { MessageService } from '../../core/services/message.service';
 import { ProfileDialogComponent } from '../../shared/profile-dialog/profile-dialog.component';
+import { ComposeMessageDialogComponent } from '../../shared/compose-message-dialog/compose-message-dialog.component';
+import { ViewMessageDialogComponent } from '../../shared/view-message-dialog/view-message-dialog.component';
+import { Router } from '@angular/router';
+import { Message } from '../../core/models/message.model';
 
 @Component({
   selector: 'app-header',
@@ -16,7 +24,8 @@ import { ProfileDialogComponent } from '../../shared/profile-dialog/profile-dial
   imports: [
     CommonModule, RouterModule,
     MatIconModule, MatButtonModule, MatMenuModule,
-    MatBadgeModule, MatDividerModule, MatDialogModule
+    MatBadgeModule, MatDividerModule, MatDialogModule,
+    MatProgressSpinnerModule, MatTooltipModule
   ],
   template: `
     <header class="header">
@@ -25,14 +34,72 @@ import { ProfileDialogComponent } from '../../shared/profile-dialog/profile-dial
       </div>
 
       <div class="header-right">
-        <button mat-icon-button class="header-btn" matTooltip="Notifications">
-          <mat-icon [matBadge]="3" matBadgeColor="warn" matBadgeSize="small" aria-hidden="false">notifications</mat-icon>
+
+        <!-- ── Notifications ── -->
+        <button mat-icon-button class="header-btn"
+          [matMenuTriggerFor]="notifMenu"
+          (menuOpened)="notifService.load()"
+          matTooltip="Notifications">
+          @if (notifService.count > 0) {
+            <mat-icon [matBadge]="notifService.count" matBadgeColor="warn" matBadgeSize="small">
+              notifications
+            </mat-icon>
+          } @else {
+            <mat-icon>notifications_none</mat-icon>
+          }
         </button>
 
-        <button mat-icon-button class="header-btn" matTooltip="Messages">
-          <mat-icon [matBadge]="5" matBadgeColor="primary" matBadgeSize="small" aria-hidden="false">mail</mat-icon>
+        <mat-menu #notifMenu="matMenu" class="notif-menu">
+          <ng-template matMenuContent>
+            <div class="notif-header" (click)="$event.stopPropagation()">
+              <span>Notifications</span>
+              @if (notifService.count > 0) {
+                <span class="notif-badge">{{ notifService.count }}</span>
+              }
+            </div>
+            <mat-divider></mat-divider>
+            @if (notifService.loading()) {
+              <div class="notif-loading" (click)="$event.stopPropagation()">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            } @else if (notifService.notifications().length === 0) {
+              <div class="notif-empty" (click)="$event.stopPropagation()">
+                <mat-icon>check_circle</mat-icon>
+                <span>Aucune notification</span>
+              </div>
+            } @else {
+              @for (n of notifService.notifications(); track n.id) {
+                <button mat-menu-item class="notif-item" (click)="navigate(n)">
+                  <mat-icon [class]="'notif-icon notif-' + n.type">{{ n.icon }}</mat-icon>
+                  <div class="notif-content">
+                    <span class="notif-title">{{ n.title }}</span>
+                    <span class="notif-msg">{{ n.message }}</span>
+                  </div>
+                </button>
+              }
+            }
+          </ng-template>
+        </mat-menu>
+
+        <!-- ── Mail / Inbox ── -->
+        <button mat-icon-button class="header-btn"
+          (click)="goToMessages()"
+          matTooltip="Messages">
+          @if (messageService.unreadCount() > 0) {
+            <mat-icon [matBadge]="messageService.unreadCount()" matBadgeColor="primary" matBadgeSize="small">
+              mail
+            </mat-icon>
+          } @else {
+            <mat-icon>mail_outline</mat-icon>
+          }
         </button>
 
+        <!-- Compose button -->
+        <button mat-icon-button class="header-btn" (click)="openCompose()" matTooltip="Nouveau message">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <!-- ── User menu ── -->
         <div class="user-menu">
           <button mat-button [matMenuTriggerFor]="userMenu" class="user-btn">
             <div class="user-avatar">
@@ -67,17 +134,46 @@ import { ProfileDialogComponent } from '../../shared/profile-dialog/profile-dial
   `,
   styleUrls: ['./header.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   pageTitle = input<string>('BNA Bank');
 
-  public authService = inject(AuthService);
-  private dialog = inject(MatDialog);
+  public authService    = inject(AuthService);
+  public notifService   = inject(NotificationService);
+  public messageService = inject(MessageService);
+  private dialog        = inject(MatDialog);
+  private router        = inject(Router);
 
-  logout() {
+  // ── Mail state ─────────────────────────────────────────────
+  ngOnInit(): void {
+    this.notifService.load();
+    this.messageService.loadUnreadCount();
+  }
+
+  goToMessages(): void {
+    this.router.navigate(['/messages']);
+  }
+
+  openCompose(): void {
+    this.dialog.open(ComposeMessageDialogComponent, {
+      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: {}
+    });
+  }
+
+  navigate(n: { route: string; entityId?: number }): void {
+    // For dossiers, navigate to the detail page directly
+    if (n.route === '/dossiers' && n.entityId) {
+      this.router.navigate(['/dossiers', n.entityId]);
+    } else {
+      this.router.navigate([n.route]);
+    }
+  }
+
+  logout(): void {
     this.authService.logout();
   }
 
-  openProfile() {
+  openProfile(): void {
     this.dialog.open(ProfileDialogComponent, {
       width: '520px',
       panelClass: 'profile-dialog-container',
