@@ -15,6 +15,10 @@ export class DossierService {
     return this.api.get<Dossier[]>(this.endpoint);
   }
 
+  getByClientId(clientId: number): Observable<Dossier[]> {
+    return this.api.get<Dossier[]>(`${this.endpoint}/client/${clientId}`);
+  }
+
   getById(id: number): Observable<Dossier> {
     return this.api.get<Dossier>(`${this.endpoint}/${id}`);
   }

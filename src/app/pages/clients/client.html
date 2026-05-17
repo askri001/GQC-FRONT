@@ -142,6 +142,18 @@
                       <mat-icon>edit</mat-icon>
                     </button>
                     <button
+                      class="act-btn"
+                      style="color:#00966e"
+                      (click)="downloadFichePdf(c)"
+                      [disabled]="pdfLoadingId() === c.id"
+                      title="Fiche Client PDF">
+                      @if (pdfLoadingId() === c.id) {
+                        <mat-spinner diameter="18"></mat-spinner>
+                      } @else {
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      }
+                    </button>
+                    <button
                       class="act-btn act-toggle"
                       (click)="toggleStatus(c)"
                       [class.on]="c.active"

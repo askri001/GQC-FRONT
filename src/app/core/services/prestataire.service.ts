@@ -222,33 +222,20 @@ export class PrestataireService {
 
   
   delete(id: number): Observable<void> {
-
     this.loadingSignal.set(true);
 
     return this.api.delete<void>(`${this.endpoint}/${id}`).pipe(
-
       tap(() => {
-
         this.prestatairesSignal.update(list =>
           list.filter(p => p.idPrestataire !== id)
         );
-
         this.loadingSignal.set(false);
-
       }),
-
       catchError(error => {
-
-        console.error('Erreur suppression prestataire', error);
-
+        // Do NOT swallow — rethrow so the component's error() handler fires
         this.loadingSignal.set(false);
-
-        this.errorSignal.set('Erreur suppression');
-
-        return of(undefined as any);
-
+        throw error;
       })
-
     );
   }
 

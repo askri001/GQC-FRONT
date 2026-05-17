@@ -10,6 +10,12 @@
     <!-- ===== TOOLBAR ===== -->
     <div class="toolbar">
 
+      <!-- Nouvelle mission — tout à droite via order CSS -->
+      <button class="btn-new" (click)="openAddDialog()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')" style="margin-left:auto;order:99">
+        <mat-icon>add</mat-icon>
+        Nouvelle mission
+      </button>
+
       <!-- Search -->
       <div class="search-box">
         <input
@@ -50,13 +56,34 @@
         </div>
       </div>
 
-      <div class="toolbar-spacer"></div>
+      <!-- Prestataire dropdown -->
+      <div class="select-wrap">
+        <label class="select-label">Prestataire</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="prestataireFilter" (ngModelChange)="applyFilter()">
+            <option value="">Tous les prestataires</option>
+            @for (p of prestataires(); track p.idPrestataire ?? p.id) {
+              <option [value]="p.idPrestataire ?? p.id">
+                {{ (p.prenom || '') + ' ' + (p.nom || '') | titlecase }}
+              </option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
 
-      <!-- Nouvelle mission -->
-      <button class="btn-new" (click)="openAddDialog()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-        <mat-icon>add</mat-icon>
-        Nouvelle mission
-      </button>
+      <!-- Dossier dropdown -->
+      <div class="select-wrap">        <label class="select-label">Dossier</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="dossierFilter" (ngModelChange)="applyFilter()">
+            <option value="">Tous les dossiers</option>
+            @for (id of dossierIds(); track id) {
+              <option [value]="id">Dossier #{{ id }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
 
     </div>
 
@@ -131,11 +158,24 @@
                   <!-- ACTIONS -->
                   <td class="td-actions">
 
-                    <!-- ChargeDossier : Modifier, Démarrer, Soumettre, Annuler, Supprimer -->
-                    <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && m.statut !== 'EN_ATTENTE_VALIDATION' && m.statut !== 'TERMINEE' && m.statut !== 'ANNULEE'">
-                      <mat-icon>edit</mat-icon>
-                    </button>
+                    <!-- ChargeDossier : Edit / Lock logic -->
+                    @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                      @if (m.statut === 'EN_COURS' || m.statut === 'EN_ATTENTE_VALIDATION') {
+                        <!-- Locked: EN_COURS or EN_ATTENTE_VALIDATION -->
+                        <span class="act-btn act-locked"
+                          matTooltip="Modification impossible : mission en cours de traitement"
+                          matTooltipPosition="above">
+                          <mat-icon>lock</mat-icon>
+                        </span>
+                      } @else if (m.statut === 'EN_ATTENTE') {
+                        <!-- EN_ATTENTE: editable -->
+                        <button class="act-btn act-edit" (click)="openEditDialog(m)" title="Modifier">
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                      }
+                      <!-- TERMINEE / ANNULEE: no edit button (final states) -->
+                    }
+
                     @if (m.statut === 'EN_ATTENTE' && authService.hasRole('ROLE_CHARGEDOSSIER')) {
                       <button class="act-btn act-toggle" (click)="toggleStatus(m)" title="Démarrer">
                         <mat-icon>play_arrow</mat-icon>
@@ -152,9 +192,33 @@
                       </button>
                     }
                     <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer"
-                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') || authService.hasRole('ROLE_ADMIN')">
+                      *ngIf="(authService.hasRole('ROLE_CHARGEDOSSIER') || authService.hasRole('ROLE_ADMIN')) && m.statut !== 'EN_COURS' && m.statut !== 'EN_ATTENTE_VALIDATION'">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
+
+                    <!-- Responsable : Valider / Rejeter (EN_ATTENTE_VALIDATION uniquement) -->
+                    @if (m.statut === 'EN_ATTENTE_VALIDATION' && (authService.hasRole('ROLE_RESPONSABLE') || authService.hasRole('ROLE_ADMIN'))) {
+                      <button class="act-btn act-validate-resp"
+                        (click)="valider(m)"
+                        [disabled]="isProcessing(m.id!)"
+                        title="Valider la mission">
+                        @if (isProcessing(m.id!)) {
+                          <mat-spinner diameter="14"></mat-spinner>
+                        } @else {
+                          <mat-icon>check_circle</mat-icon>
+                        }
+                      </button>
+                      <button class="act-btn act-reject-resp"
+                        (click)="rejeter(m)"
+                        [disabled]="isProcessing(m.id!)"
+                        title="Rejeter la mission">
+                        @if (isProcessing(m.id!)) {
+                          <mat-spinner diameter="14"></mat-spinner>
+                        } @else {
+                          <mat-icon>cancel</mat-icon>
+                        }
+                      </button>
+                    }
 
                   </td>
 

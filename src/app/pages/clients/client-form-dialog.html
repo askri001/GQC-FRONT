@@ -5,14 +5,26 @@
 <mat-dialog-content>
   <div class="form-grid">
 
-    <!-- TYPE -->
-    <mat-form-field appearance="outline" class="bna-field">
+    <!-- TYPE — readonly in edit mode -->
+    <mat-form-field appearance="outline" class="bna-field" [class.field-locked]="isEdit">
       <mat-label>Type</mat-label>
       <mat-icon matPrefix>category</mat-icon>
-      <mat-select [(ngModel)]="form.typeClient">
-        <mat-option value="PHYSIQUE">Particulier</mat-option>
-        <mat-option value="MORALE">Société</mat-option>
-      </mat-select>
+      @if (isEdit) {
+        <!-- Display as read-only text in edit mode -->
+        <input matInput
+          [value]="form.typeClient === 'PHYSIQUE' ? 'Particulier' : 'Société'"
+          readonly
+          class="locked-input">
+        <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+      } @else {
+        <mat-select [(ngModel)]="form.typeClient">
+          <mat-option value="PHYSIQUE">Particulier</mat-option>
+          <mat-option value="MORALE">Société</mat-option>
+        </mat-select>
+      }
+      @if (isEdit) {
+        <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
+      }
     </mat-form-field>
 
     <!-- NOM -->
@@ -22,29 +34,43 @@
       <input matInput [(ngModel)]="form.nom">
     </mat-form-field>
 
-    <!-- PHYSIQUE -->
-    <ng-container *ngIf="isPhysical">
+    <!-- PHYSIQUE fields -->
+    @if (isPhysical) {
       <mat-form-field appearance="outline" class="bna-field">
         <mat-label>Prénom</mat-label>
         <mat-icon matPrefix>person_outline</mat-icon>
         <input matInput [(ngModel)]="form.prenom">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="bna-field">
+      <!-- CIN — readonly in edit mode -->
+      <mat-form-field appearance="outline" class="bna-field" [class.field-locked]="isEdit">
         <mat-label>CIN</mat-label>
         <mat-icon matPrefix>badge</mat-icon>
-        <input matInput [(ngModel)]="form.cin">
+        <input matInput [(ngModel)]="form.cin"
+          [readonly]="isEdit"
+          [class.locked-input]="isEdit">
+        @if (isEdit) {
+          <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+          <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
+        }
       </mat-form-field>
-    </ng-container>
+    }
 
-    <!-- MORALE -->
-    <ng-container *ngIf="!isPhysical">
-      <mat-form-field appearance="outline" class="bna-field">
+    <!-- MORALE fields -->
+    @if (!isPhysical) {
+      <!-- RNE — readonly in edit mode -->
+      <mat-form-field appearance="outline" class="bna-field" [class.field-locked]="isEdit">
         <mat-label>RNE</mat-label>
         <mat-icon matPrefix>business</mat-icon>
-        <input matInput [(ngModel)]="form.rne">
+        <input matInput [(ngModel)]="form.rne"
+          [readonly]="isEdit"
+          [class.locked-input]="isEdit">
+        @if (isEdit) {
+          <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+          <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
+        }
       </mat-form-field>
-    </ng-container>
+    }
 
     <!-- TEL -->
     <mat-form-field appearance="outline" class="bna-field">
@@ -74,13 +100,8 @@
   <button mat-button mat-dialog-close type="button">
     Annuler
   </button>
-
-  <button
-    mat-raised-button
-    color="primary"
-    type="button"
-    (click)="onSubmit()"
-    [disabled]="isLoading">
+  <button mat-raised-button color="primary" type="button"
+    (click)="onSubmit()" [disabled]="isLoading">
     {{ isEdit ? 'Modifier' : 'Créer' }}
   </button>
 </mat-dialog-actions>

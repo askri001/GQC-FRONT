@@ -110,11 +110,25 @@
                   <!-- N° FACTURE -->
                   <td class="td-numero">{{ f.numero }}</td>
 
-                  <!-- MISSION -->
-                  <td class="td-mission">{{ getMissionLabel(f.missionId) }}</td>
+                  <!-- MISSION / DOSSIER — only if linked -->
+                  <td class="td-mission">
+                    @if (getMissionLabel(f) !== '—') {
+                      {{ getMissionLabel(f) }}
+                    } @else {
+                      <span class="td-empty">—</span>
+                    }
+                  </td>
 
-                  <!-- AFFAIRE -->
-                  <td class="td-mission">{{ getAffaireLabel(f.dossierId) }}</td>
+                  <!-- AFFAIRE — only if linked -->
+                  <td class="td-mission">
+                    @if (f.affaireNumeroProcedure) {
+                      {{ f.affaireNumeroProcedure }}
+                    } @else if (getAffaireLabel(f.dossierId) !== '—') {
+                      {{ getAffaireLabel(f.dossierId) }}
+                    } @else {
+                      <span class="td-empty">—</span>
+                    }
+                  </td>
 
                   <!-- MONTANT -->
                   <td class="td-montant">{{ f.montant | number:'1.2-2' }} DT</td>
@@ -128,9 +142,25 @@
 
                   <!-- STATUT — badge couleur par statut -->
                   <td class="td-statut">
+<<<<<<< Updated upstream
                     <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
                       {{ statutLabels[f.statut] }}
                     </span>
+=======
+                    @if (f.statut) {
+                      <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
+                        {{ statutLabels[f.statut] || f.statut }}
+                      </span>
+                    }
+                    @if (f.commentaireRejet) {
+                      <mat-icon
+                        style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help;vertical-align:middle;margin-left:4px"
+                        [matTooltip]="'Rejeté : ' + f.commentaireRejet"
+                        matTooltipPosition="right">
+                        chat_bubble
+                      </mat-icon>
+                    }
+>>>>>>> Stashed changes
                   </td>
 
                   <!-- DATE PAIEMENT — uniquement si PAYEE -->
@@ -145,24 +175,47 @@
                     }
                   </td>
 
-                  <!-- ACTIONS — ChargeDossier uniquement, Valider/Rejeter → page Validation -->
+                  <!-- ACTIONS — workflow conditionnel par statut et rôle -->
                   <td class="td-actions">
 
-                    <!-- EN_ATTENTE_VALIDATION : Modifier + Supprimer (ChargeDossier) -->
+                    <!-- EN_ATTENTE_VALIDATION : Valider/Rejeter (Responsable) + lock icon (ChargeDossier only) -->
                     @if (f.statut === 'EN_ATTENTE_VALIDATION') {
-                      <button class="act-btn act-edit"
-                        (click)="openEditFacture(f)" title="Modifier"
-                        *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                        <mat-icon>edit</mat-icon>
-                      </button>
-                      <button class="act-btn act-delete"
-                        (click)="confirmDelete(f)" title="Supprimer"
-                        *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                        <mat-icon>delete_outline</mat-icon>
-                      </button>
+                      @if (authService.hasRole('ROLE_CHARGEDOSSIER') && !authService.hasRole('ROLE_RESPONSABLE') && !authService.hasRole('ROLE_ADMIN')) {
+                        <span class="act-btn act-locked"
+                          matTooltip="Modification impossible : facture en cours de validation"
+                          matTooltipPosition="above">
+                          <mat-icon>lock</mat-icon>
+                        </span>
+                        <button class="act-btn act-delete"
+                          (click)="confirmDelete(f)" title="Supprimer">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      }
+                      @if (authService.hasRole('ROLE_RESPONSABLE') || authService.hasRole('ROLE_ADMIN')) {
+                        <button class="act-btn act-validate-resp"
+                          (click)="valider(f)"
+                          [disabled]="isProcessing(f.id!)"
+                          title="Valider la facture">
+                          @if (isProcessing(f.id!)) {
+                            <mat-spinner diameter="14"></mat-spinner>
+                          } @else {
+                            <mat-icon>check_circle</mat-icon>
+                          }
+                        </button>
+                        <button class="act-btn act-reject-resp"
+                          (click)="rejeter(f)"
+                          [disabled]="isProcessing(f.id!)"
+                          title="Rejeter la facture">
+                          @if (isProcessing(f.id!)) {
+                            <mat-spinner diameter="14"></mat-spinner>
+                          } @else {
+                            <mat-icon>cancel</mat-icon>
+                          }
+                        </button>
+                      }
                     }
 
-                    <!-- VALIDEE : Payer (Responsable) → reste ici car c'est post-validation -->
+                    <!-- VALIDEE : Payer (Responsable) -->
                     @if (f.statut === 'VALIDEE') {
                       <button class="act-btn" style="color:#1565c0"
                         (click)="payer(f)" title="Marquer comme payée"
@@ -180,7 +233,13 @@
                       </button>
                     }
 
-                    <!-- PAYEE : lecture seule, aucun bouton -->
+                    <!-- PAYEE : bouton PDF uniquement -->
+                    @if (f.statut === 'PAYEE') {
+                      <button class="act-btn act-pdf"
+                        (click)="telechargerPdf(f)" title="Télécharger PDF">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    }
 
                   </td>
 

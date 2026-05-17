@@ -76,15 +76,6 @@ export const routes: Routes = [
       },
 
       {
-        path: 'validation',
-        loadComponent: () =>
-          import('./pages/validation/validation.component')
-            .then(m => m.ValidationComponent),
-        canActivate: [RoleGuard],
-        data: { roles: ['ROLE_RESPONSABLE'] }
-      },
-
-      {
         path: 'factures',
         loadComponent: () =>
           import('./pages/factures/factures')

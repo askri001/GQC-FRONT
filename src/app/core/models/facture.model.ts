@@ -10,7 +10,17 @@ export interface Facture {
   typeFacture: TypeFacture;
   typePaiement?: TypePaiement;
   missionId?: number;
+  missionType?: string;
   dossierId?: number;
+  dossierReference?: string;
+  affaireNumeroProcedure?: string;
+  affaireTribunal?: string;
+  clientNom?: string;
+  clientPrenom?: string;
+  prestataireNom?: string;
+  prestatairePrenom?: string;
+  prestataireType?: string;
+  prestataireRib?: string;
   mission?: any;
   commentaireRejet?: string;
 }

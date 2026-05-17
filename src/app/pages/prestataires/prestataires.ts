@@ -14,8 +14,8 @@ import { PrestataireFormDialogComponent } from './prestataire-form-dialog';
 import { ConfirmPrestataireStatusDialogComponent } from './confirm-status-dialog';
 import { PrestataireDetailDialogComponent } from './prestataire-detail-dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { extractErrorMessage } from '../../core/utils/error.utils';
 
-// ── Tab definition ─────────────────────────────────────────────
 export interface TabDef {
   type:  TypePrestataire;
   label: string;
@@ -44,7 +44,6 @@ export class PrestatairesComponent implements OnInit {
   private cdr                = inject(ChangeDetectorRef);
   readonly authService       = inject(AuthService);
 
-  // ── Tabs config ────────────────────────────────────────────────
   readonly tabs: TabDef[] = [
     { type: 'AVOCAT',   label: 'Avocats',   icon: 'gavel'   },
     { type: 'HUISSIER', label: 'Huissiers', icon: 'balance' },
@@ -53,7 +52,6 @@ export class PrestatairesComponent implements OnInit {
 
   activeTab = signal<TypePrestataire>('AVOCAT');
 
-  // ── Per-tab state ──────────────────────────────────────────────
   tabState: Record<TypePrestataire, {
     rows:    Prestataire[];
     total:   number;
@@ -72,13 +70,11 @@ export class PrestatairesComponent implements OnInit {
   allPrestataires = signal<Prestataire[]>([]);
   togglingId      = signal<number | null>(null);
 
-  // ── Lifecycle ──────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadTab('AVOCAT');
     this.loadAllForDialog();
   }
 
-  // ── Helpers ────────────────────────────────────────────────────
   private initTabState() {
     return { rows: [], total: 0, page: 0, size: 10, search: '', status: '', loading: false, error: null };
   }
@@ -94,7 +90,7 @@ export class PrestatairesComponent implements OnInit {
     }
   }
 
-  // ── Load data ──────────────────────────────────────────────────
+  // ── Load ───────────────────────────────────────────────────────
   loadTab(type: TypePrestataire): void {
     const s = this.tabState[type];
     s.loading = true;
@@ -105,10 +101,7 @@ export class PrestatairesComponent implements OnInit {
 
     this.prestataireService
       .getPaginated(s.page, s.size, search, type, status)
-      .pipe(finalize(() => {
-        s.loading = false;
-        this.cdr.detectChanges();
-      }))
+      .pipe(finalize(() => { s.loading = false; this.cdr.detectChanges(); }))
       .subscribe({
         next: (res) => {
           s.rows  = res.content       ?? [];
@@ -116,11 +109,7 @@ export class PrestatairesComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          let msg = 'Erreur lors du chargement';
-          if (err?.status === 0)        msg = 'Serveur indisponible';
-          else if (err?.status === 403) msg = 'Accès refusé (403)';
-          else if (err?.error?.message) msg = err.error.message;
-          s.error = msg;
+          s.error = extractErrorMessage(err, 'Erreur lors du chargement');
           s.rows  = [];
           s.total = 0;
         },
@@ -145,8 +134,7 @@ export class PrestatairesComponent implements OnInit {
 
   // ── Pagination ─────────────────────────────────────────────────
   totalPages(): number {
-    const s = this.current;
-    return Math.max(1, Math.ceil(s.total / s.size));
+    return Math.max(1, Math.ceil(this.current.total / this.current.size));
   }
 
   goToPage(page: number): void {
@@ -172,21 +160,13 @@ export class PrestatairesComponent implements OnInit {
 
   min(a: number, b: number): number { return Math.min(a, b); }
 
-  // ── Dialog: Créer ──────────────────────────────────────────────
+  // ── Create ─────────────────────────────────────────────────────
   openCreateDialog(): void {
     const activeType = this.activeTab();
-
     const ref = this.dialog.open(PrestataireFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      panelClass: 'prestataire-dialog',
-      data: {
-        isEdit: false,
-        defaultType: activeType,
-        existingPrestataires: this.allPrestataires(),
-      },
+      width: '700px', maxWidth: '95vw', panelClass: 'prestataire-dialog',
+      data: { isEdit: false, defaultType: activeType, existingPrestataires: this.allPrestataires() },
     });
-
     ref.afterClosed().subscribe((result?: Partial<Prestataire>) => {
       if (!result) return;
       this.prestataireService.create(result).subscribe({
@@ -198,20 +178,19 @@ export class PrestatairesComponent implements OnInit {
           this.loadAllForDialog();
           if (createdType !== this.activeTab()) this.activeTab.set(createdType);
         },
-        error: () => this.snackBar.open('Erreur lors de la création', 'OK', { duration: 3000 }),
+        error: (err) => this.snackBar.open(
+          extractErrorMessage(err, 'Erreur lors de la création'), 'OK', { duration: 5000 }
+        ),
       });
     });
   }
 
-  // ── Dialog: Modifier ───────────────────────────────────────────
+  // ── Edit ───────────────────────────────────────────────────────
   openEditDialog(p: Prestataire): void {
     const ref = this.dialog.open(PrestataireFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      panelClass: 'prestataire-dialog',
+      width: '700px', maxWidth: '95vw', panelClass: 'prestataire-dialog',
       data: { isEdit: true, prestataire: p, existingPrestataires: this.allPrestataires() },
     });
-
     ref.afterClosed().subscribe((result?: Partial<Prestataire>) => {
       if (!result) return;
       this.prestataireService.update(p.idPrestataire ?? p.id!, result).subscribe({
@@ -220,12 +199,14 @@ export class PrestatairesComponent implements OnInit {
           this.loadTab(this.activeTab());
           this.loadAllForDialog();
         },
-        error: () => this.snackBar.open('Erreur lors de la modification', 'OK', { duration: 3000 }),
+        error: (err) => this.snackBar.open(
+          extractErrorMessage(err, 'Erreur lors de la modification'), 'OK', { duration: 5000 }
+        ),
       });
     });
   }
 
-  // ── Supprimer ──────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────
   confirmDelete(p: Prestataire): void {
     if (!confirm(`Supprimer "${this.getFullName(p)}" ? Cette action est irréversible.`)) return;
     this.prestataireService.delete(p.idPrestataire ?? p.id!).subscribe({
@@ -234,26 +215,22 @@ export class PrestatairesComponent implements OnInit {
         this.loadTab(this.activeTab());
         this.loadAllForDialog();
       },
-      error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 }),
+      error: (err) => this.snackBar.open(
+        extractErrorMessage(err, 'Erreur lors de la suppression'), 'OK', { duration: 6000 }
+      ),
     });
   }
 
-  // ── Toggle statut ──────────────────────────────────────────────
+  // ── Toggle status ──────────────────────────────────────────────
   toggleStatus(p: Prestataire): void {
     const nextActive = !p.actif;
-
     const ref = this.dialog.open(ConfirmPrestataireStatusDialogComponent, {
-      width: '420px',
-      maxWidth: '95vw',
-      panelClass: 'confirm-status-dialog',
+      width: '420px', maxWidth: '95vw', panelClass: 'confirm-status-dialog',
       data: { activate: nextActive, prestataireName: this.getFullName(p) },
     });
-
     ref.afterClosed().subscribe((confirmed: boolean) => {
       if (!confirmed) return;
-
       this.togglingId.set(p.idPrestataire ?? p.id!);
-
       this.prestataireService
         .updateStatus(p.idPrestataire!, nextActive)
         .pipe(finalize(() => this.togglingId.set(null)))
@@ -263,16 +240,13 @@ export class PrestatairesComponent implements OnInit {
             this.tabState[type].rows = this.tabState[type].rows.map(item =>
               item.idPrestataire === p.idPrestataire ? { ...item, actif: updated.actif } : item
             );
-            const label = nextActive ? 'activé' : 'désactivé';
-            this.snackBar.open(`Prestataire ${label} avec succès`, 'OK', { duration: 2500 });
+            this.snackBar.open(
+              `Prestataire ${nextActive ? 'activé' : 'désactivé'} avec succès`, 'OK', { duration: 2500 }
+            );
           },
-          error: (err) => {
-            let msg = 'Erreur lors du changement de statut';
-            if (err?.status === 0)        msg = 'Serveur indisponible';
-            else if (err?.status === 403) msg = 'Action non autorisée';
-            else if (err?.error?.message) msg = err.error.message;
-            this.snackBar.open(msg, 'OK', { duration: 3500 });
-          },
+          error: (err) => this.snackBar.open(
+            extractErrorMessage(err, 'Erreur lors du changement de statut'), 'OK', { duration: 3500 }
+          ),
         });
     });
   }
@@ -286,12 +260,9 @@ export class PrestatairesComponent implements OnInit {
     return this.tabs.find(t => t.type === this.activeTab())?.label.replace(/s$/, '') ?? 'Prestataire';
   }
 
-  // ── Dialog: Détail / RIB ───────────────────────────────────────
   openDetailDialog(p: Prestataire): void {
     this.dialog.open(PrestataireDetailDialogComponent, {
-      width: '480px',
-      maxWidth: '95vw',
-      panelClass: 'prestataire-detail-dialog',
+      width: '480px', maxWidth: '95vw', panelClass: 'prestataire-detail-dialog',
       data: p,
     });
   }

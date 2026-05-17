@@ -439,3 +439,38 @@
   .pager { flex-direction: column; align-items: flex-start; }
   .page-title h2 { font-size: 20px; }
 }
+
+/* ── Responsable validation buttons ───────────────────────────── */
+.act-validate-resp {
+  color: #2e7d32 !important;
+  background: rgba(46,125,50,.08);
+  border-radius: 6px;
+  border: 1px solid rgba(46,125,50,.25);
+}
+.act-validate-resp:hover:not(:disabled) { background: rgba(46,125,50,.16); }
+
+.act-reject-resp {
+  color: #c62828 !important;
+  background: rgba(198,40,40,.08);
+  border-radius: 6px;
+  border: 1px solid rgba(198,40,40,.25);
+}
+.act-reject-resp:hover:not(:disabled) { background: rgba(198,40,40,.16); }
+
+.act-validate-resp:disabled,
+.act-reject-resp:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Locked state ──────────────────────────────────────────────── */
+.act-locked {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(100,100,100,.06);
+  color: #b0b8b4;
+  cursor: not-allowed;
+  border: 1px dashed #d0d8d4;
+}
+.act-locked mat-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }

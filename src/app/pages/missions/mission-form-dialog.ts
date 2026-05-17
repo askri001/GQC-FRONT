@@ -101,6 +101,9 @@ export class MissionFormDialogComponent implements OnInit {
     return this.isEdit && this.form.statut === 'TERMINEE';
   }
 
+  // commentaire toujours obligatoire
+  get commentaireRequired(): boolean { return true; }
+
   // ── Init ───────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadDossiers();
@@ -160,6 +163,11 @@ export class MissionFormDialogComponent implements OnInit {
       this.snackBar.open('Le dossier est requis.', 'OK', { duration: 3000 });
       return;
     }
+    // Commentaire STRICTEMENT obligatoire
+    if (!f.commentaire?.trim()) {
+      this.snackBar.open('Le commentaire est obligatoire.', 'OK', { duration: 3000 });
+      return;
+    }
     if (this.resultatRequired && !f.resultat?.trim()) {
       this.snackBar.open('Le résultat est requis pour clôturer une mission.', 'OK', { duration: 3000 });
       return;
@@ -172,7 +180,8 @@ export class MissionFormDialogComponent implements OnInit {
       statut:        f.statut,
       dossierId:     Number(f.dossierId),
       prestataireId: f.prestataireId ? Number(f.prestataireId) : undefined,
-      commentaire:   f.commentaire?.trim() || undefined,
+      // Toujours envoyer le commentaire — jamais undefined pour ne pas l'écraser
+      commentaire:   f.commentaire.trim(),
       resultat:      f.resultat?.trim() || undefined,
     };
 

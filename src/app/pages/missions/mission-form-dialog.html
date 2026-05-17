@@ -57,11 +57,18 @@
       }
     </mat-form-field>
 
-    <!-- COMMENTAIRE -->
+    <!-- COMMENTAIRE — OBLIGATOIRE -->
     <mat-form-field appearance="outline" class="bna-field bna-field-full">
-      <mat-label>Commentaire (optionnel)</mat-label>
+      <mat-label>Commentaire *</mat-label>
       <mat-icon matPrefix>chat_bubble_outline</mat-icon>
-      <input matInput [(ngModel)]="form.commentaire" placeholder="Observations, notes...">
+      <input matInput
+        [(ngModel)]="form.commentaire"
+        placeholder="Observations, notes... (obligatoire)"
+        required
+        #commentaireInput="ngModel">
+      @if (commentaireInput.invalid && commentaireInput.touched) {
+        <mat-error>Le commentaire est obligatoire.</mat-error>
+      }
     </mat-form-field>
 
     <!-- RÉSULTAT — only on edit when status = TERMINEE -->

@@ -19,11 +19,16 @@ import {
 } from '../../core/models';
 
 import { FactureService } from '../../core/services/facture.service';
+import { FacturePdfService } from '../../core/services/facture-pdf.service';
 import { FactureFormDialogComponent } from './facture-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { Mission, TYPE_MISSION_LABELS } from '../../core/models/mission.model';
 import { Affaire } from '../../core/models/affaire.model';
+import { Prestataire } from '../../core/models/prestataire.model';
+import { PrestataireService } from '../../core/services/prestataire.service';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { extractErrorMessage } from '../../core/utils/error.utils';
 
 @Component({
   selector: 'app-factures',
@@ -43,17 +48,20 @@ import { Affaire } from '../../core/models/affaire.model';
 })
 export class FacturesComponent implements OnInit {
 
-  private factureService = inject(FactureService);
-  private snackBar       = inject(MatSnackBar);
-  private dialog         = inject(MatDialog);
-  private api            = inject(ApiService);
-  readonly authService   = inject(AuthService);
+  private factureService    = inject(FactureService);
+  private facturePdfService = inject(FacturePdfService);
+  private prestataireService = inject(PrestataireService);
+  private snackBar          = inject(MatSnackBar);
+  private dialog            = inject(MatDialog);
+  private api               = inject(ApiService);
+  readonly authService      = inject(AuthService);
 
   // ── State ──────────────────────────────────────────────────────
   factures         = signal<Facture[]>([]);
   filteredFactures = signal<Facture[]>([]);
   missions         = signal<Mission[]>([]);
   affaires         = signal<Affaire[]>([]);
+  prestataires     = signal<Prestataire[]>([]);
   isLoading        = signal(false);
   error            = signal<string | null>(null);
 
@@ -85,6 +93,10 @@ export class FacturesComponent implements OnInit {
       next: (data) => this.affaires.set(data ?? []),
       error: () => {},
     });
+    this.prestataireService.getAll().subscribe({
+      next: (data) => this.prestataires.set(data ?? []),
+      error: () => {},
+    });
   }
 
   // ── Load ───────────────────────────────────────────────────────
@@ -109,6 +121,14 @@ export class FacturesComponent implements OnInit {
           this.filteredFactures.set([]);
         },
       });
+  }
+
+  // ── Per-row processing ────────────────────────────────────────
+  processingIds = signal<Set<number>>(new Set());
+  isProcessing(id: number): boolean { return this.processingIds().has(id); }
+  private setProcessing(id: number, v: boolean): void {
+    const s = new Set(this.processingIds()); v ? s.add(id) : s.delete(id);
+    this.processingIds.set(s);
   }
 
   // ── Filters ────────────────────────────────────────────────────
@@ -219,6 +239,36 @@ export class FacturesComponent implements OnInit {
     });
   }
 
+  // ── Valider (Responsable) — EN_ATTENTE_VALIDATION → VALIDEE ───
+  valider(f: Facture): void {
+    if (!confirm(`Valider la facture "${f.numero}" ?`)) return;
+    this.setProcessing(f.id!, true);
+    this.factureService.validate(f.id!)
+      .pipe(finalize(() => this.setProcessing(f.id!, false)))
+      .subscribe({
+        next: () => { this.snackBar.open('Facture validee avec succes', 'OK', { duration: 3000 }); this.loadFactures(); },
+        error: (err) => this.snackBar.open(extractErrorMessage(err, 'Erreur lors de la validation'), 'OK', { duration: 6000 }),
+      });
+  }
+
+  // ── Rejeter (Responsable) — EN_ATTENTE_VALIDATION → REJETEE ───
+  rejeter(f: Facture): void {
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: 'Rejeter la facture', sousTitre: `Facture N ${f.numero} — ${f.montant} DT` },
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null || commentaire === undefined) return;
+      this.setProcessing(f.id!, true);
+      this.factureService.reject(f.id!, commentaire || undefined)
+        .pipe(finalize(() => this.setProcessing(f.id!, false)))
+        .subscribe({
+          next: () => { this.snackBar.open('Facture rejetee avec succes', 'OK', { duration: 3000 }); this.loadFactures(); },
+          error: (err) => this.snackBar.open(extractErrorMessage(err, 'Erreur lors du rejet'), 'OK', { duration: 6000 }),
+        });
+    });
+  }
+
   // ── Payer (Responsable) — VALIDEE → PAYEE ─────────────────────
   payer(f: Facture): void {
     if (!confirm(`Marquer la facture "${f.numero}" comme payée ?`)) return;
@@ -228,23 +278,44 @@ export class FacturesComponent implements OnInit {
     });
   }
 
-  // ── Mission label ──────────────────────────────────────────────
-  getMissionLabel(missionId: number | undefined): string {
-    if (!missionId) return '—';
-    const m = this.missions().find(m => m.id === missionId);
-    if (!m) return `#${missionId}`;
-    return TYPE_MISSION_LABELS[m.typeMission] ?? m.typeMission;
+  // ── Mission label — show dossier reference if available ───────
+  getMissionLabel(f: Facture): string {
+    if (f.dossierReference) return f.dossierReference;
+    if (f.missionId) {
+      const m = this.missions().find(m => m.id === f.missionId);
+      if (m) return TYPE_MISSION_LABELS[m.typeMission] ?? m.typeMission;
+      return `Mission #${f.missionId}`;
+    }
+    return '';  // empty = not linked
   }
 
   // ── Affaire label ──────────────────────────────────────────────
   getAffaireLabel(dossierId: number | undefined): string {
-    if (!dossierId) return '—';
-    // dossierId on facture may link to an affaire's dossierId
+    if (!dossierId) return '';  // empty = not linked
     const a = this.affaires().find(a => (a.idAffaire ?? a.id) === dossierId || a.dossierId === dossierId);
-    if (!a) return '—';
+    if (!a) return '';
     return a.numeroProcedure
       ? `${a.numeroProcedure}${a.tribunal ? ' — ' + a.tribunal : ''}`
       : `Affaire #${a.idAffaire ?? a.id}`;
+  }
+
+  // ── Télécharger PDF — uniquement si PAYEE ─────────────────────
+  telechargerPdf(f: Facture): void {
+    const clientLabel = [f.clientPrenom, f.clientNom].filter(Boolean).join(' ') || '—';
+    this.facturePdfService.generatePdf({
+      facture:           f,
+      prestataireNom:    f.prestataireNom    ?? '—',
+      prestatairePrenom: f.prestatairePrenom ?? '—',
+      prestataireType:   f.prestataireType   ?? '—',
+      prestataireRib:    f.prestataireRib    ?? '—',
+      missionLabel:      f.missionType       ?? this.getMissionLabel(f),
+      affaireNumero:     f.affaireNumeroProcedure ?? '—',
+      affaireTribunal:   f.affaireTribunal        ?? '—',
+      dossierRef:        f.dossierReference        ?? '—',
+      clientNom:         clientLabel,
+    }).catch(() =>
+      this.snackBar.open('Erreur lors de la génération du PDF', 'OK', { duration: 3000 })
+    );
   }
 
   // ── Delete ─────────────────────────────────────────────────────

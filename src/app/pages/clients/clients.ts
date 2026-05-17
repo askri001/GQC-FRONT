@@ -16,6 +16,7 @@ import { Client } from '../../core/models/client.model';
 import { ClientFormDialogComponent } from './client-form-dialog';
 import { ConfirmStatusDialogComponent } from './confirm-status-dialog';
 import { AuthService } from '../../core/services/auth.service';
+import { ClientPdfService } from '../../core/services/client-pdf.service';
 
 @Component({
   selector: 'app-clients',
@@ -40,6 +41,7 @@ export class ClientsComponent implements OnInit {
   private snackBar      = inject(MatSnackBar);
   private dialog        = inject(MatDialog);
   readonly authService  = inject(AuthService);
+  private clientPdf     = inject(ClientPdfService);
 
   // ── State ──────────────────────────────────────────────────────
   clients      = signal<Client[]>([]);
@@ -63,6 +65,9 @@ export class ClientsComponent implements OnInit {
 
   /** ID du client dont le statut est en cours de modification (loader) */
   togglingId = signal<number | null>(null);
+
+  /** ID du client dont le PDF est en cours de génération */
+  pdfLoadingId = signal<number | null>(null);
 
   // ── Lifecycle ──────────────────────────────────────────────────
   ngOnInit(): void { this.loadClients(); }
@@ -244,5 +249,23 @@ export class ClientsComponent implements OnInit {
 
   getTypeLabel(type: string): string {
     return type === 'PHYSIQUE' ? 'Particulier' : 'Entreprise';
+  }
+
+  // ── Fiche Client PDF ───────────────────────────────────────────
+  downloadFichePdf(c: Client): void {
+    if (this.pdfLoadingId() !== null) return;
+    this.pdfLoadingId.set(c.id!);
+
+    this.clientPdf.loadClientData(c).subscribe({
+      next: (pdfData) => {
+        this.clientPdf.generatePdf(pdfData)
+          .catch(() => this.snackBar.open('Erreur lors de la génération du PDF', 'OK', { duration: 3000 }))
+          .finally(() => this.pdfLoadingId.set(null));
+      },
+      error: () => {
+        this.snackBar.open('Erreur lors du chargement des données client', 'OK', { duration: 3000 });
+        this.pdfLoadingId.set(null);
+      },
+    });
   }
 }

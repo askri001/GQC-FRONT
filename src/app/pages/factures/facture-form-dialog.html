@@ -12,13 +12,6 @@
       <input matInput [(ngModel)]="form.numero">
     </mat-form-field>
 
-    <!-- ── MONTANT ─────────────────────────────────────────────── -->
-    <mat-form-field appearance="outline" class="bna-field">
-      <mat-label>Montant (DT) *</mat-label>
-      <mat-icon matPrefix>attach_money</mat-icon>
-      <input matInput type="number" [(ngModel)]="form.montant">
-    </mat-form-field>
-
     <!-- ── MODE DE PAIEMENT ────────────────────────────────────── -->
     <mat-form-field appearance="outline" class="bna-field">
       <mat-label>Mode de paiement</mat-label>
@@ -120,9 +113,31 @@
       </div>
     }
 
-    <!-- ── AUTO-FILL : PRESTATAIRE + RIB ─────────────────────── -->
-    @if (selectedPrestataire && !loadingLienData) {
+    <!-- ── Mission liée — uniquement pour DOSSIER ────────────── -->
+    @if (selectedPrestataire && !loadingLienData && lienType === 'DOSSIER' && missionsForDossier.length > 0) {
+      <mat-form-field appearance="outline" class="bna-field bna-field-full">
+        <mat-label>Mission liée *</mat-label>
+        <mat-icon matPrefix>assignment</mat-icon>
+        <mat-select [(ngModel)]="form.missionId">
+          @for (m of missionsForDossier; track m.id) {
+            <mat-option [value]="m.id">{{ getMissionLabel(m) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
 
+    <!-- ── MONTANT — auto-filled from prestataire ────────────── -->
+    <mat-form-field appearance="outline" class="bna-field bna-field-full">
+      <mat-label>Montant (DT) *</mat-label>
+      <mat-icon matPrefix>attach_money</mat-icon>
+      <input matInput type="number" [(ngModel)]="form.montant">
+      @if (selectedPrestataire?.tarifJournalier) {
+        <mat-hint>Auto-rempli depuis le tarif du prestataire ({{ selectedPrestataire?.tarifJournalier }} DT/J)</mat-hint>
+      }
+    </mat-form-field>
+
+    <!-- ── AUTO-FILL : PRESTATAIRE + RIB — last ──────────────── -->
+    @if (selectedPrestataire && !loadingLienData) {
       <div class="auto-fill-card bna-field-full">
         <div class="auto-fill-title">
           <mat-icon>auto_awesome</mat-icon>
@@ -147,20 +162,6 @@
 
         </div>
       </div>
-
-      <!-- Mission liée — uniquement pour DOSSIER -->
-      @if (lienType === 'DOSSIER' && missionsForDossier.length > 0) {
-        <mat-form-field appearance="outline" class="bna-field bna-field-full">
-          <mat-label>Mission liée *</mat-label>
-          <mat-icon matPrefix>assignment</mat-icon>
-          <mat-select [(ngModel)]="form.missionId">
-            @for (m of missionsForDossier; track m.id) {
-              <mat-option [value]="m.id">{{ getMissionLabel(m) }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      }
-
     }
 
   </div>

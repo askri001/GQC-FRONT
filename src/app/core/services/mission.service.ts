@@ -121,8 +121,13 @@ export class MissionService {
   }
 
   
-  updateStatus(id: number, statut: StatutMission): Observable<Mission> {
-    return this.update(id, { statut });
+  updateStatus(id: number, statut: StatutMission, mission?: Mission): Observable<Mission> {
+    // Toujours inclure le commentaire existant pour ne pas l'écraser côté backend
+    const payload: Partial<Mission> = {
+      statut,
+      ...(mission?.commentaire ? { commentaire: mission.commentaire } : {}),
+    };
+    return this.update(id, payload);
   }
 
   validate(id: number): Observable<Mission> {

@@ -15,6 +15,10 @@ export class GarantieService {
     return this.api.get<Garantie[]>(this.endpoint);
   }
 
+  getByRisqueId(risqueId: number): Observable<Garantie[]> {
+    return this.api.get<Garantie[]>(`${this.endpoint}/risque/${risqueId}`);
+  }
+
   getById(id: number): Observable<Garantie> {
     return this.api.get<Garantie>(`${this.endpoint}/${id}`);
   }

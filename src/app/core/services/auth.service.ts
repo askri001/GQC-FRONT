@@ -27,11 +27,33 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
-  private currentUserSignal = signal<User | null>(null);
+  private currentUserSignal    = signal<User | null>(null);
   private isAuthenticatedSignal = signal<boolean>(false);
+  // Store token in a signal so computed roles re-run after login
+  private tokenSignal           = signal<string | null>(localStorage.getItem(this.ACCESS_TOKEN_KEY));
 
-  currentUser = computed(() => this.currentUserSignal());
+  currentUser     = computed(() => this.currentUserSignal());
   isAuthenticated = computed(() => this.isAuthenticatedSignal());
+
+  // ── Reactive roles — recomputed on login/logout ───────────────
+  private userRoles = computed<string[]>(() => {
+    const _user  = this.currentUserSignal(); // reactive dependency
+    const token  = this.tokenSignal();       // reactive dependency
+    if (token) {
+      try {
+        const payload = jwtDecode<CustomJwtPayload>(token);
+        const roles = Array.isArray(payload.roles) ? payload.roles : [];
+        return roles.map((r: string) => (r.startsWith('ROLE_') ? r : `ROLE_${r}`));
+      } catch { /* fall through */ }
+    }
+    const rolesFromUser = _user?.roles?.map(r => r.name) || [];
+    const normalized: string[] = [];
+    rolesFromUser.forEach(r => {
+      normalized.push(r);
+      if (!r.startsWith('ROLE_')) normalized.push(`ROLE_${r}`);
+    });
+    return normalized;
+  });
 
   constructor(
     private api: ApiService,
@@ -126,6 +148,7 @@ export class AuthService {
     localStorage.removeItem('auth_user_id');
 
     this.clearStorage();
+    this.tokenSignal.set(null);           // ← triggers userRoles recompute
     this.currentUserSignal.set(null);
     this.isAuthenticatedSignal.set(false);
 
@@ -154,29 +177,11 @@ export class AuthService {
   }
 
   getUserRoles(): string[] {
-    const token = this.getAccessToken();
-    if (token) {
-      try {
-        const payload = jwtDecode<CustomJwtPayload>(token);
-        const roles = Array.isArray(payload.roles) ? payload.roles : [];
-        return roles.map((r: string) => (r.startsWith('ROLE_') ? r : `ROLE_${r}`));
-      } catch {
-      }
-    }
-
-    const rolesFromUser = this.currentUserSignal()?.roles?.map(r => r.name) || [];
-    const normalized: string[] = [];
-
-    rolesFromUser.forEach(r => {
-      normalized.push(r);
-      if (!r.startsWith('ROLE_')) normalized.push(`ROLE_${r}`);
-    });
-
-    return normalized;
+    return this.userRoles();
   }
 
   hasRole(role: string): boolean {
-    return this.getUserRoles().includes(role);
+    return this.userRoles().includes(role);
   }
 
   hasAnyRole(roles: string[]): boolean {
@@ -254,6 +259,7 @@ export class AuthService {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
 
+    this.tokenSignal.set(token);          // ← triggers userRoles recompute
     this.currentUserSignal.set(user);
     this.isAuthenticatedSignal.set(true);
   }

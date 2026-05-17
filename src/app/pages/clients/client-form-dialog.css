@@ -177,3 +177,35 @@
   }
 }
 
+
+/* ── Locked / immutable fields ─────────────────────────────── */
+.field-locked .mdc-notched-outline__leading,
+.field-locked .mdc-notched-outline__notch,
+.field-locked .mdc-notched-outline__trailing {
+  border-color: #d0d0d0 !important;
+}
+
+.field-locked {
+  --mdc-outlined-text-field-container-color: #f5f5f5;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.locked-input {
+  color: #888 !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+}
+
+.lock-icon {
+  color: #bbb !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.lock-hint {
+  color: #e67e22 !important;
+  font-size: 10px !important;
+  font-style: italic;
+}

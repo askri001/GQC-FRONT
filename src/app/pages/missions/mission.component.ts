@@ -22,6 +22,8 @@ import { MissionService } from '../../core/services/mission.service';
 import { MissionFormDialogComponent } from './mission-form-dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
+import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
+import { extractErrorMessage } from '../../core/utils/error.utils';
 
 @Component({
   selector: 'app-missions',
@@ -55,14 +57,27 @@ export class MissionsComponent implements OnInit {
   error            = signal<string | null>(null);
 
   // ── Filters ────────────────────────────────────────────────────
-  searchQuery  = '';
-  statusFilter = '';
-  typeFilter   = '';
+  searchQuery       = '';
+  statusFilter      = '';
+  typeFilter        = '';
+  prestataireFilter = '';
+  dossierFilter     = '';
+
+  // ── Derived filter lists (built after missions load) ───────────
+  dossierIds = signal<number[]>([]);
 
   // ── Pagination ─────────────────────────────────────────────────
   pageSizeValue = 10;
   pageSize      = signal(10);
   currentPage   = signal(0);
+
+  // ── Per-row processing ────────────────────────────────────────
+  processingIds = signal<Set<number>>(new Set());
+  isProcessing(id: number): boolean { return this.processingIds().has(id); }
+  private setProcessing(id: number, v: boolean): void {
+    const s = new Set(this.processingIds()); v ? s.add(id) : s.delete(id);
+    this.processingIds.set(s);
+  }
 
   // ── Lookup data ────────────────────────────────────────────────
   statuts: StatutMission[] = ['EN_COURS', 'EN_ATTENTE_VALIDATION', 'TERMINEE', 'ANNULEE'];
@@ -90,6 +105,9 @@ export class MissionsComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.missions.set(data || []);
+          // Build unique dossier IDs for filter dropdown
+          const ids = [...new Set((data || []).map(m => m.dossierId).filter((id): id is number => !!id))];
+          this.dossierIds.set(ids.sort((a, b) => a - b));
           this.applyFilter();
         },
         error: (err) => {
@@ -122,6 +140,14 @@ export class MissionsComponent implements OnInit {
 
     if (this.typeFilter) {
       result = result.filter(m => m.typeMission === this.typeFilter);
+    }
+
+    if (this.prestataireFilter) {
+      result = result.filter(m => String(m.prestataireId) === this.prestataireFilter);
+    }
+
+    if (this.dossierFilter) {
+      result = result.filter(m => String(m.dossierId) === this.dossierFilter);
     }
 
     this.filteredMissions.set(result);
@@ -203,6 +229,10 @@ export class MissionsComponent implements OnInit {
 
     ref.afterClosed().subscribe((result?: Partial<Mission>) => {
       if (!result) return;
+      // Préserver le commentaire existant si le nouveau est vide (sécurité supplémentaire)
+      if (!result.commentaire?.trim() && m.commentaire) {
+        result.commentaire = m.commentaire;
+      }
       this.missionService.update(m.id!, result).subscribe({
         next: () => {
           this.snackBar.open('Mission modifiée avec succès', 'OK', { duration: 3000 });
@@ -215,15 +245,13 @@ export class MissionsComponent implements OnInit {
 
   // ── Toggle status ──────────────────────────────────────────────
   toggleStatus(m: Mission): void {
-    // Workflow: EN_ATTENTE → EN_COURS → (edit dialog for TERMINEE) | ANNULEE
     if (m.statut === 'TERMINEE' || m.statut === 'ANNULEE') return;
-    const next: StatutMission = m.statut === 'EN_ATTENTE' ? 'EN_COURS' : 'EN_COURS';
-    // For EN_COURS → TERMINEE, open edit dialog so résultat can be entered
     if (m.statut === 'EN_COURS') {
       this.openEditDialog(m);
       return;
     }
-    this.missionService.updateStatus(m.id!, next).subscribe({
+    const next: StatutMission = 'EN_COURS';
+    this.missionService.updateStatus(m.id!, next, m).subscribe({
       next: () => {
         this.snackBar.open('Statut mis à jour', 'OK', { duration: 2500 });
         this.loadMissions();
@@ -235,7 +263,7 @@ export class MissionsComponent implements OnInit {
   // ── Annuler mission ────────────────────────────────────────────
   annulerMission(m: Mission): void {
     if (!confirm(`Annuler la mission "${this.typeLabels[m.typeMission]}" ?`)) return;
-    this.missionService.updateStatus(m.id!, 'ANNULEE').subscribe({
+    this.missionService.updateStatus(m.id!, 'ANNULEE', m).subscribe({
       next: () => { this.snackBar.open('Mission annulée', 'OK', { duration: 2500 }); this.loadMissions(); },
       error: () => this.snackBar.open('Erreur lors de l\'annulation', 'OK', { duration: 3000 }),
     });
@@ -244,9 +272,39 @@ export class MissionsComponent implements OnInit {
   // ── Soumettre pour validation (ChargeDossier) ──────────────────
   soumettre(m: Mission): void {
     if (!confirm(`Soumettre la mission pour validation ?`)) return;
-    this.missionService.updateStatus(m.id!, 'EN_ATTENTE_VALIDATION').subscribe({
+    this.missionService.updateStatus(m.id!, 'EN_ATTENTE_VALIDATION', m).subscribe({
       next: () => { this.snackBar.open('Mission soumise pour validation', 'OK', { duration: 2500 }); this.loadMissions(); },
       error: () => this.snackBar.open('Erreur lors de la soumission', 'OK', { duration: 3000 }),
+    });
+  }
+
+  // ── Valider (Responsable) — EN_ATTENTE_VALIDATION → TERMINEE ──
+  valider(m: Mission): void {
+    if (!confirm(`Valider la mission "${this.typeLabels[m.typeMission]}" ?`)) return;
+    this.setProcessing(m.id!, true);
+    this.missionService.validate(m.id!)
+      .pipe(finalize(() => this.setProcessing(m.id!, false)))
+      .subscribe({
+        next: () => { this.snackBar.open('Mission validee avec succes', 'OK', { duration: 3000 }); this.loadMissions(); },
+        error: (err) => this.snackBar.open(extractErrorMessage(err, 'Erreur lors de la validation'), 'OK', { duration: 6000 }),
+      });
+  }
+
+  // ── Rejeter (Responsable) — EN_ATTENTE_VALIDATION → EN_COURS ──
+  rejeter(m: Mission): void {
+    const ref = this.dialog.open(RejetCommentaireDialogComponent, {
+      width: '480px', maxWidth: '95vw', panelClass: 'bna-dialog',
+      data: { titre: 'Rejeter la mission', sousTitre: `Mission : ${this.typeLabels[m.typeMission]}` },
+    });
+    ref.afterClosed().subscribe(commentaire => {
+      if (commentaire === null || commentaire === undefined) return;
+      this.setProcessing(m.id!, true);
+      this.missionService.reject(m.id!, commentaire || undefined)
+        .pipe(finalize(() => this.setProcessing(m.id!, false)))
+        .subscribe({
+          next: () => { this.snackBar.open('Mission rejetee avec succes', 'OK', { duration: 3000 }); this.loadMissions(); },
+          error: (err) => this.snackBar.open(extractErrorMessage(err, 'Erreur lors du rejet'), 'OK', { duration: 6000 }),
+        });
     });
   }
 
@@ -259,6 +317,10 @@ export class MissionsComponent implements OnInit {
 
   // ── Delete ─────────────────────────────────────────────────────
   confirmDelete(m: Mission): void {
+    if (m.statut === 'EN_COURS' || m.statut === 'EN_ATTENTE_VALIDATION') {
+      this.snackBar.open('Impossible de supprimer une mission en cours de traitement.', 'OK', { duration: 3500 });
+      return;
+    }
     if (!confirm(`Supprimer la mission "${this.typeLabels[m.typeMission]}" ? Cette action est irréversible.`)) return;
     this.missionService.delete(m.id!).subscribe({
       next: () => {

@@ -145,6 +145,7 @@ export class FactureFormDialogComponent implements OnInit {
     this.form.dossierId    = null;
     this.form.missionId    = null;
     this.form.affaireId    = null;
+    this.form.montant      = null;
     this.missionsForDossier  = [];
     this.selectedPrestataire = null;
     this.lienError           = null;
@@ -156,6 +157,7 @@ export class FactureFormDialogComponent implements OnInit {
     this.selectedPrestataire = null;
     this.lienError           = null;
     this.form.missionId      = null;
+    if (!this.isEdit) this.form.montant = null;  // reset montant on dossier change
 
     if (!dossierId) return;
 
@@ -196,6 +198,7 @@ export class FactureFormDialogComponent implements OnInit {
   onAffaireChange(affaireId: number | null): void {
     this.selectedPrestataire = null;
     this.lienError           = null;
+    if (!this.isEdit) this.form.montant = null;  // reset montant on affaire change
 
     if (!affaireId) return;
 
@@ -217,6 +220,10 @@ export class FactureFormDialogComponent implements OnInit {
     this.prestataireService.getById(prestataireId).subscribe({
       next: (p: any) => {
         this.selectedPrestataire = { ...p, idPrestataire: p.idPrestataire ?? p.id };
+        // Auto-fill montant from prestataire tarif (only on create, not edit)
+        if (!this.isEdit && p.tarifJournalier) {
+          this.form.montant = Number(p.tarifJournalier);
+        }
         this.loadingLienData = false;
       },
       error: () => {

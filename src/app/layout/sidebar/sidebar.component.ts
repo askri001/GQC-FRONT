@@ -68,7 +68,6 @@ export class SidebarComponent {
 
   navItems: NavItem[] = [
     { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Validation',          icon: 'verified',      route: '/validation',   roles: ['ROLE_RESPONSABLE'] },
     { label: 'Utilisateurs',        icon: 'people',        route: '/users',        roles: ['ROLE_ADMIN'] },
     { label: 'Droits d\'accès',      icon: 'admin_panel_settings', route: '/roles', roles: ['ROLE_ADMIN'] },
     { label: 'Clients',             icon: 'person_add',    route: '/clients',      roles: ['ROLE_ADMIN', 'ROLE_CHARGEDOSSIER'] },

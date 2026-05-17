@@ -60,7 +60,9 @@ export class ClientFormDialogComponent {
   }
 
   get isPhysical(): boolean {
-    return this.form.typeClient === 'PHYSIQUE';
+    // In edit mode, use the original client type (immutable)
+    // In create mode, use the current form value
+    return (this.isEdit ? this.data.client!.typeClient : this.form.typeClient) === 'PHYSIQUE';
   }
 
   // ================= SUBMIT =================
@@ -132,15 +134,18 @@ export class ClientFormDialogComponent {
 
     // ================= RESULT =================
     const result: Partial<Client> = {
-      typeClient: f.typeClient,
       nom: f.nom.trim(),
       prenom: f.prenom?.trim() || undefined,
       tel: tel,
       email: email || undefined,
       adresse: f.adresse?.trim() || undefined,
-      cin: cin || undefined,
-      rne: rne || undefined,
-      active: this.data.client?.active ?? true
+      active: this.data.client?.active ?? true,
+      // typeClient, cin, rne only sent on CREATE — immutable after creation
+      ...(this.isEdit ? {} : {
+        typeClient: f.typeClient,
+        cin: cin || undefined,
+        rne: rne || undefined,
+      }),
     };
 
     this.dialogRef.close(result);
