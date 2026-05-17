@@ -89,6 +89,15 @@ interface PrestataireRef { id: number; nom: string; prenom: string; type: string
               <mat-option value="TERMINEE">Terminée</mat-option>
             </mat-select>
           </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Prestataire (Avocat)</mat-label>
+            <mat-select [(ngModel)]="prestataireFilter" (selectionChange)="applyFilter()">
+              <mat-option [value]="0">Tous les prestataires</mat-option>
+              @for (p of prestataires(); track p.id) {
+                <mat-option [value]="p.id">{{ p.prenom }} {{ p.nom }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
 
         @if (loading()) {
@@ -251,6 +260,7 @@ export class AffairesComponent implements OnInit {
   searchTerm = '';
   statutFilter = '';
   dossierFilter = 0;
+  prestataireFilter = 0;
   pageSize = 10;
   currentPage = 0;
 
@@ -323,6 +333,9 @@ export class AffairesComponent implements OnInit {
     }
     if (this.statutFilter) {
       result = result.filter(a => a.statut === this.statutFilter);
+    }
+    if (this.prestataireFilter) {
+      result = result.filter(a => a.prestataireId === this.prestataireFilter);
     }
     this.filteredAffaires.set(result);
     this.currentPage = 0;

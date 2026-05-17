@@ -157,6 +157,7 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
           [matAutocomplete]="dossierAuto"
           [(ngModel)]="dossierSearchText"
           (ngModelChange)="onDossierSearch($event)"
+          [disabled]="!!editingRisque()?.id"
           placeholder="Tapez la référence du dossier...">
         <mat-autocomplete #dossierAuto="matAutocomplete"
           [displayWith]="displayDossier.bind(this)"
@@ -165,6 +166,9 @@ type RisqueDraft = Partial<Risque> & { dossierId: number };
             <mat-option [value]="d">{{ d.reference }}</mat-option>
           }
         </mat-autocomplete>
+        @if (editingRisque()?.id) {
+          <mat-hint style="color:#7aada0">Le dossier ne peut pas être modifié sur un risque existant</mat-hint>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline">
