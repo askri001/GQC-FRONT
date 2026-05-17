@@ -1,0 +1,149 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <!-- ===== TITLE ===== -->
+    <div class="page-title">
+      <mat-icon class="title-icon">verified</mat-icon>
+      <h2>Validation</h2>
+    </div>
+
+    <mat-tab-group animationDuration="200ms">
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 1 — MISSIONS EN COURS
+      ══════════════════════════════════════════════════════ -->
+      <mat-tab label="Missions en cours">
+
+        @if (missionsError()) {
+          <div class="state-box error-box">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ missionsError() }}</p>
+            <button class="retry-btn" (click)="loadMissions()">Réessayer</button>
+          </div>
+        } @else if (missionsLoading()) {
+          <div class="state-box">
+            <mat-spinner diameter="44"></mat-spinner>
+            <p>Chargement...</p>
+          </div>
+        } @else if (missions().length === 0) {
+          <div class="state-box empty-box">
+            <mat-icon>assignment_turned_in</mat-icon>
+            <p>Aucune mission en cours</p>
+          </div>
+        } @else {
+          <div class="table-card">
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>TYPE</th>
+                    <th>PRESTATAIRE</th>
+                    <th>STATUT</th>
+                    <th>COMMENTAIRE</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of missions(); track m.id) {
+                    <tr>
+                      <td>{{ typeMissionLabels[m.typeMission] }}</td>
+                      <td>{{ getPrestataireNom(m.prestataireId) }}</td>
+                      <td>
+                        <span class="status-chip" [ngClass]="getMissionStatutClass(m.statut)">
+                          {{ statutMissionLabels[m.statut] }}
+                        </span>
+                      </td>
+                      <td>{{ m.commentaire || '—' }}</td>
+                      <td class="td-actions">
+                        <button class="act-btn act-validate-resp"
+                          (click)="validerMission(m)"
+                          title="Valider">
+                          <mat-icon>check_circle</mat-icon>
+                        </button>
+                        <button class="act-btn act-reject-resp"
+                          (click)="rejeterMission(m)"
+                          title="Rejeter">
+                          <mat-icon>cancel</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+      </mat-tab>
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 2 — FACTURES EN ATTENTE DE VALIDATION
+      ══════════════════════════════════════════════════════ -->
+      <mat-tab label="Factures en attente">
+
+        @if (facturesError()) {
+          <div class="state-box error-box">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ facturesError() }}</p>
+            <button class="retry-btn" (click)="loadFactures()">Réessayer</button>
+          </div>
+        } @else if (facturesLoading()) {
+          <div class="state-box">
+            <mat-spinner diameter="44"></mat-spinner>
+            <p>Chargement...</p>
+          </div>
+        } @else if (factures().length === 0) {
+          <div class="state-box empty-box">
+            <mat-icon>receipt_long</mat-icon>
+            <p>Aucune facture en attente</p>
+          </div>
+        } @else {
+          <div class="table-card">
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N° FACTURE</th>
+                    <th>MONTANT</th>
+                    <th>TYPE</th>
+                    <th>STATUT</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (f of factures(); track f.id) {
+                    <tr>
+                      <td>{{ f.numero }}</td>
+                      <td>{{ f.montant | number:'1.2-2' }} DT</td>
+                      <td>{{ typeFactureLabels[f.typeFacture] || f.typeFacture || '—' }}</td>
+                      <td>
+                        <span class="status-chip" [ngClass]="getFactureStatutClass(f.statut)">
+                          {{ statutFactureLabels[f.statut] }}
+                        </span>
+                      </td>
+                      <td class="td-actions">
+                        <button class="act-btn act-validate-resp"
+                          (click)="validerFacture(f)"
+                          title="Valider">
+                          <mat-icon>check_circle</mat-icon>
+                        </button>
+                        <button class="act-btn act-reject-resp"
+                          (click)="rejeterFacture(f)"
+                          title="Rejeter">
+                          <mat-icon>cancel</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+      </mat-tab>
+
+    </mat-tab-group>
+
+  </div>
+</div>

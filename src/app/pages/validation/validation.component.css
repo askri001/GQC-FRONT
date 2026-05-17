@@ -1,0 +1,37 @@
+/* Validation component — inherits global styles */
+.page-container { padding: 24px; }
+.page-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.page-title { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.page-title h2 { margin: 0; font-size: 1.4rem; color: #1a3a2a; }
+.title-icon { color: #00966e; font-size: 28px; width: 28px; height: 28px; }
+
+.table-card { margin-top: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ede8; }
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.data-table thead tr { background: #00966e; }
+.data-table thead th { color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; font-size: 0.75rem; letter-spacing: .04em; white-space: nowrap; }
+.data-table tbody tr { border-bottom: 1px solid #f0f5f3; transition: background .15s; }
+.data-table tbody tr:hover { background: #f5faf8; }
+.data-table tbody td { padding: 10px 12px; color: #2d4a3e; vertical-align: middle; }
+
+.td-actions { display: flex; gap: 4px; align-items: center; }
+.act-btn { background: none; border: none; cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s; }
+.act-btn:hover { background: #e8f5f0; }
+.act-validate-resp { color: #00966e; }
+.act-reject-resp   { color: #c62828; }
+
+.status-chip { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.badge-attente    { background: #fff3e0; color: #e65100; }
+.badge-encours    { background: #e3f2fd; color: #1565c0; }
+.badge-validation { background: #f3e5f5; color: #6a1b9a; }
+.badge-termine    { background: #e8f5e9; color: #2e7d32; }
+.badge-annule     { background: #fce4ec; color: #c62828; }
+.badge-valide     { background: #e8f5e9; color: #2e7d32; }
+.badge-rejete     { background: #fce4ec; color: #c62828; }
+.badge-paye       { background: #e3f2fd; color: #1565c0; }
+
+.state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; gap: 12px; color: #7aada0; }
+.state-box mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: .4; }
+.error-box { color: #c62828; }
+.retry-btn { padding: 6px 16px; border: 1px solid #c62828; border-radius: 6px; background: none; color: #c62828; cursor: pointer; }
+.empty-box { color: #aaa; }

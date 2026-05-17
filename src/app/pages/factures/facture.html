@@ -142,11 +142,6 @@
 
                   <!-- STATUT — badge couleur par statut -->
                   <td class="td-statut">
-<<<<<<< Updated upstream
-                    <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
-                      {{ statutLabels[f.statut] }}
-                    </span>
-=======
                     @if (f.statut) {
                       <span class="status-chip" [ngClass]="getStatutClass(f.statut)">
                         {{ statutLabels[f.statut] || f.statut }}
@@ -160,7 +155,6 @@
                         chat_bubble
                       </mat-icon>
                     }
->>>>>>> Stashed changes
                   </td>
 
                   <!-- DATE PAIEMENT — uniquement si PAYEE -->

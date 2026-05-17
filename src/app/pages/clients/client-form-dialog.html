@@ -10,17 +10,18 @@
       <mat-label>Type</mat-label>
       <mat-icon matPrefix>category</mat-icon>
       @if (isEdit) {
-        <!-- Display as read-only text in edit mode -->
         <input matInput
           [value]="form.typeClient === 'PHYSIQUE' ? 'Particulier' : 'Société'"
           readonly
           class="locked-input">
-        <mat-icon matSuffix class="lock-icon">lock</mat-icon>
       } @else {
         <mat-select [(ngModel)]="form.typeClient">
           <mat-option value="PHYSIQUE">Particulier</mat-option>
           <mat-option value="MORALE">Société</mat-option>
         </mat-select>
+      }
+      @if (isEdit) {
+        <mat-icon matSuffix class="lock-icon">lock</mat-icon>
       }
       @if (isEdit) {
         <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
@@ -51,6 +52,8 @@
           [class.locked-input]="isEdit">
         @if (isEdit) {
           <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+        }
+        @if (isEdit) {
           <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
         }
       </mat-form-field>
@@ -67,6 +70,8 @@
           [class.locked-input]="isEdit">
         @if (isEdit) {
           <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+        }
+        @if (isEdit) {
           <mat-hint class="lock-hint">Non modifiable après création</mat-hint>
         }
       </mat-form-field>
