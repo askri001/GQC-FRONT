@@ -128,25 +128,25 @@ import { ApiService } from '../../core/services/api.service';
       align-items: center;
       gap: 20px;
       padding: 28px 28px 24px;
-      background: linear-gradient(135deg, #0F2044 0%, #1A3A6B 100%);
+      background: linear-gradient(135deg, #00966E 0%, #007A58 100%);
       position: relative;
     }
 
     .avatar-circle {
-      width: 64px;
-      height: 64px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #00966E 0%, #00C48C 100%);
+      background: rgba(255,255,255,.20);
+      border: 3px solid rgba(255,255,255,.40);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(0, 196, 140, 0.4);
     }
 
     .avatar-initials {
       color: #fff;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
       letter-spacing: 1px;
     }
@@ -154,26 +154,26 @@ import { ApiService } from '../../core/services/api.service';
     .profile-identity {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .profile-identity h2 {
       margin: 0;
       color: #fff;
       font-size: 20px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .username-badge {
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,.75);
       font-size: 13px;
     }
 
     .role-badge {
       display: inline-block;
-      background: rgba(0, 196, 140, 0.2);
-      color: #00C48C;
-      border: 1px solid rgba(0, 196, 140, 0.4);
+      background: rgba(255,255,255,.20);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.35);
       border-radius: 20px;
       padding: 2px 12px;
       font-size: 12px;
@@ -183,14 +183,14 @@ import { ApiService } from '../../core/services/api.service';
 
     .close-btn {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      color: rgba(255,255,255,0.6) !important;
+      top: 14px;
+      right: 14px;
+      color: rgba(255,255,255,.7) !important;
     }
 
     .close-btn:hover {
       color: #fff !important;
-      background: rgba(255,255,255,0.1) !important;
+      background: rgba(255,255,255,.15) !important;
     }
 
     /* Body */
@@ -270,11 +270,15 @@ import { ApiService } from '../../core/services/api.service';
     }
 
     .save-btn {
-      background: linear-gradient(135deg, #0F2044 0%, #00966E 100%) !important;
+      background: #00966E !important;
       border-radius: 8px !important;
       font-weight: 600 !important;
-      box-shadow: 0 4px 14px rgba(0, 150, 110, 0.3) !important;
+      box-shadow: 0 3px 10px rgba(0, 150, 110, 0.28) !important;
       min-width: 130px;
+    }
+
+    .save-btn:hover {
+      background: #007A58 !important;
     }
   `]
 })

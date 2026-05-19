@@ -1,0 +1,166 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <div class="page-title">
+      <mat-icon class="title-icon">event</mat-icon>
+      <h2>Gestion des Audiences</h2>
+    </div>
+
+    <div class="toolbar">
+      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+        <button class="btn-new" (click)="createAudience()" style="order:99;margin-left:auto">
+          <mat-icon>add</mat-icon>
+          Nouvelle Audience
+        </button>
+      }
+
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Rechercher par type ou décision..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Affaire</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="affaireFilter" (ngModelChange)="applyFilter()">
+            <option [value]="0">Toutes les affaires</option>
+            @for (af of affaires(); track af.idAffaire) {
+              <option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement des audiences...</p>
+      </div>
+    }
+    @else if (pagedAudiences().length === 0) {
+      <div class="state-box empty-box">
+        <mat-icon>event</mat-icon>
+        <p>Aucune audience trouvée</p>
+      </div>
+    }
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>AFFAIRE</th>
+                <th>TYPE</th>
+                <th>DÉCISION</th>
+                <th>OBSERVATION</th>
+                <th>COMMENTAIRE</th>
+                @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                  <th>ACTIONS</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of pagedAudiences(); track a.idAudience) {
+                <tr>
+                  <td>{{ a.dateAudience | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ getAffaireRef(a.affaireId) }}</td>
+                  <td>{{ a.typeAudience || '—' }}</td>
+                  <td>{{ a.decision || '—' }}</td>
+                  <td>{{ a.observation || '—' }}</td>
+                  <td>{{ a.commentaire || '—' }}</td>
+                  @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                    <td class="td-actions">
+                      <button class="act-btn act-edit" (click)="editAudience(a)" title="Modifier">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button class="act-btn act-delete" (click)="deleteAudience(a.idAudience!)" title="Supprimer">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span class="pager-info">
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredAudiences().length, (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredAudiences().length }}
+          </span>
+          <div class="pager-btns">
+            <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="pager-btn pager-num" [class.pager-active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+            }
+            <button class="pager-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="pager-size">
+            <span>Par page :</span>
+            <select [(ngModel)]="pageSizeValue" (ngModelChange)="onPageSizeChange($event)">
+              <option [value]="5">5</option><option [value]="10">10</option><option [value]="25">25</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+<app-drawer-panel
+  [open]="editMode()"
+  [title]="editId() === 0 ? 'Nouvelle Audience' : 'Modifier Audience'"
+  icon="event"
+  [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+  [saveDisabled]="!tempAudience().affaireId || !tempAudience().dateAudience"
+  [saving]="loading()"
+  (closed)="cancelEdit()"
+  (saved)="saveAudience()">
+
+  <mat-form-field appearance="outline">
+    <mat-label>Affaire *</mat-label>
+    <mat-select [(ngModel)]="tempAudience().affaireId">
+      <mat-option [value]="0" disabled>Sélectionner une affaire</mat-option>
+      @for (af of affaires(); track af.idAffaire) {
+        <mat-option [value]="af.idAffaire">{{ af.numeroProcedure }} — {{ af.tribunal }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Date Audience *</mat-label>
+    <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAudience().dateAudience">
+    <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+    <mat-datepicker #datePicker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Type d'audience</mat-label>
+    <input matInput [(ngModel)]="tempAudience().typeAudience">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Décision</mat-label>
+    <input matInput [(ngModel)]="tempAudience().decision">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Observation</mat-label>
+    <input matInput [(ngModel)]="tempAudience().observation">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Commentaire</mat-label>
+    <textarea matInput [(ngModel)]="tempAudience().commentaire" rows="3"></textarea>
+  </mat-form-field>
+
+</app-drawer-panel>

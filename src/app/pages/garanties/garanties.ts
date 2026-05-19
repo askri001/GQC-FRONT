@@ -1,17 +1,13 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { GarantieService } from '../../core/services/garantie.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -24,378 +20,176 @@ import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.com
   selector: 'app-garanties',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatPaginatorModule,
-    DrawerPanelComponent
+    CommonModule, FormsModule,
+    MatIconModule, MatButtonModule, MatFormFieldModule,
+    MatInputModule, MatSelectModule, MatProgressSpinnerModule,
+    MatSnackBarModule, DrawerPanelComponent
   ],
-  template: `
-    <div class="page-container">
-      <mat-card class="page-card">
-        <div class="card-header">
-          <div class="header-title">
-            <mat-icon class="title-icon">verified_user</mat-icon>
-            <h2>Gestion des Garanties</h2>
-          </div>
-          <button mat-raised-button color="primary" (click)="createGarantie()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-            <mat-icon>add</mat-icon> Nouvelle Garantie
-          </button>
-        </div>
-
-        <div class="filters">
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-icon matPrefix>search</mat-icon>
-            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()"
-              placeholder="Rechercher par type ou description...">
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Dossier</mat-label>
-            <mat-select [(ngModel)]="dossierFilter" (selectionChange)="applyFilter()">
-              <mat-option [value]="0">Tous les dossiers</mat-option>
-              @for (d of dossiers(); track d.idDossier) {
-                <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Risque</mat-label>
-            <mat-select [(ngModel)]="risqueFilter" (selectionChange)="applyFilter()">
-              <mat-option [value]="0">Tous les risques</mat-option>
-              @for (r of risques(); track r.id) {
-                <mat-option [value]="r.id">{{ r.reference || ('RSQ-#' + r.id) }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Statut</mat-label>
-            <mat-select [(ngModel)]="statutFilter" (selectionChange)="applyFilter()">
-              <mat-option value="">Tous</mat-option>
-              <mat-option value="ACTIVE">Active</mat-option>
-              <mat-option value="REALISEE">Réalisée</mat-option>
-              <mat-option value="EXPIREE">Expirée</mat-option>
-              <mat-option value="INVALIDEE">Invalidée</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        @if (loading()) {
-          <div class="loading"><mat-spinner diameter="50"></mat-spinner><p>Chargement...</p></div>
-        } @else if (pagedGaranties().length === 0) {
-          <div class="no-data"><mat-icon>verified_user</mat-icon><p>Aucune garantie trouvée</p></div>
-        } @else {
-          <div class="table-container">
-            <table mat-table [dataSource]="pagedGaranties()" class="mat-elevation-z2 full-width">
-              <ng-container matColumnDef="typeGarantie">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
-                <td mat-cell *matCellDef="let g">{{ getTypeLabel(g.typeGarantie) }}</td>
-              </ng-container>
-              <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef>Description</th>
-                <td mat-cell *matCellDef="let g">{{ g.description }}</td>
-              </ng-container>
-              <ng-container matColumnDef="valeur">
-                <th mat-header-cell *matHeaderCellDef>Valeur</th>
-                <td mat-cell *matCellDef="let g">{{ g.valeur | number:'1.0-0' }} DT</td>
-              </ng-container>
-              <ng-container matColumnDef="statut">
-                <th mat-header-cell *matHeaderCellDef>Statut</th>
-                <td mat-cell *matCellDef="let g">
-                  <mat-chip [class]="'statut-' + g.statut?.toLowerCase()">{{ getStatutLabel(g.statut) }}</mat-chip>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="risque">
-                <th mat-header-cell *matHeaderCellDef>Risque</th>
-                <td mat-cell *matCellDef="let g">{{ getRisqueRef(g.risqueId) }}</td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let g">
-                  <button mat-icon-button color="primary" (click)="editGarantie(g)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>edit</mat-icon></button>
-                  <button mat-icon-button color="warn" (click)="deleteGarantie(g.idGarantie!)" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')"><mat-icon>delete</mat-icon></button>
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="cols"></tr>
-              <tr mat-row *matRowDef="let row; columns: cols;"></tr>
-            </table>
-            <mat-paginator [length]="filteredGaranties().length" [pageSize]="pageSize"
-              [pageSizeOptions]="[5, 10, 25]" (page)="onPageChange($event)"></mat-paginator>
-          </div>
-        }
-      </mat-card>
-    </div>
-
-    <!-- Drawer -->
-    <app-drawer-panel
-      [open]="editMode()"
-      [title]="editId() === 0 ? 'Nouvelle Garantie' : 'Modifier Garantie'"
-      icon="verified_user"
-      [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
-      [saveDisabled]="!tempGarantie().typeGarantie || !tempGarantie().description || !tempGarantie().risqueId"
-      [saving]="loading()"
-      (closed)="cancelEdit()"
-      (saved)="saveGarantie()">
-
-      <mat-form-field appearance="outline">
-        <mat-label>Dossier *</mat-label>
-        <mat-select [(ngModel)]="drawerDossierId" (ngModelChange)="onDrawerDossierChange()">
-          <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
-          @for (d of dossiers(); track d.idDossier) {
-            <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Risque *</mat-label>
-        <mat-select [(ngModel)]="tempGarantie().risqueId" [disabled]="!drawerDossierId">
-          <mat-option [value]="0" disabled>
-            {{ drawerDossierId ? 'Sélectionner un risque' : 'Sélectionnez d\'abord un dossier' }}
-          </mat-option>
-          @for (r of drawerRisques(); track r.id) {
-            <mat-option [value]="r.id">{{ r.reference || ('RSQ-#' + r.id) }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
-          }
-        </mat-select>
-        @if (drawerDossierId && drawerRisques().length === 0) {
-          <mat-hint style="color:#e65100">Aucun risque pour ce dossier</mat-hint>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Type de Garantie *</mat-label>
-        <mat-select [(ngModel)]="tempGarantie().typeGarantie">
-          <mat-option value="HYPOTHEQUE">Hypothèque</mat-option>
-          <mat-option value="GAGE">Gage</mat-option>
-          <mat-option value="CAUTION">Caution</mat-option>
-          <mat-option value="ASSURANCE">Assurance</mat-option>
-          <mat-option value="AUTRE">Autre</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Description *</mat-label>
-        <textarea matInput [(ngModel)]="tempGarantie().description" rows="3"></textarea>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Valeur (DT) *</mat-label>
-        <input matInput type="number" [(ngModel)]="tempGarantie().valeur">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Statut</mat-label>
-        <mat-select [(ngModel)]="tempGarantie().statut">
-          <mat-option value="ACTIVE">Active</mat-option>
-          <mat-option value="REALISEE">Réalisée</mat-option>
-          <mat-option value="EXPIREE">Expirée</mat-option>
-          <mat-option value="INVALIDEE">Invalidée</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </app-drawer-panel>
-  `,
+  templateUrl: './garanties.html',
   styleUrls: ['./garanties.css']
 })
 export class GarantiesComponent implements OnInit {
   private garantieService = inject(GarantieService);
-  private api = inject(ApiService);
-  private snackBar = inject(MatSnackBar);
-  readonly authService = inject(AuthService);
+  private api             = inject(ApiService);
+  private snackBar        = inject(MatSnackBar);
+  readonly authService    = inject(AuthService);
 
   garanties = signal<Garantie[]>([]);
   risques   = signal<Risque[]>([]);
   dossiers  = signal<Dossier[]>([]);
-  loading = signal(false);
+  loading   = signal(false);
 
-  searchTerm = '';
-  statutFilter = '';
-  dossierFilter = 0;
-  risqueFilter = 0;
-  drawerDossierId = 0;  // dossier selected inside the drawer form
-  pageSize = 10;
-  currentPage = 0;
+  searchTerm      = '';
+  statutFilter    = '';
+  dossierFilter   = 0;
+  risqueFilter    = 0;
+  drawerDossierId = 0;
 
-  editId = signal<number | null>(null);
-  editMode = signal(false);
+  pageSizeValue = 10;
+  pageSize      = signal(10);
+  currentPage   = signal(0);
+
+  editId       = signal<number | null>(null);
+  editMode     = signal(false);
   tempGarantie = signal<Partial<Garantie>>({});
-
-  displayedColumns = ['typeGarantie', 'description', 'valeur', 'statut', 'risque', 'actions'];
-
-  get cols(): string[] {
-    return this.authService.isAdmin()
-      ? this.displayedColumns.filter(c => c !== 'actions')
-      : this.displayedColumns;
-  }
 
   filteredGaranties = signal<Garantie[]>([]);
 
-  pagedGaranties = () => {
-    const start = this.currentPage * this.pageSize;
-    return this.filteredGaranties().slice(start, start + this.pageSize);
-  };
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadGaranties();
     this.loadRisques();
     this.loadDossiers();
   }
 
-  loadDossiers() {
+  loadDossiers(): void {
     this.api.get<Dossier[]>('/dossiers').subscribe({
       next: (data) => this.dossiers.set(data ?? []),
-      error: () => this.dossiers.set([])
+      error: () => {}
     });
   }
 
-  loadGaranties() {
+  loadGaranties(): void {
     this.loading.set(true);
     this.garantieService.getAll().subscribe({
-      next: (data) => {
-        this.garanties.set(data);
-        this.applyFilter();
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading garanties', err);
-        this.loading.set(false);
-        this.showNotification('Erreur chargement garanties', 'error');
-      }
+      next: (data) => { this.garanties.set(data ?? []); this.applyFilter(); this.loading.set(false); },
+      error: () => { this.loading.set(false); this.showNotification('Erreur chargement garanties', 'error'); }
     });
   }
 
-  loadRisques() {
+  loadRisques(): void {
     this.api.get<Risque[]>('/risques').subscribe({
-      next: (data) => this.risques.set(data),
-      error: (err) => console.error('Error loading risques', err)
+      next: (data) => this.risques.set(data ?? []),
+      error: () => {}
     });
   }
 
-  applyFilter() {
-    let result = this.garanties();
+  applyFilter(): void {
+    let r = this.garanties();
     if (this.dossierFilter) {
-      const risqueIds = this.risques()
-        .filter(r => r.dossierId === this.dossierFilter)
-        .map(r => r.id);
-      result = result.filter(g => risqueIds.includes(g.risqueId));
+      const ids = this.risques().filter(r => r.dossierId === this.dossierFilter).map(r => r.id);
+      r = r.filter(g => ids.includes(g.risqueId));
     }
-    if (this.risqueFilter) {
-      result = result.filter(g => g.risqueId === this.risqueFilter);
-    }
+    if (this.risqueFilter)  r = r.filter(g => g.risqueId === this.risqueFilter);
     if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(g =>
-        g.typeGarantie?.toLowerCase().includes(term) ||
-        g.description?.toLowerCase().includes(term)
-      );
+      const t = this.searchTerm.toLowerCase();
+      r = r.filter(g => g.typeGarantie?.toLowerCase().includes(t) || g.description?.toLowerCase().includes(t));
     }
-    if (this.statutFilter) {
-      result = result.filter(g => g.statut === this.statutFilter);
-    }
-    this.filteredGaranties.set(result);
-    this.currentPage = 0;
+    if (this.statutFilter) r = r.filter(g => g.statut === this.statutFilter);
+    this.filteredGaranties.set(r);
+    this.currentPage.set(0);
   }
 
-  onPageChange(event: PageEvent) {
-    this.pageSize = event.pageSize;
-    this.currentPage = event.pageIndex;
+  pagedGaranties(): Garantie[] {
+    const start = this.currentPage() * this.pageSize();
+    return this.filteredGaranties().slice(start, start + this.pageSize());
   }
 
-  /** Risques filtered by the dossier selected in the drawer */
+  totalPages(): number { return Math.max(1, Math.ceil(this.filteredGaranties().length / this.pageSize())); }
+
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
+    this.currentPage.set(page);
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(Number(size));
+    this.currentPage.set(0);
+  }
+
+  getPageNumbers(): number[] {
+    const total   = this.totalPages();
+    const current = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const start = Math.max(0, current - 2);
+    const end   = Math.min(total - 1, current + 2);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  min(a: number, b: number): number { return Math.min(a, b); }
+
   drawerRisques(): Risque[] {
     if (!this.drawerDossierId) return this.risques();
     return this.risques().filter(r => r.dossierId === this.drawerDossierId);
   }
 
-  /** When dossier changes in drawer, reset the risque selection */
   onDrawerDossierChange(): void {
     this.tempGarantie.set({ ...this.tempGarantie(), risqueId: 0 });
   }
 
-  createGarantie() {
+  createGarantie(): void {
     this.editId.set(0);
     this.drawerDossierId = 0;
-    this.tempGarantie.set({
-      typeGarantie: undefined,
-      description: '',
-      valeur: 0,
-      statut: 'ACTIVE',
-      risqueId: 0
-    });
+    this.tempGarantie.set({ typeGarantie: undefined, description: '', valeur: 0, statut: 'ACTIVE', risqueId: 0 });
     this.editMode.set(true);
   }
 
-  editGarantie(garantie: Garantie) {
+  editGarantie(garantie: Garantie): void {
     this.editId.set(garantie.idGarantie!);
     this.tempGarantie.set({ ...garantie });
-    // Pre-fill dossier from the linked risque
     const r = this.risques().find(r => r.id === garantie.risqueId);
     this.drawerDossierId = r?.dossierId ?? 0;
     this.editMode.set(true);
   }
 
-  saveGarantie() {
+  saveGarantie(): void {
     const temp = this.tempGarantie();
     if (!temp.typeGarantie || !temp.description || !temp.risqueId) {
-      this.showNotification('Type, description et risque sont requis', 'error');
-      return;
+      this.showNotification('Type, description et risque sont requis', 'error'); return;
     }
-
-    const request = this.editId() === 0
+    const req = this.editId() === 0
       ? this.garantieService.create(temp)
       : this.garantieService.update(this.editId()!, temp);
-
     this.loading.set(true);
-    request.subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.loadGaranties();
-        this.cancelEdit();
-        this.showNotification('Garantie sauvegardée', 'success');
-      },
-      error: (err) => {
-        this.loading.set(false);
-        console.error('Save error', err);
-        this.showNotification('Erreur sauvegarde', 'error');
-      }
+    req.subscribe({
+      next: () => { this.loading.set(false); this.loadGaranties(); this.cancelEdit(); this.showNotification('Garantie sauvegardée', 'success'); },
+      error: () => { this.loading.set(false); this.showNotification('Erreur sauvegarde', 'error'); }
     });
   }
 
-  deleteGarantie(id: number) {
-    if (confirm('Confirmer la suppression de cette garantie ?')) {
-      this.garantieService.delete(id).subscribe({
-        next: () => {
-          this.loadGaranties();
-          this.showNotification('Garantie supprimée', 'success');
-        },
-        error: (err) => {
-          console.error('Delete error', err);
-          this.showNotification('Erreur suppression', 'error');
-        }
-      });
-    }
+  deleteGarantie(id: number): void {
+    if (!confirm('Confirmer la suppression de cette garantie ?')) return;
+    this.garantieService.delete(id).subscribe({
+      next: () => { this.loadGaranties(); this.showNotification('Garantie supprimée', 'success'); },
+      error: () => this.showNotification('Erreur suppression', 'error')
+    });
   }
 
-  cancelEdit() {
+  cancelEdit(): void {
     this.editId.set(null);
     this.tempGarantie.set({});
     this.drawerDossierId = 0;
     this.editMode.set(false);
   }
 
-  getTypeLabel(type: string): string {
-    return TYPE_GARANTIE_LABELS[type as TypeGarantie] || type;
-  }
+  getTypeLabel(type: string): string { return TYPE_GARANTIE_LABELS[type as TypeGarantie] || type; }
+  getStatutLabel(statut: string): string { return STATUT_GARANTIE_LABELS[statut as StatutGarantie] || statut; }
 
-  getStatutLabel(statut: string): string {
-    return STATUT_GARANTIE_LABELS[statut as StatutGarantie] || statut;
+  getStatutClass(statut: string): string {
+    const map: Record<string, string> = {
+      'ACTIVE': 'chip-active', 'REALISEE': 'chip-realisee',
+      'EXPIREE': 'chip-expiree', 'INVALIDEE': 'chip-invalidee'
+    };
+    return map[statut] ?? '';
   }
 
   getRisqueRef(risqueId: number): string {
@@ -403,8 +197,7 @@ export class GarantiesComponent implements OnInit {
     return r ? (r.reference || `RSQ-#${risqueId}`) : `#${risqueId}`;
   }
 
-  showNotification(msg: string, type: 'success' | 'error' = 'success') {
-    const panelClass = type === 'success' ? 'success-snackbar' : 'error-snackbar';
-    this.snackBar.open(msg, 'Close', { duration: 3000, panelClass });
+  showNotification(msg: string, type: 'success' | 'error' = 'success'): void {
+    this.snackBar.open(msg, 'Fermer', { duration: 3000, panelClass: type === 'success' ? 'success-snackbar' : 'error-snackbar' });
   }
 }

@@ -1,0 +1,158 @@
+<div class="ufd-dialog">
+
+  <!-- Header -->
+  <div class="ufd-header">
+    <div class="ufd-header-icon">
+      <mat-icon>{{ data.isEdit ? 'edit' : 'person_add' }}</mat-icon>
+    </div>
+    <div>
+      <h2 class="ufd-title">{{ dialogTitle }}</h2>
+      <p class="ufd-subtitle">{{ dialogSubtitle }}</p>
+    </div>
+    <button class="ufd-close" mat-dialog-close type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="ufd-body">
+
+    <!-- Row 1: Username + Prénom (create only) -->
+    @if (!data.isEdit) {
+      <div class="ufd-row">
+        <div class="ufd-field">
+          <label class="ufd-label">Nom d'utilisateur *</label>
+          <div class="ufd-input-wrap" [class.ufd-error]="tUsername && !isValidUsername(form.username) && form.username.length > 0">
+            <mat-icon class="ufd-input-icon">account_circle</mat-icon>
+            <input class="ufd-input" [(ngModel)]="form.username"
+              (ngModelChange)="tUsername = true"
+              placeholder="Ex: jdupont">
+          </div>
+          @if (tUsername && !form.username.trim()) {
+            <span class="ufd-err-msg">Requis</span>
+          } @else if (tUsername && !isValidUsername(form.username) && form.username.length > 0) {
+            <span class="ufd-err-msg">Lettres, chiffres et _ (min. 3 car.)</span>
+          } @else {
+            <span class="ufd-hint">Lettres, chiffres et _ (min. 3 car.)</span>
+          }
+        </div>
+        <div class="ufd-field">
+          <label class="ufd-label">Prénom</label>
+          <div class="ufd-input-wrap">
+            <mat-icon class="ufd-input-icon">person_outline</mat-icon>
+            <input class="ufd-input" [(ngModel)]="form.prenom" placeholder="Ex: Jean">
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Row: Prénom + Nom (edit) or Nom + Email (create) -->
+    @if (data.isEdit) {
+      <div class="ufd-row">
+        <div class="ufd-field">
+          <label class="ufd-label">Prénom</label>
+          <div class="ufd-input-wrap">
+            <mat-icon class="ufd-input-icon">person_outline</mat-icon>
+            <input class="ufd-input" [(ngModel)]="form.prenom" placeholder="Ex: Jean">
+          </div>
+        </div>
+        <div class="ufd-field">
+          <label class="ufd-label">Nom</label>
+          <div class="ufd-input-wrap">
+            <mat-icon class="ufd-input-icon">person</mat-icon>
+            <input class="ufd-input" [(ngModel)]="form.nom" placeholder="Ex: Dupont">
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="ufd-row">
+        <div class="ufd-field">
+          <label class="ufd-label">Nom</label>
+          <div class="ufd-input-wrap">
+            <mat-icon class="ufd-input-icon">person</mat-icon>
+            <input class="ufd-input" [(ngModel)]="form.nom" placeholder="Ex: Dupont">
+          </div>
+        </div>
+        <div class="ufd-field">
+          <label class="ufd-label">Email *</label>
+          <div class="ufd-input-wrap" [class.ufd-error]="tEmail && !isValidEmail(form.email) && form.email.length > 0">
+            <mat-icon class="ufd-input-icon">email</mat-icon>
+            <input class="ufd-input" type="email" [(ngModel)]="form.email"
+              (ngModelChange)="tEmail = true" placeholder="Ex: jean@bna.tn">
+          </div>
+          @if (tEmail && !isValidEmail(form.email) && form.email.length > 0) {
+            <span class="ufd-err-msg">Format invalide</span>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Email full width (edit mode) -->
+    @if (data.isEdit) {
+      <div class="ufd-field">
+        <label class="ufd-label">Email *</label>
+        <div class="ufd-input-wrap" [class.ufd-error]="tEmail && !isValidEmail(form.email) && form.email.length > 0">
+          <mat-icon class="ufd-input-icon">email</mat-icon>
+          <input class="ufd-input" type="email" [(ngModel)]="form.email"
+            (ngModelChange)="tEmail = true" placeholder="Ex: jean@bna.tn">
+        </div>
+        @if (tEmail && !isValidEmail(form.email) && form.email.length > 0) {
+          <span class="ufd-err-msg">Format invalide</span>
+        }
+      </div>
+    }
+
+    <!-- Password (create only) -->
+    @if (!data.isEdit) {
+      <div class="ufd-field">
+        <label class="ufd-label">Mot de passe *</label>
+        <div class="ufd-input-wrap">
+          <mat-icon class="ufd-input-icon">lock</mat-icon>
+          <input class="ufd-input" [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="form.password"
+            (ngModelChange)="tPassword = true"
+            placeholder="Min. 8 car., 1 chiffre, 1 majuscule">
+          <button class="ufd-eye-btn" type="button" (click)="showPassword = !showPassword">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+        @if (tPassword && form.password.length > 0 && !isValidPassword(form.password)) {
+          <span class="ufd-err-msg">Min. 8 car., 1 chiffre, 1 majuscule</span>
+        } @else {
+          <span class="ufd-hint">Min. 8 caractères, 1 chiffre, 1 majuscule</span>
+        }
+      </div>
+    }
+
+    <!-- Role -->
+    <div class="ufd-field">
+      <label class="ufd-label">Rôle *</label>
+      <div class="ufd-select-wrap" [class.ufd-disabled]="!!data.isSelf">
+        <mat-icon class="ufd-input-icon">security</mat-icon>
+        <select class="ufd-select" [(ngModel)]="form.roleId"
+          (ngModelChange)="tRoleIds = true"
+          [disabled]="!!data.isSelf">
+          <option [value]="null" disabled>Sélectionner un rôle</option>
+          @for (role of data.availableRoles; track role.idRole) {
+            <option [value]="role.idRole">{{ getRoleLabel(role.name) }}</option>
+          }
+        </select>
+        <mat-icon class="ufd-select-arrow">keyboard_arrow_down</mat-icon>
+      </div>
+      @if (data.isSelf) {
+        <span class="ufd-hint" style="color:#e65100">Vous ne pouvez pas modifier votre propre rôle</span>
+      }
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="ufd-footer">
+    <button class="ufd-btn-cancel" mat-dialog-close type="button">Annuler</button>
+    <button class="ufd-btn-save" type="button" (click)="onSubmit()">
+      <mat-icon>{{ saveIcon }}</mat-icon>
+      {{ saveLabel }}
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,154 @@
+<div class="chat-layout">
+
+  <!-- ═══════════════════════════════════════════════════════
+       LEFT PANEL — Conversations list
+  ═══════════════════════════════════════════════════════ -->
+  <div class="chat-sidebar">
+
+    <!-- Header -->
+    <div class="chat-sidebar-header">
+      <h2>Messagerie</h2>
+      <button class="new-chat-btn" (click)="showNewChat = !showNewChat" matTooltip="Nouveau message">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="chat-search">
+      <mat-icon class="chat-search-icon">search</mat-icon>
+      <input class="chat-search-input" [(ngModel)]="searchQuery"
+        placeholder="Rechercher une conversation..." />
+    </div>
+
+    <!-- New chat user list -->
+    @if (showNewChat) {
+      <div class="new-chat-panel">
+        <div class="new-chat-header">
+          <span>Nouvelle conversation</span>
+          <button class="icon-btn" (click)="showNewChat = false"><mat-icon>close</mat-icon></button>
+        </div>
+        @for (u of filteredUsers(); track u.id) {
+          <div class="user-item" (click)="startNewChat(u)">
+            <div class="avatar avatar-sm">{{ getInitials(u.prenom + ' ' + u.nom || u.username) }}</div>
+            <div class="user-item-info">
+              <span class="user-item-name">{{ u.prenom || '' }} {{ u.nom || '' }}</span>
+              <span class="user-item-role">{{ (u.roles && u.roles[0]) || '' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="chat-state">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    }
+
+    <!-- Conversation list -->
+    @else if (filteredConversations().length === 0) {
+      <div class="chat-state">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        <p>Aucune conversation</p>
+        <small>Cliquez sur ✏️ pour démarrer</small>
+      </div>
+    }
+
+    @else {
+      <div class="conv-list">
+        @for (conv of filteredConversations(); track conv.userId) {
+          <div class="conv-item" [class.active]="activeConv()?.userId === conv.userId"
+            (click)="openConversation(conv)">
+            <div class="avatar">{{ getInitials(conv.displayName) }}</div>
+            <div class="conv-info">
+              <div class="conv-top">
+                <span class="conv-name">{{ conv.displayName }}</span>
+                <span class="conv-time">{{ formatTime(conv.lastTime) }}</span>
+              </div>
+              <div class="conv-bottom">
+                <span class="conv-preview">{{ conv.lastMessage || 'Démarrer la conversation' }}</span>
+                @if (conv.unreadCount > 0) {
+                  <span class="unread-badge">{{ conv.unreadCount }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       RIGHT PANEL — Active conversation
+  ═══════════════════════════════════════════════════════ -->
+  <div class="chat-main">
+
+    @if (!activeConv()) {
+      <!-- Empty state -->
+      <div class="chat-empty">
+        <mat-icon>forum</mat-icon>
+        <h3>Sélectionnez une conversation</h3>
+        <p>Choisissez une conversation à gauche ou démarrez-en une nouvelle</p>
+      </div>
+    }
+
+    @else {
+      <!-- Chat header -->
+      <div class="chat-header">
+        <div class="avatar">{{ getInitials(activeConv()!.displayName) }}</div>
+        <div class="chat-header-info">
+          <span class="chat-header-name">{{ activeConv()!.displayName }}</span>
+          <span class="chat-header-username">@{{ activeConv()!.username }}</span>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-body" #chatBody>
+        @if (activeConv()!.messages.length === 0) {
+          <div class="chat-no-messages">
+            <mat-icon>waving_hand</mat-icon>
+            <p>Démarrez la conversation !</p>
+          </div>
+        }
+        @for (msg of activeConv()!.messages; track msg.id) {
+          <div class="msg-row" [class.mine]="isMine(msg)" [class.theirs]="!isMine(msg)">
+            @if (!isMine(msg)) {
+              <div class="avatar avatar-sm">{{ getInitials(activeConv()!.displayName) }}</div>
+            }
+            <div class="bubble" [class.bubble-mine]="isMine(msg)" [class.bubble-theirs]="!isMine(msg)">
+              <p class="bubble-text">{{ msg.body }}</p>
+              @if (msg.entityType && msg.entityId) {
+                <div class="bubble-entity" (click)="goToEntity(msg)">
+                  <mat-icon>{{ getEntityIcon(msg.entityType) }}</mat-icon>
+                  <span>{{ msg.entityType }} #{{ msg.entityId }}</span>
+                  <mat-icon class="entity-arrow">open_in_new</mat-icon>
+                </div>
+              }
+              <span class="bubble-time">{{ formatTime(toDate(msg.createdAt)) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <textarea class="chat-input" [(ngModel)]="newMessage"
+          (keydown)="onEnter($event)"
+          placeholder="Écrire un message... (Entrée pour envoyer)"
+          rows="1"></textarea>
+        <button class="send-btn" (click)="sendMessage()"
+          [disabled]="!newMessage.trim() || sending()">
+          @if (sending()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>send</mat-icon>
+          }
+        </button>
+      </div>
+    }
+
+  </div>
+
+</div>

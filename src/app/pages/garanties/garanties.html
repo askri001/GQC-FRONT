@@ -1,0 +1,217 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <!-- TITLE -->
+    <div class="page-title">
+      <mat-icon class="title-icon">verified_user</mat-icon>
+      <h2>Gestion des Garanties</h2>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+
+      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+        <button class="btn-new" (click)="createGarantie()" style="order:99;margin-left:auto">
+          <mat-icon>add</mat-icon>
+          Nouvelle Garantie
+        </button>
+      }
+
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Rechercher..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Dossier</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="dossierFilter" (ngModelChange)="applyFilter()">
+            <option [value]="0">Tous les dossiers</option>
+            @for (d of dossiers(); track d.idDossier) {
+              <option [value]="d.idDossier">{{ d.reference }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Statut</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="statutFilter" (ngModelChange)="applyFilter()">
+            <option value="">Tous les statuts</option>
+            <option value="ACTIVE">Active</option>
+            <option value="REALISEE">Réalisée</option>
+            <option value="EXPIREE">Expirée</option>
+            <option value="INVALIDEE">Invalidée</option>
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOADING -->
+    @if (loading()) {
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement des garanties...</p>
+      </div>
+    }
+
+    <!-- EMPTY -->
+    @else if (pagedGaranties().length === 0) {
+      <div class="state-box empty-box">
+        <mat-icon>verified_user</mat-icon>
+        <p>Aucune garantie trouvée</p>
+      </div>
+    }
+
+    <!-- TABLE -->
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>TYPE</th>
+                <th>DESCRIPTION</th>
+                <th>VALEUR</th>
+                <th>STATUT</th>
+                <th>RISQUE</th>
+                @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                  <th>ACTIONS</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of pagedGaranties(); track g.idGarantie) {
+                <tr>
+                  <td>{{ getTypeLabel(g.typeGarantie) }}</td>
+                  <td>{{ g.description }}</td>
+                  <td>{{ g.valeur | number:'1.0-0' }} DT</td>
+                  <td>
+                    <span class="status-chip" [ngClass]="getStatutClass(g.statut)">
+                      {{ getStatutLabel(g.statut) }}
+                    </span>
+                  </td>
+                  <td>{{ getRisqueRef(g.risqueId) }}</td>
+                  @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                    <td class="td-actions">
+                      <button class="act-btn act-edit" (click)="editGarantie(g)" title="Modifier">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button class="act-btn act-delete" (click)="deleteGarantie(g.idGarantie!)" title="Supprimer">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATOR -->
+        <div class="pager">
+          <span class="pager-info">
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredGaranties().length, (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredGaranties().length }}
+          </span>
+          <div class="pager-btns">
+            <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="pager-btn pager-num" [class.pager-active]="p === currentPage()" (click)="goToPage(p)">
+                {{ p + 1 }}
+              </button>
+            }
+            <button class="pager-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="pager-size">
+            <span>Par page :</span>
+            <select [(ngModel)]="pageSizeValue" (ngModelChange)="onPageSizeChange($event)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- DRAWER -->
+<app-drawer-panel
+  [open]="editMode()"
+  [title]="editId() === 0 ? 'Nouvelle Garantie' : 'Modifier Garantie'"
+  icon="verified_user"
+  [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+  [saveDisabled]="!tempGarantie().typeGarantie || !tempGarantie().description || !tempGarantie().risqueId"
+  [saving]="loading()"
+  (closed)="cancelEdit()"
+  (saved)="saveGarantie()">
+
+  <mat-form-field appearance="outline">
+    <mat-label>Dossier *</mat-label>
+    <mat-select [(ngModel)]="drawerDossierId" (ngModelChange)="onDrawerDossierChange()">
+      <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
+      @for (d of dossiers(); track d.idDossier) {
+        <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Risque *</mat-label>
+    <mat-select [(ngModel)]="tempGarantie().risqueId" [disabled]="!drawerDossierId">
+      <mat-option [value]="0" disabled>
+        {{ drawerDossierId ? 'Sélectionner un risque' : 'Sélectionnez d\'abord un dossier' }}
+      </mat-option>
+      @for (r of drawerRisques(); track r.id) {
+        <mat-option [value]="r.id">{{ r.reference || ('RSQ-#' + r.id) }} — {{ r.montantTotal | number:'1.0-0' }} DT</mat-option>
+      }
+    </mat-select>
+    @if (drawerDossierId && drawerRisques().length === 0) {
+      <mat-hint style="color:#e65100">Aucun risque pour ce dossier</mat-hint>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Type de Garantie *</mat-label>
+    <mat-select [(ngModel)]="tempGarantie().typeGarantie">
+      <mat-option value="HYPOTHEQUE">Hypothèque</mat-option>
+      <mat-option value="GAGE">Gage</mat-option>
+      <mat-option value="CAUTION">Caution</mat-option>
+      <mat-option value="ASSURANCE">Assurance</mat-option>
+      <mat-option value="AUTRE">Autre</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Description *</mat-label>
+    <textarea matInput [(ngModel)]="tempGarantie().description" rows="3"></textarea>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Valeur (DT) *</mat-label>
+    <input matInput type="number" [(ngModel)]="tempGarantie().valeur">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Statut</mat-label>
+    <mat-select [(ngModel)]="tempGarantie().statut">
+      <mat-option value="ACTIVE">Active</mat-option>
+      <mat-option value="REALISEE">Réalisée</mat-option>
+      <mat-option value="EXPIREE">Expirée</mat-option>
+      <mat-option value="INVALIDEE">Invalidée</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+</app-drawer-panel>

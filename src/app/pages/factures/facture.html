@@ -147,14 +147,6 @@
                         {{ statutLabels[f.statut] || f.statut }}
                       </span>
                     }
-                    @if (f.commentaireRejet) {
-                      <mat-icon
-                        style="font-size:16px;width:16px;height:16px;color:#c62828;cursor:help;vertical-align:middle;margin-left:4px"
-                        [matTooltip]="'Rejeté : ' + f.commentaireRejet"
-                        matTooltipPosition="right">
-                        chat_bubble
-                      </mat-icon>
-                    }
                   </td>
 
                   <!-- DATE PAIEMENT — uniquement si PAYEE -->
@@ -174,7 +166,7 @@
 
                     <!-- EN_ATTENTE_VALIDATION : Valider/Rejeter (Responsable) + lock icon (ChargeDossier only) -->
                     @if (f.statut === 'EN_ATTENTE_VALIDATION') {
-                      @if (authService.hasRole('ROLE_CHARGEDOSSIER') && !authService.hasRole('ROLE_RESPONSABLE') && !authService.hasRole('ROLE_ADMIN')) {
+                      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
                         <span class="act-btn act-locked"
                           matTooltip="Modification impossible : facture en cours de validation"
                           matTooltipPosition="above">
@@ -185,7 +177,7 @@
                           <mat-icon>delete_outline</mat-icon>
                         </button>
                       }
-                      @if (authService.hasRole('ROLE_RESPONSABLE') || authService.hasRole('ROLE_ADMIN')) {
+                      @if (authService.hasRole('ROLE_RESPONSABLE')) {
                         <button class="act-btn act-validate-resp"
                           (click)="valider(f)"
                           [disabled]="isProcessing(f.id!)"
@@ -210,10 +202,9 @@
                     }
 
                     <!-- VALIDEE : Payer (Responsable) -->
-                    @if (f.statut === 'VALIDEE') {
+                    @if (f.statut === 'VALIDEE' && authService.hasRole('ROLE_RESPONSABLE')) {
                       <button class="act-btn" style="color:#1565c0"
-                        (click)="payer(f)" title="Marquer comme payée"
-                        *ngIf="authService.hasRole('ROLE_RESPONSABLE')">
+                        (click)="payer(f)" title="Marquer comme payée">
                         <mat-icon>payments</mat-icon>
                       </button>
                     }

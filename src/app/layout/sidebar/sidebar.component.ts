@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../core/services/auth.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { Router } from '@angular/router';
 
 interface NavItem {
@@ -61,10 +62,11 @@ export class SidebarComponent {
 
   constructor(
     public authService: AuthService,
+    public sidebarService: SidebarService,
     private router: Router
   ) {}
 
-  collapsed = signal(false);
+  get collapsed() { return this.sidebarService.collapsed; }
 
   navItems: NavItem[] = [
     { label: 'Dashboard',           icon: 'dashboard',     route: '/dashboard',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
@@ -78,8 +80,7 @@ export class SidebarComponent {
     { label: 'Audiences',           icon: 'event',         route: '/audiences',    roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Prestataires',        icon: 'business',      route: '/prestataires', roles: ['ROLE_ADMIN', 'ROLE_CHARGEDOSSIER'] },
     { label: 'Missions',            icon: 'assignment',    route: '/missions',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] },
-    { label: 'Messagerie',          icon: 'mail',          route: '/messages',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
+    { label: 'Factures',            icon: 'receipt',       route: '/factures',     roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE', 'ROLE_CHARGEDOSSIER'] }
   ];
 
   filteredNavItems(): NavItem[] {
@@ -96,6 +97,6 @@ export class SidebarComponent {
   }
 
   toggleCollapse(): void {
-    this.collapsed.update(v => !v);
+    this.sidebarService.toggle();
   }
 }

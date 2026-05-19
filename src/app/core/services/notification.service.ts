@@ -59,8 +59,8 @@ export class NotificationService {
           });
           (missions || []).filter(m => m.statut === 'EN_ATTENTE_VALIDATION').forEach(m => {
             items.push({ id: `mis-val-${m.id}`, type: 'warning', icon: 'assignment',
-              title: 'Mission à valider', message: `Mission #${m.id}`,
-              route: '/missions', entityId: m.id });
+              title: 'Mission à valider', message: `Mission #${m.id ?? (m as any).idMission}`,
+              route: '/missions', entityId: m.id ?? (m as any).idMission });
           });
           (factures || []).filter(f => f.statut === 'EN_ATTENTE_VALIDATION').forEach(f => {
             items.push({ id: `fac-val-${f.id}`, type: 'warning', icon: 'receipt',

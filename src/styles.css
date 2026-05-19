@@ -129,3 +129,37 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 768px) {
   .filters { flex-direction: column; }
 }
+
+/* ================================================================
+   NOTIFICATION MENU — global override
+   ================================================================ */
+.notif-menu .mat-mdc-menu-panel {
+  min-width: 340px !important;
+  max-width: 380px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.14) !important;
+  overflow: hidden !important;
+  margin-top: 8px !important;
+}
+
+.notif-menu .mat-mdc-menu-content {
+  padding: 0 !important;
+}
+
+/* ================================================================
+   DIALOG CENTERING — override Material default positioning
+   ================================================================ */
+.cdk-overlay-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1000 !important;
+}
+
+.cdk-global-overlay-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

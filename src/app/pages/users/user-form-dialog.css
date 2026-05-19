@@ -1,0 +1,149 @@
+.ufd-dialog {
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Header */
+.ufd-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px 18px;
+  background: linear-gradient(135deg, #00966E, #007A58);
+  position: relative;
+}
+
+.ufd-header-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: rgba(255,255,255,.20);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.ufd-header-icon mat-icon {
+  color: #fff;
+  font-size: 20px !important; width: 20px !important; height: 20px !important;
+}
+
+.ufd-title { margin: 0; font-size: 16px; font-weight: 700; color: #fff; }
+.ufd-subtitle { margin: 2px 0 0; font-size: 12px; color: rgba(255,255,255,.75); }
+
+.ufd-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border: none; border-radius: 8px;
+  background: rgba(255,255,255,.15); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.ufd-close:hover { background: rgba(255,255,255,.28); }
+.ufd-close mat-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
+
+/* Body */
+.ufd-body {
+  padding: 20px 22px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+}
+
+.ufd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.ufd-field { display: flex; flex-direction: column; gap: 5px; }
+
+.ufd-label {
+  font-size: 11px; font-weight: 600; color: #5a7a72;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+
+.ufd-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  height: 44px; padding: 0 12px;
+  border: 1.5px solid #d4e8e0; border-radius: 10px;
+  background: #f7fdfb; transition: border-color .2s, box-shadow .2s;
+}
+.ufd-input-wrap:focus-within {
+  border-color: #00966E;
+  box-shadow: 0 0 0 3px rgba(0,150,110,.10);
+  background: #fff;
+}
+.ufd-input-wrap.ufd-error { border-color: #c62828; }
+
+.ufd-input-icon {
+  font-size: 17px !important; width: 17px !important; height: 17px !important;
+  color: #7aada0; flex-shrink: 0;
+}
+
+.ufd-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 14px; color: #1a2e28;
+}
+.ufd-input::placeholder { color: #a8bfb8; }
+
+.ufd-eye-btn {
+  width: 26px; height: 26px; border: none; background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: #7aada0; border-radius: 6px; flex-shrink: 0;
+}
+.ufd-eye-btn:hover { background: rgba(0,0,0,.06); }
+.ufd-eye-btn mat-icon { font-size: 17px !important; width: 17px !important; height: 17px !important; }
+
+.ufd-select-wrap {
+  display: flex; align-items: center; gap: 8px;
+  height: 44px; padding: 0 12px;
+  border: 1.5px solid #d4e8e0; border-radius: 10px;
+  background: #f7fdfb; transition: border-color .2s;
+  position: relative;
+}
+.ufd-select-wrap:focus-within {
+  border-color: #00966E;
+  box-shadow: 0 0 0 3px rgba(0,150,110,.10);
+  background: #fff;
+}
+.ufd-select-wrap.ufd-disabled { opacity: .6; }
+
+.ufd-select {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 14px; color: #1a2e28;
+  appearance: none; -webkit-appearance: none;
+  cursor: pointer; padding-right: 24px;
+}
+
+.ufd-select-arrow {
+  position: absolute; right: 10px;
+  font-size: 17px !important; width: 17px !important; height: 17px !important;
+  color: #7aada0; pointer-events: none;
+}
+
+.ufd-hint { font-size: 11px; color: #7aada0; }
+.ufd-err-msg { font-size: 11px; color: #c62828; font-weight: 500; }
+
+/* Footer */
+.ufd-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid #e8f3ee;
+  background: #fff;
+}
+
+.ufd-btn-cancel {
+  height: 40px; padding: 0 20px;
+  border: 1.5px solid #d4e8e0; border-radius: 10px;
+  background: #fff; color: #5a7a72;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.ufd-btn-cancel:hover { border-color: #00966E; color: #00966E; background: #f7fdfb; }
+
+.ufd-btn-save {
+  height: 40px; padding: 0 22px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; border-radius: 10px;
+  background: #00966E; color: #fff;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,150,110,.28);
+  transition: background .15s, transform .1s;
+}
+.ufd-btn-save:hover { background: #007A58; transform: translateY(-1px); }
+.ufd-btn-save mat-icon { font-size: 17px !important; width: 17px !important; height: 17px !important; }

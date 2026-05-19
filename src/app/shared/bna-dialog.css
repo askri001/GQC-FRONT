@@ -9,9 +9,18 @@
 
 .bna-dialog .mdc-dialog__surface {
   background: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.16) !important;
   overflow: hidden !important;
+}
+
+/* Remove default padding from dialog container so our custom header fills edge to edge */
+.bna-dialog .mat-mdc-dialog-container .mdc-dialog__container {
+  padding: 0 !important;
+}
+
+.bna-dialog .mat-mdc-dialog-surface {
+  padding: 0 !important;
 }
 
 /* ── Title ─────────────────────────────────────────────────── */

@@ -192,12 +192,12 @@
                       </button>
                     }
                     <button class="act-btn act-delete" (click)="confirmDelete(m)" title="Supprimer"
-                      *ngIf="(authService.hasRole('ROLE_CHARGEDOSSIER') || authService.hasRole('ROLE_ADMIN')) && m.statut !== 'EN_COURS' && m.statut !== 'EN_ATTENTE_VALIDATION'">
+                      *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && m.statut !== 'EN_COURS' && m.statut !== 'EN_ATTENTE_VALIDATION'">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
 
                     <!-- Responsable : Valider / Rejeter (EN_ATTENTE_VALIDATION uniquement) -->
-                    @if (m.statut === 'EN_ATTENTE_VALIDATION' && (authService.hasRole('ROLE_RESPONSABLE') || authService.hasRole('ROLE_ADMIN'))) {
+                    @if (m.statut === 'EN_ATTENTE_VALIDATION' && authService.hasRole('ROLE_RESPONSABLE')) {
                       <button class="act-btn act-validate-resp"
                         (click)="valider(m)"
                         [disabled]="isProcessing(m.id!)"

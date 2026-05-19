@@ -1,163 +1,222 @@
 <div class="page-container">
-  <mat-card class="dossiers-card">
-    <div class="card-header">
-      <div class="header-title">
-        <mat-icon class="title-icon">folder</mat-icon>
-        <h2>Gestion des Dossiers Contentieux</h2>
+  <div class="page-card">
+
+    <!-- ===== TITLE ===== -->
+    <div class="page-title">
+      <mat-icon class="title-icon">folder</mat-icon>
+      <h2>Gestion des Dossiers Contentieux</h2>
+    </div>
+
+    <!-- ===== TOOLBAR ===== -->
+    <div class="toolbar">
+
+      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+        <button class="btn-new" (click)="createDossier()" style="order:99;margin-left:auto">
+          <mat-icon>add</mat-icon>
+          Nouveau Dossier
+        </button>
+      }
+
+      <!-- Search -->
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()" placeholder="Rechercher par référence..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
       </div>
+
+      <!-- Statut -->
+      <div class="select-wrap">
+        <label class="select-label">Statut</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="statutFilter" (ngModelChange)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="EN_COURS">En Cours</option>
+            <option value="EN_ATTENTE_VALIDATION">En Attente de Validation</option>
+            <option value="EN_ATTENTE_CLOTURE">En Attente de Clôture</option>
+            <option value="VALIDE">Validé</option>
+            <option value="CLOTURE">Clôturé</option>
+            <option value="SUSPENDU">Suspendu</option>
+            <option value="TRANSFERE">Transféré</option>
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+      <!-- Client -->
+      <div class="select-wrap">
+        <label class="select-label">Client</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="clientFilter" (ngModelChange)="applyFilters()">
+            <option [value]="0">Tous les clients</option>
+            @for (c of clients(); track c.id) {
+              <option [value]="c.id">{{ getClientLabel(c) }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
     </div>
 
-    <div class="filters">
-      <mat-form-field appearance="outline" class="search-field">
-        <mat-icon matPrefix>search</mat-icon>
-        <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Rechercher par référence...">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Statut</mat-label>
-        <mat-select [(ngModel)]="statutFilter" (selectionChange)="applyFilters()">
-          <mat-option value="">Tous</mat-option>
-          <mat-option value="EN_COURS">En Cours</mat-option>
-          <mat-option value="EN_ATTENTE_VALIDATION">En Attente de Validation</mat-option>
-          <mat-option value="EN_ATTENTE_CLOTURE">En Attente de Clôture</mat-option>
-          <mat-option value="VALIDE">Validé</mat-option>
-          <mat-option value="CLOTURE">Clôturé</mat-option>
-          <mat-option value="SUSPENDU">Suspendu</mat-option>
-          <mat-option value="TRANSFERE">Transféré</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Client</mat-label>
-        <mat-select [(ngModel)]="clientFilter" (selectionChange)="applyFilters()">
-          <mat-option [value]="0">Tous les clients</mat-option>
-          @for (c of clients(); track c.id) {
-            <mat-option [value]="c.id">{{ getClientLabel(c) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-      <button mat-raised-button color="primary" (click)="createDossier()" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-        <mat-icon>add</mat-icon> Nouveau Dossier
-      </button>
-    </div>
-
+    <!-- ===== LOADING ===== -->
     @if (loading()) {
-      <div class="loading">
-        <mat-spinner diameter="50"></mat-spinner>
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
         <p>Chargement des dossiers...</p>
       </div>
-    } @else if (filteredDossiers.length === 0) {
-      <div class="no-data">
+    }
+
+    <!-- ===== EMPTY ===== -->
+    @else if (pagedDossiers().length === 0) {
+      <div class="state-box empty-box">
         <mat-icon>folder_open</mat-icon>
         <p>Aucun dossier trouvé</p>
       </div>
-    } @else {
-      <div class="table-container">
-        <table mat-table [dataSource]="filteredDossiers" class="mat-elevation-z8">
+    }
 
-          <ng-container matColumnDef="reference">
-            <th mat-header-cell *matHeaderCellDef>Référence</th>
-            <td mat-cell *matCellDef="let dossier">
-              <a class="ref-link" [routerLink]="['/dossiers', dossier.idDossier]">{{ dossier.reference }}</a>
-            </td>
-          </ng-container>
+    <!-- ===== TABLE ===== -->
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>RÉFÉRENCE</th>
+                <th>CLIENT</th>
+                <th>CHARGÉ</th>
+                <th>DATE OUVERTURE</th>
+                <th>STATUT</th>
+                <th>RISQUE</th>
+                <th>MONTANT INITIAL</th>
+                <th>RÉCUPÉRÉ</th>
+                @if (showActions()) {
+                  <th>ACTIONS</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (dossier of pagedDossiers(); track dossier.idDossier) {
+                <tr>
 
-          <ng-container matColumnDef="client">
-            <th mat-header-cell *matHeaderCellDef>Client</th>
-            <td mat-cell *matCellDef="let dossier">{{ getClientName(dossier.clientId) }}</td>
-          </ng-container>
+                  <td class="td-ref">
+                    <a class="ref-link" [routerLink]="['/dossiers', dossier.idDossier]">{{ dossier.reference }}</a>
+                  </td>
 
-          <ng-container matColumnDef="chargeDossier">
-            <th mat-header-cell *matHeaderCellDef>Chargé</th>
-            <td mat-cell *matCellDef="let dossier">{{ getChargeName(dossier.chargeDossierId) }}</td>
-          </ng-container>
+                  <td>{{ getClientName(dossier.clientId) }}</td>
 
-          <ng-container matColumnDef="dateOuverture">
-            <th mat-header-cell *matHeaderCellDef>Date Ouverture</th>
-            <td mat-cell *matCellDef="let dossier">{{ dossier.dateOuverture | date:'dd/MM/yy' }}</td>
-          </ng-container>
+                  <td>{{ getChargeName(dossier.chargeDossierId) }}</td>
 
-          <ng-container matColumnDef="statut">
-            <th mat-header-cell *matHeaderCellDef>Statut</th>
-            <td mat-cell *matCellDef="let dossier">
-              <div style="display:flex;align-items:center;gap:6px">
-                <mat-chip [class]="getStatutClass(dossier.statut)">{{ getStatutLabel(dossier.statut) }}</mat-chip>
-              </div>
-            </td>
-          </ng-container>
+                  <td>{{ dossier.dateOuverture | date:'dd/MM/yy' }}</td>
 
-          <ng-container matColumnDef="niveauRisque">
-            <th mat-header-cell *matHeaderCellDef>Risque</th>
-            <td mat-cell *matCellDef="let dossier">
-              <mat-chip [class]="getRisqueClass(dossier.niveauRisque)">{{ getRisqueLabel(dossier.niveauRisque) }}</mat-chip>
-            </td>
-          </ng-container>
+                  <td>
+                    <span class="status-chip" [ngClass]="getStatutClass(dossier.statut)">
+                      {{ getStatutLabel(dossier.statut) }}
+                    </span>
+                  </td>
 
-          <ng-container matColumnDef="montantInitial">
-            <th mat-header-cell *matHeaderCellDef>Montant Initial</th>
-            <td mat-cell *matCellDef="let dossier">{{ dossier.montantInitial }} DT</td>
-          </ng-container>
+                  <td>
+                    <span class="status-chip" [ngClass]="getRisqueClass(dossier.niveauRisque)">
+                      {{ getRisqueLabel(dossier.niveauRisque) }}
+                    </span>
+                  </td>
 
+                  <td>{{ dossier.montantInitial | number:'1.0-0' }} DT</td>
 
-          <ng-container matColumnDef="montantRecupere">
-            <th mat-header-cell *matHeaderCellDef>Récupéré</th>
-            <td mat-cell *matCellDef="let dossier">{{ dossier.montantRecupere }} DT</td>
-          </ng-container>
+                  <td>{{ dossier.montantRecupere | number:'1.0-0' }} DT</td>
 
+                  @if (showActions()) {
+                    <td class="td-actions">
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let dossier">
-              <!-- ChargeDossier: edit, submit for validation, request closure, PDF -->
-              <button mat-icon-button color="primary" (click)="editDossier(dossier)" title="Modifier"
-                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && dossier.statut !== 'EN_ATTENTE_VALIDATION' && dossier.statut !== 'EN_ATTENTE_CLOTURE' && dossier.statut !== 'CLOTURE'">
-                <mat-icon>edit</mat-icon>
+                      <!-- ChargeDossier actions -->
+                      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                        @if (dossier.statut !== 'EN_ATTENTE_VALIDATION' && dossier.statut !== 'EN_ATTENTE_CLOTURE' && dossier.statut !== 'CLOTURE') {
+                          <button class="act-btn act-edit" (click)="editDossier(dossier)" title="Modifier">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                        }
+                        @if (dossier.statut === 'EN_COURS') {
+                          <button class="act-btn act-submit" (click)="soumettre(dossier)" title="Soumettre pour validation">
+                            <mat-icon>send</mat-icon>
+                          </button>
+                        }
+                        @if (dossier.statut === 'EN_COURS' || dossier.statut === 'VALIDE') {
+                          <button class="act-btn act-closure" (click)="demanderCloture(dossier)" title="Demander la clôture">
+                            <mat-icon>lock_clock</mat-icon>
+                          </button>
+                        }
+                        <button class="act-btn act-delete" (click)="deleteDossier(dossier.idDossier!)" title="Supprimer">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      }
+
+                      <!-- Responsable actions -->
+                      @if (authService.hasRole('ROLE_RESPONSABLE')) {
+                        @if (dossier.statut === 'EN_ATTENTE_VALIDATION' || dossier.statut === 'EN_COURS') {
+                          <button class="act-btn act-validate-resp" (click)="valider(dossier)" title="Valider">
+                            <mat-icon>check_circle</mat-icon>
+                          </button>
+                          <button class="act-btn act-reject-resp" (click)="rejeter(dossier)" title="Rejeter">
+                            <mat-icon>cancel</mat-icon>
+                          </button>
+                        }
+                        @if (dossier.statut === 'EN_ATTENTE_CLOTURE') {
+                          <button class="act-btn act-closure" (click)="cloturerDossier(dossier)" title="Valider la clôture">
+                            <mat-icon>lock</mat-icon>
+                          </button>
+                        }
+                      }
+
+                      <!-- PDF: everyone -->
+                      <button class="act-btn act-pdf" (click)="exportPdf(dossier)" title="Exporter PDF">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+
+                    </td>
+                  }
+
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATOR -->
+        <div class="pager">
+          <span class="pager-info">
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredCount(), (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredCount() }}
+          </span>
+          <div class="pager-btns">
+            <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="pager-btn pager-num" [class.pager-active]="p === currentPage()" (click)="goToPage(p)">
+                {{ p + 1 }}
               </button>
-              <button mat-icon-button color="accent" (click)="soumettre(dossier)" title="Soumettre pour validation"
-                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && dossier.statut === 'EN_COURS'">
-                <mat-icon>send</mat-icon>
-              </button>
-              <button mat-icon-button style="color:#6a1b9a" (click)="demanderCloture(dossier)" title="Demander la clôture"
-                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER') && (dossier.statut === 'EN_COURS' || dossier.statut === 'VALIDE')">
-                <mat-icon>lock_clock</mat-icon>
-              </button>
-              <!-- Responsable: validate, reject, or close -->
-              <button mat-icon-button style="color:#2e7d32" (click)="valider(dossier)" title="Valider"
-                *ngIf="authService.hasRole('ROLE_RESPONSABLE') && (dossier.statut === 'EN_ATTENTE_VALIDATION' || dossier.statut === 'EN_COURS')">
-                <mat-icon>check_circle</mat-icon>
-              </button>
-              <button mat-icon-button style="color:#c62828" (click)="rejeter(dossier)" title="Rejeter"
-                *ngIf="authService.hasRole('ROLE_RESPONSABLE') && (dossier.statut === 'EN_ATTENTE_VALIDATION' || dossier.statut === 'EN_COURS')">
-                <mat-icon>cancel</mat-icon>
-              </button>
-              <button mat-icon-button style="color:#6a1b9a" (click)="cloturerDossier(dossier)" title="Valider la clôture"
-                *ngIf="authService.hasRole('ROLE_RESPONSABLE') && dossier.statut === 'EN_ATTENTE_CLOTURE'">
-                <mat-icon>lock</mat-icon>
-              </button>
-              <!-- Delete: ChargeDossier only -->
-              <button mat-icon-button color="warn" (click)="deleteDossier(dossier.idDossier!)" title="Supprimer" *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                <mat-icon>delete</mat-icon>
-              </button>
-              <!-- PDF: everyone -->
-              <button mat-icon-button style="color:#c0392b" (click)="exportPdf(dossier)" title="Exporter PDF">
-                <mat-icon>picture_as_pdf</mat-icon>
-              </button>
-            </td>
-          </ng-container>
+            }
+            <button class="pager-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="pager-size">
+            <span>Par page :</span>
+            <select [(ngModel)]="pageSizeValue" (ngModelChange)="onPageSizeChange($event)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+            </select>
+          </div>
+        </div>
 
-          <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let row; columns: cols;"></tr>
-        </table>
-
-        <mat-paginator
-          [length]="totalDossiers"
-          [pageSize]="pageSize"
-          [pageSizeOptions]="[5, 10, 25, 50]"
-          (page)="onPageChange($event)">
-        </mat-paginator>
       </div>
     }
-  </mat-card>
+
+  </div>
 </div>
 
+<!-- ===== DRAWER ===== -->
 <app-drawer-panel
   [open]="editMode()"
   [title]="editId() === 0 ? 'Nouveau Dossier' : 'Modifier Dossier'"
@@ -168,11 +227,9 @@
   (closed)="cancelEdit()"
   (saved)="saveDossier()">
 
-  <form #dossierForm="ngForm" (ngSubmit)="saveDossier()">
-
   <mat-form-field appearance="outline">
     <mat-label>Client *</mat-label>
-    <mat-select name="clientId" [(ngModel)]="selectedClientId" (ngModelChange)="selectedClientId = $event">
+    <mat-select name="clientId" [(ngModel)]="selectedClientId">
       <mat-option [value]="0" disabled>Sélectionner un client</mat-option>
       @for (client of clients(); track client.id) {
         <mat-option [value]="client.id">{{ getClientLabel(client) }}</mat-option>
@@ -182,19 +239,19 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Référence *</mat-label>
-    <input matInput name="reference" [(ngModel)]="tempDossier.reference" placeholder="Ex: DOS-2024-001">
+    <input matInput [(ngModel)]="tempDossier.reference" placeholder="Ex: DOS-2024-001">
   </mat-form-field>
 
   <mat-form-field appearance="outline">
     <mat-label>Date Ouverture</mat-label>
-    <input matInput name="dateOuverture" [matDatepicker]="datePicker" [(ngModel)]="tempDossier.dateOuverture">
+    <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempDossier.dateOuverture">
     <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
     <mat-datepicker #datePicker></mat-datepicker>
   </mat-form-field>
 
   <mat-form-field appearance="outline">
     <mat-label>Statut</mat-label>
-    <mat-select name="statut" [(ngModel)]="tempDossier.statut">
+    <mat-select [(ngModel)]="tempDossier.statut">
       <mat-option value="EN_COURS">En Cours</mat-option>
       <mat-option value="SUSPENDU">Suspendu</mat-option>
       <mat-option value="TRANSFERE">Transféré</mat-option>
@@ -203,18 +260,12 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Niveau Risque</mat-label>
-    <mat-select name="niveauRisque" [(ngModel)]="tempDossier.niveauRisque">
+    <mat-select [(ngModel)]="tempDossier.niveauRisque">
       <mat-option value="FAIBLE">Faible</mat-option>
       <mat-option value="MOYEN">Moyen</mat-option>
       <mat-option value="ELEVE">Élevé</mat-option>
       <mat-option value="CRITIQUE">Critique</mat-option>
     </mat-select>
   </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Montant Récupéré</mat-label>
-    <input matInput type="number" name="montantRecupere" [(ngModel)]="tempDossier.montantRecupere">
-  </mat-form-field>
-  </form>
 
 </app-drawer-panel>

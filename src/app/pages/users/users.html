@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <div class="page-title">
+      <mat-icon class="title-icon">people</mat-icon>
+      <h2>Gestion des Utilisateurs</h2>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn-new" (click)="openCreate()" style="order:99;margin-left:auto">
+        <mat-icon>add</mat-icon>
+        Nouvel Utilisateur
+      </button>
+
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Rechercher..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement...</p>
+      </div>
+    }
+    @else if (pagedUsers().length === 0) {
+      <div class="state-box empty-box">
+        <mat-icon>people</mat-icon>
+        <p>Aucun utilisateur trouvé</p>
+      </div>
+    }
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>NOM D'UTILISATEUR</th>
+                <th>NOM COMPLET</th>
+                <th>EMAIL</th>
+                <th>RÔLE</th>
+                <th>STATUT</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of pagedUsers(); track u.id) {
+                <tr>
+                  <td><strong>{{ u.username }}</strong></td>
+                  <td>{{ u.prenom || '' }} {{ u.nom || '' }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>
+                    @for (role of parseRoles(u.roles); track role) {
+                      <span class="role-chip">{{ role }}</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="status-chip" [class.chip-active]="u.enabled !== false" [class.chip-inactive]="u.enabled === false">
+                      {{ u.enabled !== false ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                  <td class="td-actions">
+                    <button class="act-btn act-edit" (click)="openEdit(u)" title="Modifier">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    @if (!isSelf(u)) {
+                      <button class="act-btn act-toggle" (click)="toggleStatus(u)"
+                        [title]="u.enabled !== false ? 'Désactiver' : 'Activer'">
+                        <mat-icon>{{ u.enabled !== false ? 'person_off' : 'person' }}</mat-icon>
+                      </button>
+                      <button class="act-btn act-delete" (click)="deleteUser(u)" title="Supprimer">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    } @else {
+                      <span class="act-btn act-locked" title="Votre propre compte">
+                        <mat-icon>lock</mat-icon>
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span class="pager-info">
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredUsersSignal().length, (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredUsersSignal().length }}
+          </span>
+          <div class="pager-btns">
+            <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="pager-btn pager-num" [class.pager-active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+            }
+            <button class="pager-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="pager-size">
+            <span>Par page :</span>
+            <select [(ngModel)]="pageSizeValue" (ngModelChange)="onPageSizeChange($event)">
+              <option [value]="10">10</option><option [value]="25">25</option><option [value]="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

@@ -13,6 +13,10 @@
   min-height: 100vh;
 }
 
+.main-content.sidebar-collapsed {
+  margin-left: 70px;
+}
+
 .content-area {
   flex: 1;
   padding: 24px;

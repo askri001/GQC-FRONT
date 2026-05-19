@@ -111,25 +111,10 @@ export class ComposeMessageDialogComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    // Load all users that the current user can message
-    // Use /api/users/me to get current user, then load all users via a combined approach
-    this.api.get<any[]>('/users/chargedossiers').subscribe({
-      next: (cds) => {
-        this.api.get<any[]>('/users').subscribe({
-          next: (all) => { this.users = all ?? []; },
-          error: () => {
-            // If admin endpoint fails, use chargedossiers only
-            this.users = cds ?? [];
-          }
-        });
-      },
-      error: () => {
-        // Fallback: try admin endpoint
-        this.api.get<any[]>('/users').subscribe({
-          next: (data) => this.users = data ?? [],
-          error: () => this.users = []
-        });
-      }
+    // Load all users for messaging — accessible to all authenticated users
+    this.api.get<any[]>('/users/for-messaging').subscribe({
+      next: (data) => { this.users = (data ?? []).filter(u => u.enabled !== false); },
+      error: () => { this.users = []; }
     });
   }
 

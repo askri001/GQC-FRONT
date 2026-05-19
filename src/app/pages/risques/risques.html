@@ -1,0 +1,170 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <!-- TITLE -->
+    <div class="page-title">
+      <mat-icon class="title-icon">warning</mat-icon>
+      <h2>Gestion des Risques</h2>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+
+      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+        <button class="btn-new" (click)="openDrawer()" style="order:99;margin-left:auto">
+          <mat-icon>add</mat-icon>
+          Nouveau Risque
+        </button>
+      }
+
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm" placeholder="Rechercher..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Dossier</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="dossierFilter" (ngModelChange)="loadData()">
+            <option [value]="0">Tous les dossiers</option>
+            @for (d of dossiers(); track d.idDossier) {
+              <option [value]="d.idDossier">{{ d.reference }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOADING -->
+    @if (risqueService.loading()) {
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement des risques...</p>
+      </div>
+    }
+
+    <!-- EMPTY -->
+    @else if (filteredRisques().length === 0) {
+      <div class="state-box empty-box">
+        <mat-icon>warning</mat-icon>
+        <p>Aucun risque trouvé</p>
+      </div>
+    }
+
+    <!-- TABLE -->
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>RÉFÉRENCE</th>
+                <th>DOSSIER</th>
+                <th>MONTANT PRINCIPAL</th>
+                <th>INTÉRÊTS</th>
+                <th>MONTANT TOTAL</th>
+                <th>TAUX</th>
+                <th>DATE CONTRAT</th>
+                <th>ÉCHÉANCE</th>
+                @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                  <th>ACTIONS</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of filteredRisques(); track r.id) {
+                <tr>
+                  <td><strong>{{ r.reference || '—' }}</strong></td>
+                  <td>{{ getDossierRef(r.dossierId) }}</td>
+                  <td>{{ r.montantPrincipal | number:'1.0-0' }} DT</td>
+                  <td>{{ r.montantInteret | number:'1.0-0' }} DT</td>
+                  <td><strong>{{ r.montantTotal | number:'1.0-0' }} DT</strong></td>
+                  <td>{{ r.tauxInteret }} %</td>
+                  <td>{{ r.dateContrat | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ r.dateEcheance | date:'dd/MM/yyyy' }}</td>
+                  @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                    <td class="td-actions">
+                      <button class="act-btn act-edit" (click)="editRisque(r)" title="Modifier">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button class="act-btn act-delete" (click)="deleteRisque(r.id!)" title="Supprimer">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- DRAWER -->
+<app-drawer-panel
+  [open]="drawerOpen()"
+  [title]="editingRisque()?.id ? 'Modifier Risque' : 'Nouveau Risque'"
+  icon="warning"
+  [saveLabel]="editingRisque()?.id ? 'Sauvegarder' : 'Créer'"
+  [saveDisabled]="!tempRisque().montantPrincipal || !tempRisque().dossierId"
+  [saving]="risqueService.loading()"
+  (closed)="closeDrawer()"
+  (saved)="saveRisque()">
+
+  <mat-form-field appearance="outline">
+    <mat-label>Dossier *</mat-label>
+    <mat-icon matPrefix>folder</mat-icon>
+    <input matInput [matAutocomplete]="dossierAuto"
+      [(ngModel)]="dossierSearchText"
+      (ngModelChange)="onDossierSearch($event)"
+      placeholder="Tapez la référence du dossier...">
+    <mat-autocomplete #dossierAuto="matAutocomplete"
+      [displayWith]="displayDossier.bind(this)"
+      (optionSelected)="onDossierSelected($event)">
+      @for (d of filteredDossierOptions(); track d.idDossier) {
+        <mat-option [value]="d">{{ d.reference }}</mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Montant Principal *</mat-label>
+    <input matInput type="number" [(ngModel)]="tempRisque().montantPrincipal" (ngModelChange)="updateTotal()">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Intérêts</mat-label>
+    <input matInput type="number" [(ngModel)]="tempRisque().montantInteret" (ngModelChange)="updateTotal()">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Montant Total (calculé automatiquement)</mat-label>
+    <input matInput type="number" [value]="calculatedTotal()" readonly style="color:#00966E;font-weight:600">
+    <mat-icon matSuffix style="color:#00966E">calculate</mat-icon>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Taux d'intérêt (%)</mat-label>
+    <input matInput type="number" step="0.1" [(ngModel)]="tempRisque().tauxInteret">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Date Contrat</mat-label>
+    <input matInput [matDatepicker]="dateContratPicker" [(ngModel)]="tempRisque().dateContrat">
+    <mat-datepicker-toggle matSuffix [for]="dateContratPicker"></mat-datepicker-toggle>
+    <mat-datepicker #dateContratPicker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Date Échéance</mat-label>
+    <input matInput [matDatepicker]="dateEcheancePicker" [(ngModel)]="tempRisque().dateEcheance">
+    <mat-datepicker-toggle matSuffix [for]="dateEcheancePicker"></mat-datepicker-toggle>
+    <mat-datepicker #dateEcheancePicker></mat-datepicker>
+  </mat-form-field>
+
+</app-drawer-panel>

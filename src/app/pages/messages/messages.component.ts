@@ -1,16 +1,28 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MessageService } from '../../core/services/message.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
+import { WebSocketService } from '../../core/services/websocket.service';
 import { Message } from '../../core/models/message.model';
-import { ComposeMessageDialogComponent } from '../../shared/compose-message-dialog/compose-message-dialog.component';
-import { ViewMessageDialogComponent } from '../../shared/view-message-dialog/view-message-dialog.component';
+
+interface Conversation {
+  userId: number;
+  username: string;
+  displayName: string;
+  lastMessage: string;
+  lastTime: Date | undefined;
+  unreadCount: number;
+  messages: Message[];
+}
 
 @Component({
   selector: 'app-messages',
@@ -18,287 +30,275 @@ import { ViewMessageDialogComponent } from '../../shared/view-message-dialog/vie
   imports: [
     CommonModule, FormsModule,
     MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-    MatSnackBarModule, MatDialogModule, MatDividerModule
+    MatSnackBarModule, MatTooltipModule
   ],
-  template: `
-    <div class="page-container">
-      <div class="page-card">
-
-        <!-- Header -->
-        <div class="msg-page-header">
-          <div class="header-title">
-            <mat-icon class="title-icon">mail</mat-icon>
-            <h2>Messagerie</h2>
-          </div>
-          <button mat-raised-button color="primary" (click)="openCompose()">
-            <mat-icon>edit</mat-icon>
-            Nouveau message
-          </button>
-        </div>
-
-        <!-- Tabs -->
-        <div class="msg-tabs">
-          <button class="msg-tab" [class.active]="activeTab === 'inbox'" (click)="switchTab('inbox')">
-            <mat-icon>inbox</mat-icon>
-            Reçus
-            @if (unreadCount() > 0) {
-              <span class="unread-badge">{{ unreadCount() }}</span>
-            }
-          </button>
-          <button class="msg-tab" [class.active]="activeTab === 'sent'" (click)="switchTab('sent')">
-            <mat-icon>send</mat-icon>
-            Envoyés
-          </button>
-        </div>
-
-        <mat-divider></mat-divider>
-
-        <!-- Loading -->
-        @if (loading()) {
-          <div class="msg-state">
-            <mat-spinner diameter="40"></mat-spinner>
-            <p>Chargement...</p>
-          </div>
-        }
-
-        <!-- Empty -->
-        @else if (messages().length === 0) {
-          <div class="msg-state">
-            <mat-icon>{{ activeTab === 'inbox' ? 'inbox' : 'send' }}</mat-icon>
-            <p>{{ activeTab === 'inbox' ? 'Aucun message reçu' : 'Aucun message envoyé' }}</p>
-          </div>
-        }
-
-        <!-- Message list -->
-        @else {
-          <div class="msg-list">
-            @for (m of messages(); track m.id) {
-              <div class="msg-row" [class.unread]="activeTab === 'inbox' && !m.read"
-                (click)="openMessage(m)">
-                <div class="msg-avatar">
-                  <mat-icon>{{ activeTab === 'inbox' ? 'person' : 'person_outline' }}</mat-icon>
-                </div>
-                <div class="msg-info">
-                  <div class="msg-row-top">
-                    <span class="msg-from">
-                      {{ activeTab === 'inbox' ? m.fromUsername : m.toUsername }}
-                    </span>
-                    <span class="msg-date">{{ m.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                  </div>
-                  <div class="msg-subject">{{ m.subject }}</div>
-                  <div class="msg-preview">{{ m.body }}</div>
-                  @if (m.entityType) {
-                    <span class="msg-entity-tag">
-                      <mat-icon style="font-size:12px;width:12px;height:12px">link</mat-icon>
-                      {{ m.entityType }} #{{ m.entityId }}
-                    </span>
-                  }
-                </div>
-                @if (activeTab === 'inbox' && !m.read) {
-                  <div class="unread-dot"></div>
-                }
-              </div>
-            }
-          </div>
-        }
-
-      </div>
-    </div>
-  `,
-  styles: [`
-    .page-container {
-      min-height: 100vh;
-      padding: 32px 28px;
-      background: #eef4f1;
-    }
-    .page-card {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 2px 20px rgba(0,100,70,.09);
-      padding: 36px 40px 32px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .msg-page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .title-icon {
-      font-size: 28px !important;
-      width: 28px !important;
-      height: 28px !important;
-      color: #00966E !important;
-    }
-    .header-title h2 {
-      margin: 0;
-      font-size: 26px;
-      font-weight: 700;
-      color: #1a2e28;
-    }
-    .msg-tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 0;
-    }
-    .msg-tab {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
-      border: none;
-      background: transparent;
-      color: #7aada0;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all .15s;
-    }
-    .msg-tab mat-icon { font-size: 18px !important; width: 18px !important; height: 18px !important; }
-    .msg-tab.active { color: #00966E; border-bottom-color: #00966E; font-weight: 600; }
-    .msg-tab:hover { color: #00966E; }
-    .unread-badge {
-      background: #c62828;
-      color: #fff;
-      border-radius: 10px;
-      padding: 1px 7px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .msg-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 60px 24px;
-      color: #7aada0;
-    }
-    .msg-state mat-icon { font-size: 48px !important; width: 48px !important; height: 48px !important; opacity: .4; }
-    .msg-list { margin-top: 8px; }
-    .msg-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 16px 12px;
-      border-bottom: 1px solid #e8f3ee;
-      cursor: pointer;
-      transition: background .12s;
-      border-radius: 8px;
-      position: relative;
-    }
-    .msg-row:hover { background: #f0faf6; }
-    .msg-row.unread { background: #f7fdfb; }
-    .msg-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #e0f5ee;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: #00966E;
-    }
-    .msg-info { flex: 1; min-width: 0; }
-    .msg-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-    .msg-from { font-weight: 600; font-size: 14px; color: #1a2e28; }
-    .msg-date { font-size: 12px; color: #7aada0; }
-    .msg-subject { font-size: 13px; font-weight: 500; color: #2d4a42; margin-bottom: 3px; }
-    .msg-preview { font-size: 12px; color: #7aada0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; }
-    .msg-entity-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      background: #e0f5ee;
-      color: #00966E;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-    .unread-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #00966E;
-      flex-shrink: 0;
-      margin-top: 6px;
-    }
-  `]
+  templateUrl: './messages.component.html',
+  styleUrls: ['./messages.component.css']
 })
-export class MessagesComponent implements OnInit {
+export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   private messageService = inject(MessageService);
-  private dialog         = inject(MatDialog);
+  private authService    = inject(AuthService);
+  private api            = inject(ApiService);
+  private wsService      = inject(WebSocketService);
   private snackBar       = inject(MatSnackBar);
+  private router         = inject(Router);
 
-  messages    = signal<Message[]>([]);
-  loading     = signal(false);
-  activeTab   = 'inbox';
-  unreadCount = signal(0);
+  @ViewChild('chatBody') chatBody!: ElementRef;
+
+  conversations  = signal<Conversation[]>([]);
+  activeConv     = signal<Conversation | null>(null);
+  allUsers       = signal<any[]>([]);
+  loading        = signal(false);
+  sending        = signal(false);
+  newMessage     = '';
+  searchQuery    = '';
+  showNewChat    = false;
+  private shouldScroll = false;
+  private subs: Subscription[] = [];
+
+  get currentUserId(): number {
+    return Number(localStorage.getItem('auth_user_id')) || 0;
+  }
+
+  get currentUsername(): string {
+    return this.authService.currentUser()?.username || '';
+  }
 
   ngOnInit(): void {
-    this.loadInbox();
-    this.loadUnreadCount();
-  }
-
-  switchTab(tab: string): void {
-    this.activeTab = tab;
-    if (tab === 'inbox') this.loadInbox();
-    else this.loadSent();
-  }
-
-  loadInbox(): void {
-    this.loading.set(true);
-    this.messageService.getInbox().subscribe({
-      next: (data) => { this.messages.set(data ?? []); this.loading.set(false); },
-      error: () => this.loading.set(false)
+    this.loadAll();
+    this.api.get<any[]>('/users/for-messaging').subscribe({
+      next: (data) => this.allUsers.set((data ?? []).filter(u => u.username !== this.currentUsername)),
+      error: () => {}
     });
+
+    // Real-time: when a new message arrives via WebSocket
+    this.subs.push(
+      this.wsService.newMessage$.subscribe((msg: Message) => {
+        // Add message to the correct conversation and reload
+        this.loadAll();
+        this.shouldScroll = true;
+      })
+    );
   }
 
-  loadSent(): void {
-    this.loading.set(true);
-    this.messageService.getSent().subscribe({
-      next: (data) => { this.messages.set(data ?? []); this.loading.set(false); },
-      error: () => this.loading.set(false)
-    });
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
   }
 
-  loadUnreadCount(): void {
-    this.messageService.loadUnreadCount();
-    this.unreadCount = this.messageService.unreadCount;
-  }
-
-  openMessage(m: Message): void {
-    if (this.activeTab === 'inbox' && !m.read && m.id) {
-      this.messageService.markAsRead(m.id).subscribe({
-        next: () => {
-          this.messages.update(list => list.map(msg => msg.id === m.id ? { ...msg, read: true } : msg));
-          this.loadUnreadCount();
-        }
-      });
+  ngAfterViewChecked(): void {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
     }
-    this.dialog.open(ViewMessageDialogComponent, {
-      width: '560px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: { message: m }
-    }).afterClosed().subscribe(replied => {
-      if (replied) { this.loadInbox(); this.loadUnreadCount(); }
+  }
+
+  loadAll(): void {
+    this.loading.set(true);
+    // Load both inbox and sent to build conversations
+    Promise.all([
+      this.messageService.getInbox().toPromise(),
+      this.messageService.getSent().toPromise()
+    ]).then(([inbox, sent]) => {
+      const all = [...(inbox ?? []), ...(sent ?? [])];
+      this.buildConversations(all, inbox ?? []);
+      this.loading.set(false);
+    }).catch(() => this.loading.set(false));
+  }
+
+  buildConversations(all: Message[], inbox: Message[]): void {
+    const convMap = new Map<number, Conversation>();
+    const myId = this.currentUserId;
+
+    all.forEach(msg => {
+      // The "other" person in this message
+      const otherId   = msg.fromUserId === myId ? msg.toUserId!   : msg.fromUserId!;
+      const otherName = msg.fromUserId === myId ? msg.toUsername!  : msg.fromUsername!;
+      const otherNom  = msg.fromUserId === myId
+        ? ''
+        : `${msg.fromPrenom || ''} ${msg.fromNom || ''}`.trim();
+
+      if (!convMap.has(otherId)) {
+        convMap.set(otherId, {
+          userId: otherId,
+          username: otherName,
+          displayName: otherNom || otherName,
+          lastMessage: '',
+          lastTime: undefined,
+          unreadCount: 0,
+          messages: []
+        });
+      }
+
+      const conv = convMap.get(otherId)!;
+      conv.messages.push(msg);
+    });
+
+    // Count unread per conversation
+    inbox.forEach(msg => {
+      if (!msg.read && msg.fromUserId !== myId) {
+        const conv = convMap.get(msg.fromUserId!);
+        if (conv) conv.unreadCount++;
+      }
+    });
+
+    // Sort messages within each conversation by date
+    convMap.forEach(conv => {
+      conv.messages.sort((a, b) =>
+        new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime()
+      );
+      const last = conv.messages[conv.messages.length - 1];
+      if (last) {
+        conv.lastMessage = last.body;
+        conv.lastTime    = new Date(last.createdAt!);
+      }
+    });
+
+    // Sort conversations by last message time (newest first)
+    const sorted = Array.from(convMap.values()).sort((a, b) => {
+      if (!a.lastTime) return 1;
+      if (!b.lastTime) return -1;
+      return b.lastTime.getTime() - a.lastTime.getTime();
+    });
+
+    this.conversations.set(sorted);
+
+    // Restore active conversation if one was open
+    const active = this.activeConv();
+    if (active) {
+      const updated = sorted.find(c => c.userId === active.userId);
+      if (updated) this.activeConv.set(updated);
+    }
+  }
+
+  openConversation(conv: Conversation): void {
+    this.activeConv.set(conv);
+    this.showNewChat = false;
+    this.shouldScroll = true;
+
+    // Mark unread messages as read
+    conv.messages
+      .filter(m => !m.read && m.fromUserId !== this.currentUserId && m.id)
+      .forEach(m => {
+        this.messageService.markAsRead(m.id!).subscribe();
+      });
+    conv.unreadCount = 0;
+  }
+
+  startNewChat(user: any): void {
+    // Check if conversation already exists
+    const existing = this.conversations().find(c => c.userId === user.id);
+    if (existing) {
+      this.openConversation(existing);
+      return;
+    }
+    // Create a new empty conversation
+    const newConv: Conversation = {
+      userId: user.id,
+      username: user.username,
+      displayName: `${user.prenom || ''} ${user.nom || ''}`.trim() || user.username,
+      lastMessage: '',
+      lastTime: undefined,
+      unreadCount: 0,
+      messages: []
+    };
+    this.conversations.update(list => [newConv, ...list]);
+    this.activeConv.set(newConv);
+    this.showNewChat = false;
+  }
+
+  sendMessage(): void {
+    const body = this.newMessage.trim();
+    const conv = this.activeConv();
+    if (!body || !conv || this.sending()) return;
+
+    this.sending.set(true);
+    this.messageService.send({
+      toUserId: conv.userId,
+      subject:  `Message de ${this.currentUsername}`,
+      body
+    }).subscribe({
+      next: () => {
+        this.newMessage = '';
+        this.sending.set(false);
+        this.shouldScroll = true;
+        this.loadAll();
+      },
+      error: () => {
+        this.sending.set(false);
+        this.snackBar.open('Erreur lors de l\'envoi', 'OK', { duration: 3000 });
+      }
     });
   }
 
-  openCompose(): void {
-    this.dialog.open(ComposeMessageDialogComponent, {
-      width: '520px', maxWidth: '95vw', panelClass: 'bna-dialog',
-      data: {}
-    }).afterClosed().subscribe(sent => {
-      if (sent) { this.loadSent(); this.snackBar.open('Message envoyé', 'OK', { duration: 2500 }); }
-    });
+  onEnter(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
+  }
+
+  scrollToBottom(): void {
+    try {
+      if (this.chatBody) {
+        this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight;
+      }
+    } catch {}
+  }
+
+  isMine(msg: Message): boolean {
+    return msg.fromUserId === this.currentUserId;
+  }
+
+  getEntityIcon(type: string): string {
+    const map: Record<string, string> = {
+      DOSSIER: 'folder', AFFAIRE: 'gavel', MISSION: 'assignment', FACTURE: 'receipt'
+    };
+    return map[type] ?? 'link';
+  }
+
+  goToEntity(msg: Message): void {
+    const routes: Record<string, string> = {
+      DOSSIER: '/dossiers', AFFAIRE: '/affaires', MISSION: '/missions', FACTURE: '/factures'
+    };
+    const route = routes[msg.entityType ?? ''];
+    if (route) this.router.navigate([route]);
+  }
+
+  filteredConversations(): Conversation[] {
+    if (!this.searchQuery) return this.conversations();
+    const q = this.searchQuery.toLowerCase();
+    return this.conversations().filter(c =>
+      c.displayName.toLowerCase().includes(q) ||
+      c.username.toLowerCase().includes(q)
+    );
+  }
+
+  filteredUsers(): any[] {
+    if (!this.searchQuery) return this.allUsers();
+    const q = this.searchQuery.toLowerCase();
+    return this.allUsers().filter(u =>
+      u.username?.toLowerCase().includes(q) ||
+      u.nom?.toLowerCase().includes(q) ||
+      u.prenom?.toLowerCase().includes(q)
+    );
+  }
+
+  getInitials(name: string): string {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  toDate(d: Date | string | undefined): Date | undefined {
+    if (!d) return undefined;
+    return d instanceof Date ? d : new Date(d);
+  }
+
+  formatTime(date: Date | undefined): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    if (diff < 86400000) return d.toLocaleTimeString('fr-TN', { hour: '2-digit', minute: '2-digit' });
+    if (diff < 604800000) return d.toLocaleDateString('fr-TN', { weekday: 'short' });
+    return d.toLocaleDateString('fr-TN', { day: '2-digit', month: '2-digit' });
   }
 }

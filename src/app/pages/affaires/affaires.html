@@ -1,0 +1,236 @@
+<div class="page-container">
+  <div class="page-card">
+
+    <!-- TITLE -->
+    <div class="page-title">
+      <mat-icon class="title-icon">gavel</mat-icon>
+      <h2>Gestion des Affaires</h2>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+
+      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+        <button class="btn-new" (click)="createAffaire()" style="order:99;margin-left:auto">
+          <mat-icon>add</mat-icon>
+          Nouvelle Affaire
+        </button>
+      }
+
+      <div class="search-box">
+        <input class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()"
+          placeholder="Rechercher par N° procédure ou tribunal..." />
+        <span class="search-icon-wrap"><mat-icon>search</mat-icon></span>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Dossier</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="dossierFilter" (ngModelChange)="loadAffaires()">
+            <option [value]="0">Tous les dossiers</option>
+            @for (d of dossiers(); track d.idDossier) {
+              <option [value]="d.idDossier">{{ d.reference }}</option>
+            }
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+      <div class="select-wrap">
+        <label class="select-label">Statut</label>
+        <div class="select-box">
+          <select class="native-select" [(ngModel)]="statutFilter" (ngModelChange)="applyFilter()">
+            <option value="">Tous les statuts</option>
+            <option value="INITIEE">Initiée</option>
+            <option value="EN_COURS">En Cours</option>
+            <option value="JUGEMENT_RENDU">Jugement Rendu</option>
+            <option value="EN_ATTENTE_VALIDATION">En Attente de Validation</option>
+            <option value="TERMINEE">Terminée</option>
+          </select>
+          <mat-icon class="select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOADING -->
+    @if (loading()) {
+      <div class="state-box">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement des affaires...</p>
+      </div>
+    }
+
+    <!-- EMPTY -->
+    @else if (pagedAffaires().length === 0) {
+      <div class="state-box empty-box">
+        <mat-icon>gavel</mat-icon>
+        <p>Aucune affaire trouvée</p>
+      </div>
+    }
+
+    <!-- TABLE -->
+    @else {
+      <div class="table-card">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>N° PROCÉDURE</th>
+                <th>DOSSIER</th>
+                <th>TRIBUNAL</th>
+                <th>DATE DÉBUT</th>
+                <th>STATUT</th>
+                <th>JUGEMENT</th>
+                @if (showActions()) {
+                  <th>ACTIONS</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of pagedAffaires(); track a.idAffaire) {
+                <tr>
+                  <td><strong>{{ a.numeroProcedure }}</strong></td>
+                  <td>{{ getDossierRef(a.dossierId) }}</td>
+                  <td>{{ a.tribunal }}</td>
+                  <td>{{ a.dateDebut | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="status-chip" [ngClass]="getStatutClass(a.statut)">
+                      {{ getStatutLabel(a.statut) }}
+                    </span>
+                  </td>
+                  <td>{{ a.jugement || '—' }}</td>
+                  @if (showActions()) {
+                    <td class="td-actions">
+                      @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
+                        @if (a.statut !== 'EN_ATTENTE_VALIDATION') {
+                          <button class="act-btn act-edit" (click)="editAffaire(a)" title="Modifier">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                        }
+                        @if (a.statut === 'JUGEMENT_RENDU') {
+                          <button class="act-btn act-submit" (click)="soumettre(a)" title="Soumettre pour validation">
+                            <mat-icon>send</mat-icon>
+                          </button>
+                        }
+                        <button class="act-btn act-delete" (click)="deleteAffaire(a.idAffaire!)" title="Supprimer">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      }
+                      @if (authService.hasRole('ROLE_RESPONSABLE')) {
+                        @if (a.statut === 'EN_ATTENTE_VALIDATION' || a.statut === 'EN_COURS' || a.statut === 'JUGEMENT_RENDU') {
+                          <button class="act-btn act-validate-resp" (click)="valider(a)" title="Valider">
+                            <mat-icon>check_circle</mat-icon>
+                          </button>
+                          <button class="act-btn act-reject-resp" (click)="rejeter(a)" title="Rejeter">
+                            <mat-icon>cancel</mat-icon>
+                          </button>
+                        }
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATOR -->
+        <div class="pager">
+          <span class="pager-info">
+            {{ currentPage() * pageSize() + 1 }}–{{ min(filteredAffaires().length, (currentPage() + 1) * pageSize()) }}
+            sur {{ filteredAffaires().length }}
+          </span>
+          <div class="pager-btns">
+            <button class="pager-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="pager-btn pager-num" [class.pager-active]="p === currentPage()" (click)="goToPage(p)">
+                {{ p + 1 }}
+              </button>
+            }
+            <button class="pager-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="pager-size">
+            <span>Par page :</span>
+            <select [(ngModel)]="pageSizeValue" (ngModelChange)="onPageSizeChange($event)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- DRAWER -->
+<app-drawer-panel
+  [open]="editMode()"
+  [title]="editId() === 0 ? 'Nouvelle Affaire' : 'Modifier Affaire'"
+  icon="gavel"
+  [saveLabel]="editId() === 0 ? 'Créer' : 'Sauvegarder'"
+  [saveDisabled]="!tempAffaire().numeroProcedure || !tempAffaire().tribunal || !tempAffaire().dossierId"
+  [saving]="loading()"
+  (closed)="cancelEdit()"
+  (saved)="saveAffaire()">
+
+  <mat-form-field appearance="outline">
+    <mat-label>Dossier *</mat-label>
+    <mat-select [(ngModel)]="tempAffaire().dossierId">
+      <mat-option [value]="0" disabled>Sélectionner un dossier</mat-option>
+      @for (d of dossiers(); track d.idDossier) {
+        <mat-option [value]="d.idDossier">{{ d.reference }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>N° Procédure *</mat-label>
+    <input matInput [(ngModel)]="tempAffaire().numeroProcedure">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Date Début</mat-label>
+    <input matInput [matDatepicker]="datePicker" [(ngModel)]="tempAffaire().dateDebut">
+    <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+    <mat-datepicker #datePicker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Tribunal *</mat-label>
+    <input matInput [(ngModel)]="tempAffaire().tribunal">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Statut</mat-label>
+    <mat-select [(ngModel)]="tempAffaire().statut">
+      <mat-option value="INITIEE">Initiée</mat-option>
+      <mat-option value="EN_COURS">En Cours</mat-option>
+      <mat-option value="JUGEMENT_RENDU">Jugement Rendu</mat-option>
+      <mat-option value="TERMINEE">Terminée</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Jugement</mat-label>
+    <input matInput [(ngModel)]="tempAffaire().jugement">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Prestataire assigné</mat-label>
+    <mat-select [(ngModel)]="tempAffaire().prestataireId">
+      <mat-option [value]="undefined">Aucun</mat-option>
+      @for (p of prestataires(); track p.id) {
+        <mat-option [value]="p.id">{{ p.prenom }} {{ p.nom }} ({{ p.type }})</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+</app-drawer-panel>

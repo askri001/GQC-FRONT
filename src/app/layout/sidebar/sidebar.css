@@ -10,18 +10,27 @@
   top: 0;
   z-index: 1000;
   box-shadow: 4px 0 20px rgba(15, 32, 68, 0.4);
+  overflow: hidden;
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: 64px;
 }
 
+/* ── Header ── */
 .sidebar-header {
-  padding: 20px;
+  padding: 18px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 72px;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 18px 0;
 }
 
 .logo {
@@ -29,55 +38,72 @@
   align-items: center;
   gap: 10px;
   color: var(--bna-white);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .logo mat-icon {
-  font-size: 32px;
-  width: 32px;
-  height: 32px;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .logo-text {
-  font-size: 24px;
-  font-weight: bold;
-  letter-spacing: 2px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.sidebar.collapsed .logo {
+  display: none;
 }
 
 .toggle-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   color: var(--bna-white);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  flex-shrink: 0;
 }
 
 .toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
 }
 
+.toggle-btn mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* ── Nav ── */
 .sidebar-nav {
   flex: 1;
-  padding: 15px 10px;
+  padding: 12px 8px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.75);
+  gap: 12px;
+  padding: 11px 14px;
+  color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
   border-radius: 10px;
-  margin-bottom: 6px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
   position: relative;
+  white-space: nowrap;
   overflow: hidden;
 }
 
@@ -87,64 +113,79 @@
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
+  width: 3px;
   height: 0;
   background: var(--bna-primary-bright);
-  border-radius: 0 4px 4px 0;
-  transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 3px 3px 0;
+  transition: height 0.2s ease;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.10);
   color: var(--bna-white);
-  padding-left: 20px;
 }
 
 .nav-item:hover::before {
-  height: 40%;
+  height: 50%;
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(0, 196, 140, 0.25) 0%, rgba(0, 150, 110, 0.15) 100%);
+  background: linear-gradient(90deg, rgba(0, 196, 140, 0.22) 0%, rgba(0, 150, 110, 0.12) 100%);
   color: var(--bna-white);
-  box-shadow: 0 4px 15px rgba(0, 196, 140, 0.2);
   font-weight: 600;
 }
 
 .nav-item.active::before {
-  height: 70%;
+  height: 65%;
   background: var(--bna-primary-bright);
 }
 
 .nav-item.active mat-icon {
   color: var(--bna-primary-bright);
-  filter: drop-shadow(0 0 6px rgba(0, 196, 140, 0.5));
 }
 
 .nav-item mat-icon {
-  font-size: 22px;
-  width: 22px;
-  height: 22px;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
 }
 
 .nav-label {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
+}
+
+/* ── Collapsed nav items ── */
+.sidebar.collapsed .sidebar-nav {
+  padding: 12px 6px;
 }
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 12px;
+  padding: 12px 0;
+  gap: 0;
+  border-radius: 10px;
 }
 
+.sidebar.collapsed .nav-item:hover {
+  padding: 12px 0;
+}
+
+/* ── Footer ── */
 .sidebar-footer {
-  padding: 15px;
+  padding: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .version {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
   text-align: center;
+  white-space: nowrap;
 }
 
+.sidebar.collapsed .sidebar-footer {
+  display: none;
+}

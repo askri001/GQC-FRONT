@@ -1,9 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
+import { WebSocketService } from './websocket.service';
 import { catchError, of, firstValueFrom } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
-
 import { AuthResponse, LoginRequest, Role, User } from '../models';
 
 
@@ -57,7 +57,8 @@ export class AuthService {
 
   constructor(
     private api: ApiService,
-    private router: Router
+    private router: Router,
+    private wsService: WebSocketService
   ) {
     this.initializeAuth();
   }
@@ -130,8 +131,11 @@ export class AuthService {
 
       if (userFromApi) {
         this.setAuth(token, userFromApi);
+        this.wsService.connect(token, userFromApi.username || '');
       } else {
         this.updateUserFromToken(token);
+        const username = this.currentUserSignal()?.username || '';
+        this.wsService.connect(token, username);
       }
 
       return true;
@@ -142,6 +146,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.wsService.disconnect();
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
