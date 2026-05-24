@@ -51,7 +51,6 @@ interface NavItem {
       </nav>
 
       <div class="sidebar-footer">
-        <div class="version">BNA Tunisia v1.0.0</div>
       </div>
 
     </div>

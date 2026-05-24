@@ -32,14 +32,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
       <div class="drawer-footer">
         <button mat-button class="cancel-btn" (click)="onClose()" [disabled]="saving">
-          <mat-icon>close</mat-icon> Annuler
+          Annuler
         </button>
         <button mat-raised-button color="primary" class="save-btn"
           (click)="onSave()" [disabled]="saveDisabled || saving">
           @if (saving) {
             <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
           } @else {
-            <mat-icon>save</mat-icon>
+            <mat-icon>check</mat-icon>
           }
           {{ saveLabel }}
         </button>
@@ -97,31 +97,30 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 22px 28px;
-      background: linear-gradient(135deg, #0F2044 0%, #1A3A6B 100%);
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #00966E 0%, #007A58 100%);
       flex-shrink: 0;
     }
 
     .drawer-title {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .drawer-title-icon {
-      color: #00C48C;
-      font-size: 26px;
-      width: 26px;
-      height: 26px;
-      filter: drop-shadow(0 0 6px rgba(0, 196, 140, 0.4));
+      color: rgba(255,255,255,.90);
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
     }
 
     .drawer-title h3 {
       margin: 0;
       color: #fff;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
     }
 
     .drawer-close-btn {
@@ -204,17 +203,17 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     }
 
     .save-btn {
-      background: linear-gradient(135deg, #0F2044 0%, #00966E 100%) !important;
-      min-width: 130px;
+      background: #00966E !important;
+      min-width: 120px;
       border-radius: 8px !important;
       font-weight: 600 !important;
-      letter-spacing: 0.3px !important;
-      box-shadow: 0 4px 14px rgba(0, 150, 110, 0.3) !important;
+      box-shadow: 0 3px 10px rgba(0, 150, 110, 0.28) !important;
       transition: all 0.2s ease !important;
     }
 
     .save-btn:hover:not([disabled]) {
-      box-shadow: 0 6px 20px rgba(0, 150, 110, 0.45) !important;
+      background: #007A58 !important;
+      box-shadow: 0 5px 16px rgba(0, 150, 110, 0.38) !important;
       transform: translateY(-1px);
     }
 

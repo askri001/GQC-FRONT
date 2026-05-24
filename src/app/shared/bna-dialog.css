@@ -5,6 +5,7 @@
 
 .bna-dialog .mat-mdc-dialog-container {
   --mdc-dialog-container-color: transparent;
+  padding: 0 !important;
 }
 
 .bna-dialog .mdc-dialog__surface {
@@ -12,6 +13,7 @@
   border-radius: 16px !important;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.16) !important;
   overflow: hidden !important;
+  padding: 0 !important;
 }
 
 /* Remove default padding from dialog container so our custom header fills edge to edge */

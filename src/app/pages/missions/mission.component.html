@@ -124,7 +124,9 @@
                 <th>PRESTATAIRE</th>
                 <th>STATUT</th>
                 <th>RÉSULTAT / COMMENTAIRE</th>
-                <th>ACTIONS</th>
+                @if (!authService.isAdmin()) {
+                  <th>ACTIONS</th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -156,7 +158,8 @@
                   </td>
 
                   <!-- ACTIONS -->
-                  <td class="td-actions">
+                  @if (!authService.isAdmin()) {
+                    <td class="td-actions">
 
                     <!-- ChargeDossier : Edit / Lock logic -->
                     @if (authService.hasRole('ROLE_CHARGEDOSSIER')) {
@@ -221,6 +224,7 @@
                     }
 
                   </td>
+                  }
 
                 </tr>
               }

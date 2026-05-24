@@ -163,3 +163,24 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* ================================================================
+   FORM DIALOG — clean panel for all create/edit form dialogs
+   ================================================================ */
+.form-dialog .mat-mdc-dialog-container {
+  padding: 0 !important;
+  --mdc-dialog-container-color: transparent;
+}
+
+.form-dialog .mat-mdc-dialog-surface,
+.form-dialog .mdc-dialog__surface {
+  padding: 0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18) !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+.form-dialog .mat-mdc-dialog-container .mdc-dialog__container {
+  padding: 0 !important;
+}

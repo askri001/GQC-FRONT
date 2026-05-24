@@ -18,7 +18,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MessageService } from '../../core/services/message.service';
 import { RejetCommentaireDialogComponent } from '../../shared/rejet-commentaire-dialog/rejet-commentaire-dialog.component';
-import { DrawerPanelComponent } from '../../shared/drawer-panel/drawer-panel.component';
+import { DossierFormDialogComponent } from './dossier-form-dialog';
 import type { Dossier } from '../../core/models/dossier.model';
 import { DOSSIER_STATUT_LABELS, NIVEAU_RISQUE_LABELS } from '../../core/models/dossier.model';
 import { Client } from '../../core/models/client.model';
@@ -31,7 +31,7 @@ import { Client } from '../../core/models/client.model';
     MatIconModule, MatButtonModule, MatProgressSpinnerModule,
     MatSnackBarModule, MatFormFieldModule, MatInputModule,
     MatSelectModule, MatDatepickerModule, MatNativeDateModule,
-    MatTooltipModule, MatDialogModule, DrawerPanelComponent
+    MatTooltipModule, MatDialogModule
   ],
   templateUrl: './dossiers.html',
   styleUrls: ['./dossiers.css']
@@ -127,49 +127,43 @@ export class DossiersComponent implements OnInit {
   min(a: number, b: number): number { return Math.min(a, b); }
 
   showActions(): boolean {
-    return this.authService.hasRole('ROLE_CHARGEDOSSIER') || this.authService.hasRole('ROLE_RESPONSABLE');
+    return this.authService.hasRole('ROLE_CHARGEDOSSIER') ||
+           this.authService.hasRole('ROLE_RESPONSABLE') ||
+           this.authService.isAdmin();
   }
 
   createDossier(): void {
-    this.editId.set(0);
     const currentUserId = Number(localStorage.getItem('auth_user_id')) || undefined;
-    this.tempDossier = {
-      reference: '', dateOuverture: new Date(),
-      statut: 'EN_COURS', niveauRisque: 'FAIBLE',
-      clientId: 0, chargeDossierId: currentUserId
-    };
-    this.selectedClientId = 0;
-    this.editMode.set(true);
-  }
-
-  editDossier(dossier: Dossier): void {
-    this.editId.set(dossier.idDossier!);
-    this.tempDossier = { ...dossier };
-    this.selectedClientId = dossier.clientId;
-    this.editMode.set(true);
-  }
-
-  saveDossier(): void {
-    const temp = this.tempDossier;
-    temp.clientId = this.selectedClientId;
-    if (!temp.reference?.trim()) { this.showNotification('La référence est requise', 'error'); return; }
-    if (!temp.clientId)          { this.showNotification('Veuillez sélectionner un client', 'error'); return; }
-    const req = this.editId() === 0
-      ? this.dossierService.create(temp as Omit<Dossier, 'idDossier'>)
-      : this.dossierService.update(this.editId()!, temp as Dossier);
-    this.loading.set(true);
-    req.subscribe({
-      next: () => { this.loading.set(false); this.loadDossiers(); this.cancelEdit(); this.showNotification('Dossier sauvegardé', 'success'); },
-      error: () => { this.loading.set(false); this.showNotification('Erreur sauvegarde', 'error'); }
+    const ref = this.dialog.open(DossierFormDialogComponent, {
+      width: '540px', maxWidth: '95vw', panelClass: 'form-dialog',
+      data: { isEdit: false, dossier: { statut: 'EN_COURS', niveauRisque: 'FAIBLE', dateOuverture: new Date(), chargeDossierId: currentUserId } }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (!result) return;
+      result.chargeDossierId = currentUserId;
+      this.dossierService.create(result as Omit<Dossier, 'idDossier'>).subscribe({
+        next: () => { this.loadDossiers(); this.showNotification('Dossier créé', 'success'); },
+        error: () => this.showNotification('Erreur création', 'error')
+      });
     });
   }
 
-  cancelEdit(): void {
-    this.editId.set(null);
-    this.tempDossier = {};
-    this.editMode.set(false);
-    this.selectedClientId = 0;
+  editDossier(dossier: Dossier): void {
+    const ref = this.dialog.open(DossierFormDialogComponent, {
+      width: '540px', maxWidth: '95vw', panelClass: 'form-dialog',
+      data: { isEdit: true, dossier }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (!result) return;
+      this.dossierService.update(dossier.idDossier!, { ...dossier, ...result } as Dossier).subscribe({
+        next: () => { this.loadDossiers(); this.showNotification('Dossier modifié', 'success'); },
+        error: () => this.showNotification('Erreur modification', 'error')
+      });
+    });
   }
+
+  saveDossier(): void {}
+  cancelEdit(): void {}
 
   deleteDossier(id: number): void {
     if (!confirm('Confirmer la suppression ?')) return;

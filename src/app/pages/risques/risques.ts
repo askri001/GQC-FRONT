@@ -138,8 +138,23 @@ export class RisquesComponent implements OnInit {
     return dossier.reference || '';
   }
 
+  calculatedInteret(): number {
+    const principal = this.tempRisque().montantPrincipal ?? 0;
+    const taux      = this.tempRisque().tauxInteret      ?? 0;
+    return Math.round(principal * taux / 100 * 100) / 100;
+  }
+
   calculatedTotal(): number {
-    return (this.tempRisque().montantPrincipal ?? 0) + (this.tempRisque().montantInteret ?? 0);
+    return (this.tempRisque().montantPrincipal ?? 0) + this.calculatedInteret();
+  }
+
+  recalculate(): void {
+    const interet = this.calculatedInteret();
+    this.tempRisque.set({
+      ...this.tempRisque(),
+      montantInteret: interet,
+      montantTotal:   (this.tempRisque().montantPrincipal ?? 0) + interet
+    });
   }
 
   updateTotal(): void {}

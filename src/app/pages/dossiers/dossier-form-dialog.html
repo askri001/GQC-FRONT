@@ -1,0 +1,88 @@
+<div class="dfd-dialog">
+
+  <div class="dfd-header">
+    <div class="dfd-header-icon">
+      <mat-icon>folder</mat-icon>
+    </div>
+    <div>
+      <h2 class="dfd-title">{{ dialogTitle }}</h2>
+      <p class="dfd-subtitle">{{ dialogSubtitle }}</p>
+    </div>
+    <button class="dfd-close" mat-dialog-close type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dfd-body">
+
+    <div class="dfd-field">
+      <label class="dfd-label">Client *</label>
+      <div class="dfd-select-wrap">
+        <mat-icon class="dfd-input-icon">person</mat-icon>
+        <select class="dfd-select" [(ngModel)]="form.clientId">
+          <option [value]="0" disabled>Sélectionner un client</option>
+          @for (c of clients; track c.id) {
+            <option [value]="c.id">{{ getClientLabel(c) }}</option>
+          }
+        </select>
+        <mat-icon class="dfd-select-arrow">keyboard_arrow_down</mat-icon>
+      </div>
+    </div>
+
+    <div class="dfd-field">
+      <label class="dfd-label">Référence *</label>
+      <div class="dfd-input-wrap">
+        <mat-icon class="dfd-input-icon">tag</mat-icon>
+        <input class="dfd-input" [(ngModel)]="form.reference" placeholder="Ex: DOS-2024-001">
+      </div>
+    </div>
+
+    <div class="dfd-row">
+      <div class="dfd-field">
+        <label class="dfd-label">Date Ouverture</label>
+        <div class="dfd-input-wrap">
+          <mat-icon class="dfd-input-icon">calendar_today</mat-icon>
+          <input class="dfd-input" type="date" [(ngModel)]="form.dateOuverture">
+        </div>
+      </div>
+      <div class="dfd-field">
+        <label class="dfd-label">Niveau de Risque</label>
+        <div class="dfd-select-wrap">
+          <mat-icon class="dfd-input-icon">warning</mat-icon>
+          <select class="dfd-select" [(ngModel)]="form.niveauRisque">
+            <option value="FAIBLE">Faible</option>
+            <option value="MOYEN">Moyen</option>
+            <option value="ELEVE">Élevé</option>
+            <option value="CRITIQUE">Critique</option>
+          </select>
+          <mat-icon class="dfd-select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    @if (data.isEdit) {
+      <div class="dfd-field">
+        <label class="dfd-label">Statut</label>
+        <div class="dfd-select-wrap">
+          <mat-icon class="dfd-input-icon">info</mat-icon>
+          <select class="dfd-select" [(ngModel)]="form.statut">
+            <option value="EN_COURS">En Cours</option>
+            <option value="SUSPENDU">Suspendu</option>
+            <option value="TRANSFERE">Transféré</option>
+          </select>
+          <mat-icon class="dfd-select-arrow">keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <div class="dfd-footer">
+    <button class="dfd-btn-cancel" mat-dialog-close type="button">Annuler</button>
+    <button class="dfd-btn-save" type="button" (click)="onSubmit()">
+      <mat-icon>{{ data.isEdit ? 'save' : 'folder_open' }}</mat-icon>
+      {{ saveLabel }}
+    </button>
+  </div>
+
+</div>

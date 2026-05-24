@@ -102,7 +102,9 @@
                   <th>TARIF (DT/J)</th>
                   <th>STATUT</th>
                   <th>RIB</th>
-                  <th>ACTIONS</th>
+                  @if (!authService.isAdmin()) {
+                    <th>ACTIONS</th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -136,34 +138,36 @@
                       </button>
                     </td>
 
-                    <td class="td-actions">
-                      <button class="act-btn act-edit"
-                              (click)="openEditDialog(p)"
-                              title="Modifier"
-                              *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                        <mat-icon>edit</mat-icon>
-                      </button>
+                    @if (!authService.isAdmin()) {
+                      <td class="td-actions">
+                        <button class="act-btn act-edit"
+                                (click)="openEditDialog(p)"
+                                title="Modifier"
+                                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                          <mat-icon>edit</mat-icon>
+                        </button>
 
-                      <button class="act-btn act-toggle"
-                              (click)="toggleStatus(p)"
-                              [class.on]="p.actif"
-                              [disabled]="togglingId() === p.idPrestataire"
-                              [title]="p.actif ? 'Désactiver' : 'Activer'"
-                              *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                        @if (togglingId() === p.idPrestataire) {
-                          <mat-spinner diameter="18" class="toggle-spinner"></mat-spinner>
-                        } @else {
-                          <mat-icon>{{ p.actif ? 'toggle_on' : 'toggle_off' }}</mat-icon>
-                        }
-                      </button>
+                        <button class="act-btn act-toggle"
+                                (click)="toggleStatus(p)"
+                                [class.on]="p.actif"
+                                [disabled]="togglingId() === p.idPrestataire"
+                                [title]="p.actif ? 'Désactiver' : 'Activer'"
+                                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                          @if (togglingId() === p.idPrestataire) {
+                            <mat-spinner diameter="18" class="toggle-spinner"></mat-spinner>
+                          } @else {
+                            <mat-icon>{{ p.actif ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                          }
+                        </button>
 
-                      <button class="act-btn act-delete"
-                              (click)="confirmDelete(p)"
-                              title="Supprimer"
-                              *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
-                        <mat-icon>delete_outline</mat-icon>
-                      </button>
-                    </td>
+                        <button class="act-btn act-delete"
+                                (click)="confirmDelete(p)"
+                                title="Supprimer"
+                                *ngIf="authService.hasRole('ROLE_CHARGEDOSSIER')">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </td>
+                    }
 
                   </tr>
                 }
